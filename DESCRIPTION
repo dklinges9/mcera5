@@ -1,0 +1,21 @@
+Package: mcera5
+Type: Package
+Title: Tools to Acquire and Process ERA5 Data for use in Microclimate Modelling
+Version: 0.1.0
+Author: James P. Duffy
+Maintainer: James P. Duffy <james.philip.duffy@gmail.com>
+Description: todo
+License: GPL-2
+Encoding: UTF-8
+LazyData: true
+URL: http://github.com/everydayduffy/mcera5
+BugReports: http://github.com/everydayduffy/mcera5/issues
+Imports:
+    plyr,
+    dplyr,
+    ecmwfr,
+    lubridate,
+    tidync
+Remotes:
+    ilyamaclean/microclima
+RoxygenNote: 7.0.1
