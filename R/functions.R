@@ -153,10 +153,6 @@
   return(df)
 }
 
-# builds an ERA5 request for all required climate variables for a year or multiple years
-# outputs a list of lists (each one a request)
-# splits request by year, selecting relevant months from input start/end times
-
 #' Builds a request compatible with the CDS for all microclimate relevant climate
 #' variables.
 #'
@@ -180,6 +176,7 @@
 #' @param end_time a POSIXlt object indicating the last hour for which data
 #' are required.
 #' @param outfile_name character prefix for .nc files when downloaded.
+#'
 build_era5_request <- function(xmin, xmax, ymin, ymax, start_time, end_time,
                                outfile_name = "era5_out") {
 
@@ -235,6 +232,27 @@ build_era5_request <- function(xmin, xmax, ymin, ymax, start_time, end_time,
   return(request)
 }
 
+#' Submit request(s) to CDS for ERA5 data download
+#'
+#' @description Uses the `ecwmfr` package to submit requests to the Climate
+#' Data Store (CDS) for ERA5 .nc files. Executes one request at a time.
+#'
+#' @param request a list of request(s) created with `build_era5_request`.
+#' @param uid character vector containing your CDS user ID.
+#' @out_path character vector of the location at which to download nc files.
+#'
+request_era5 <- function(request, uid, out_path) {
+
+  for(req in 1:length(request)) {
+
+    ecmwfr::wf_request(user = as.character(uid),
+                       request = request[[req]],
+                       transfer = TRUE,
+                       path = out_path,
+                       verbose = TRUE,
+                       time_out = 18000)
+  }
+}
 
 #' Produces spatially weighted hourly data for a single location ready for use
 #' with microclima::runauto
