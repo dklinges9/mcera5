@@ -2,7 +2,8 @@
 % Please edit documentation in R/functions.R
 \name{point_nc_to_df}
 \alias{point_nc_to_df}
-\title{Produces spatially weighted hourly data for a single location ready for use with runauto}
+\title{Produces spatially weighted hourly data for a single location ready for use
+with microclima::runauto}
 \usage{
 point_nc_to_df(
   nc,
@@ -18,21 +19,21 @@ point_nc_to_df(
 \item{nc}{character vector containing nc filename(s). Data within nc files
 must span the period defined by start_time and end_time.}
 
-\item{x}{longitude of the location for which data is required (decimal
+\item{x}{longitude of the location for which data are required (decimal
 degrees, -ve west of Greenwich Meridian).}
 
-\item{y}{latitude of the location for which data is required (decimal
+\item{y}{latitude of the location for which data are required (decimal
 degrees, -ve south of the equator).}
 
 \item{start_time}{a POSIXlt object indicating the first hour for which data
-is required.}
+are required.}
 
 \item{end_time}{a POSIXlt object indicating the last hour for which data
-is required.}
+are required.}
 
 \item{lsm_nc}{character vector containing the ERA5 land/sea mask nc filename.}
 
-\item{lsm_thresh}{threshold to divide land (0) and sea (1). Default = 0.05.}
+\item{lsm_thresh}{threshold to divide sea (0) and land (1). Default = 0.05.}
 }
 \value{
 a data frame containing hourly values for a suite of climate

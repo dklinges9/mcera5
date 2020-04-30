@@ -141,9 +141,103 @@
   return(dat)
 }
 
-# provide weighted neighbour calculation of all hourly variables in a time frame
+# creates a data frame of unique month and year pairs from input start/end times
+.uni_dates <- function(start_time, end_time) {
 
-#' Produces spatially weighted hourly data for a single location ready for use with runauto
+  tme <- as.POSIXlt(seq(start_time,end_time, by = 1))
+  mon <- lubridate::month(tme)
+  yea <- lubridate::year(tme)
+  df <- data.frame(mon,yea) %>%
+    dplyr::distinct(.)
+
+  return(df)
+}
+
+# builds an ERA5 request for all required climate variables for a year or multiple years
+# outputs a list of lists (each one a request)
+# splits request by year, selecting relevant months from input start/end times
+
+#' Builds a request compatible with the CDS for all microclimate relevant climate
+#' variables.
+#'
+#' @description `build_era5_request` creates a request or set of requests that
+#' can be submitted to the Climate Data Store (CDS) with the `ecmwfr` package.
+#' Spatial and temporal extents are defined by the user, and requests are
+#' automatically split by year. The following variables requested:
+#' 2m_temperature, 2m_dewpoint_temperature, surface_pressure,
+#' 10m_u_component_of_wind, 10m_v_component_of_wind, total_precipitation,
+#' total_cloud_cover, mean_surface_net_long_wave_radiation_flux,
+#' mean_surface_downward_long_wave_radiation_flux,
+#' total_sky_direct_solar_radiation_at_surface,
+#' surface_solar_radiation_downwards.
+#'
+#' @param xmin The minimum longitude to request data for.
+#' @param xmax The maximum longitude to request data for.
+#' @param ymin The minimum latitude to request data for.
+#' @param ymax The maximum latitude to request data for.
+#' @param start_time a POSIXlt object indicating the first hour for which data
+#' are required.
+#' @param end_time a POSIXlt object indicating the last hour for which data
+#' are required.
+#' @param outfile_name character prefix for .nc files when downloaded.
+build_era5_request <- function(xmin, xmax, ymin, ymax, start_time, end_time,
+                               outfile_name = "era5_out") {
+
+  # input checks
+  if(missing(xmin)) { stop("xmin is missing")}
+  if(missing(xmax)) { stop("xmax is missing")}
+  if(missing(ymin)) { stop("ymin is missing")}
+  if(missing(ymax)) { stop("ymax is missing")}
+  if(missing(start_time)) { stop("start_time is missing")}
+  if(missing(end_time)) { stop("end_time is missing")}
+
+  # area of interest
+  ar <- paste0(ymax,"/",xmin,"/",ymin,"/",xmax)
+  # month/year combos
+  ut <- .uni_dates(start_time, end_time)
+  request <- list()
+
+  # loop through focal years
+  for(i in 1:length(unique(ut$yea))) {
+
+    # focal year
+    yr <- unique(ut$yea)[i]
+    # select months relevant to focal year
+    sub_mon <- ut %>%
+      dplyr::filter(., yea == yr) %>%
+      dplyr::select(., mon)
+
+    sub_request <- list(
+      area = ar,
+      product_type = "reanalysis",
+      format = "netcdf",
+      variable = c("2m_temperature", "2m_dewpoint_temperature", "surface_pressure",
+                   "10m_u_component_of_wind", "10m_v_component_of_wind",
+                   "total_precipitation", "total_cloud_cover",
+                   "mean_surface_net_long_wave_radiation_flux",
+                   "mean_surface_downward_long_wave_radiation_flux",
+                   "total_sky_direct_solar_radiation_at_surface",
+                   "surface_solar_radiation_downwards"),
+      year = as.character(yr),
+      month = as.character(sub_mon$mon),
+      day = c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11",
+              "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22",
+              "23", "24", "25", "26", "27", "28", "29", "30", "31"),
+      time = c("00:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00",
+               "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00",
+               "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00",
+               "21:00", "22:00", "23:00"),
+      dataset = "reanalysis-era5-single-levels",
+      target = paste0(outfile_name,"_",yr,".nc"))
+
+    request[[i]] <- sub_request
+  }
+  return(request)
+}
+
+
+#' Produces spatially weighted hourly data for a single location ready for use
+#' with microclima::runauto
 #'
 #' @description `point_nc_to_df` takes an nc file or set of nc files containing
 #' hourly ERA5 climate data, and for a given set of coordinates, produces an
@@ -152,16 +246,16 @@
 #'
 #' @param nc character vector containing nc filename(s). Data within nc files
 #' must span the period defined by start_time and end_time.
-#' @param x longitude of the location for which data is required (decimal
+#' @param x longitude of the location for which data are required (decimal
 #' degrees, -ve west of Greenwich Meridian).
-#' @param y latitude of the location for which data is required (decimal
+#' @param y latitude of the location for which data are required (decimal
 #' degrees, -ve south of the equator).
 #' @param start_time a POSIXlt object indicating the first hour for which data
-#' is required.
+#' are required.
 #' @param end_time a POSIXlt object indicating the last hour for which data
-#' is required.
+#' are required.
 #' @param lsm_nc character vector containing the ERA5 land/sea mask nc filename.
-#' @param lsm_thresh threshold to divide land (0) and sea (1). Default = 0.05.
+#' @param lsm_thresh threshold to divide sea (0) and land (1). Default = 0.05.
 #'
 #' @return a data frame containing hourly values for a suite of climate
 #' variables.
@@ -253,7 +347,8 @@ point_nc_to_df <- function(nc, x, y, start_time, end_time, lsm_nc = NULL,
   return(out)
 }
 
-#' Produces spatially weighted hourly data for a single location ready for use with runauto
+#' Produces spatially weighted hourly data for a single location ready for use
+#' with microclima::runauto
 #'
 #' @description `point_nc_to_df_precip` takes an nc file or set of nc files
 #' containing hourly ERA5 climate data, and for a given set of coordinates,
@@ -262,16 +357,16 @@ point_nc_to_df <- function(nc, x, y, start_time, end_time, lsm_nc = NULL,
 #'
 #' @param nc character vector containing nc filename(s). Data within nc files
 #' must span the period defined by start_time and end_time.
-#' @param x longitude of the location for which data is required (decimal
+#' @param x longitude of the location for which data are required (decimal
 #' degrees, -ve west of Greenwich Meridian).
-#' @param y latitude of the location for which data is required (decimal
+#' @param y latitude of the location for which data are required (decimal
 #' degrees, -ve south of the equator).
 #' @param start_time a POSIXlt object indicating the first hour for which data
-#' is required.
+#' are required.
 #' @param end_time a POSIXlt object indicating the last hour for which data
-#' is required.
+#' are required.
 #' @param lsm_nc character vector containing the ERA5 land/sea mask nc filename.
-#' @param lsm_thresh threshold to divide land (0) and sea (1). Default = 0.05.
+#' @param lsm_thresh threshold to divide sea (0) and land (1). Default = 0.05.
 #' #'
 #' @return a numeric vector of daily precipitation.
 #' @export
