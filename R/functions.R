@@ -71,7 +71,7 @@
     focal_x <- c(x_r, x_r, x_r + 0.25, x_r + 0.25) } else {
       focal_x <- c(x_r - 0.25, x_r - 0.25, x_r, x_r)
     }
-  if(y_in >= y_r) {
+  if(y >= y_r) {
     focal_y <- c(y_r, y_r + 0.25, y_r, y_r + 0.25) } else {
       focal_y <- c(y_r - 0.25, y_r, y_r - 0.25, y_r)
     }
