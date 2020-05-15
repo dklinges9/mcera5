@@ -19,3 +19,7 @@ Imports:
 Remotes:
     ilyamaclean/microclima
 RoxygenNote: 7.0.1
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

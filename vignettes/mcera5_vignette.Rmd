@@ -1,0 +1,149 @@
+---
+title: "Downloading ERA5 data for use with `microclima`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Setup
+
+ERA5 climate data can be downloaded from the climate data store (CDS). The 
+following describes how to access the data using R:
+
+1) Register [here](https://cds.climate.copernicus.eu/user/register). 
+
+2) Then, navigate [here](https://cds.climate.copernicus.eu/), login, and click on 
+your name (in the top right hand corner) to access your profile. Here you will 
+find your user ID (UID) and API key, both which are required for you to remotely 
+download data from the CDS. Make a note of these.  
+
+3) You will also need to accept the Ts&Cs (whilst logged in) [here](https://cds.climate.copernicus.eu/cdsapp/#!/terms/licence-to-use-copernicus-products).
+
+The following packages are required:
+```{r packages, warning = FALSE, message = FALSE}
+library(dplyr)
+library(ecmwfr)
+library(keyring)
+library(lubridate)
+library(tidync)
+library(microclima) # remotes::install_github("ilyamaclean/microclima")
+library(NicheMapR) # remotes::install_github("mrke/NicheMapR")
+```
+
+```{r funs, include = FALSE}
+#############
+##FUNCTIONS##
+#############
+
+#07/10/19 - Add catch for too many nc files - i.e. empty slices? to skip 
+source(here::here("R/functions.R"))
+```
+
+#### Set user credentials for API access
+
+```{r creds, eval = FALSE}
+# assign your credentials
+uid <- "*****"
+cds_api_key <- "********-****-****-****-************"
+
+ecmwfr::wf_set_key(user = uid,
+                   key = cds_api_key,
+                   service = "cds")
+```
+
+## Usage
+
+#### Building a request
+
+The first step is to decide on the spatial and temporal extents of the data retrieved from the CDS.
+There is a fair sized overhead in submitting a request (and consequently waiting in a queue) so it 
+is sensible to execute as few requests as possible. To this end, it is recommended to ensure the 
+spatial extent covers multiple areas of interest (within reason) and that the temporal extent covers
+multiple time periods of interest.
+
+Requests are submitted as whole months, and also they will be split by year, so that they are not too big to handle. The splitting of requests which overlap year boundaries is dealt with automatically. 
+
+Once these parameters are decided, one can begin to build the request(s) as follows:
+
+```{r build request}
+
+# bounding coordinates (in WGS84 / EPSG:4326)
+xmn <- -4
+xmx <- -2
+ymn <- 49
+ymx <- 51
+
+# temporal extent
+st_time <- lubridate::ymd("2010:02:26")
+en_time <- lubridate::ymd("2010:03:01")
+
+# filename and location for downloaded .nc files
+file_prefix <- "era5_test"
+op <- "C:/Sandbox"
+
+# build a request (covering multiple years)
+req <- build_era5_request(xmin = xmn, xmax = xmx, 
+                          ymin = ymn, ymax = ymx,
+                          start_time = st_time,
+                          end_time = en_time,
+                          outfile_name = file_prefix)
+```
+
+Requests are stored in list format. Each request (divided by year) are stored as list
+objects within the master list:
+
+```{r list_view}
+str(req)
+```
+
+#### Obtaining data with a request
+
+The next step is to execute the requests, by sending them to the CDS. The `request_era5` function will deal with lists containing multiple requests (i.e. those created by `build_era5_request` with temporal extents spanning multiple years). Executing `request_era5` will download .nc files for each year to the location defined by `out_path`. The filenames will have a prefix defined by `outfile_name` in `build_era5_request`:
+
+```{r send_request, eval = FALSE}
+request_era5(request = req, uid = uid, out_path = op)
+```
+
+#### Processing .nc files
+
+Once all .nc files are downloaded, the next step is to extract climate variables conforming to desired spatial and temporal extents from them. This can be done for either a single point in space with `point_nc_to_df` or for a an area with `grid_nc_to_df` (currently not properly implemented). Both functions output a dataframe where each row is a single observation in time and space and each column is a climatic variable. Note that these functions use the same start and end times defined prior to building the request. Given that `runauto` in the `microclima` package only accepts date ranges within single years, you will need to create a data frame for each yearly block. For example, if your period of interest spans multiple years (and you have used the previous code to download multiple .nc files, run this next block of code for each year):
+
+```{r process_nc, eval = FALSE}
+# list the path of the .nc file for a given year
+my_nc <- "C:/Sandbox/era5_test_2010.nc"
+
+# for a single point (make sure it's within the bounds of your .nc file)
+long <- -3.654600
+lat <- 50.640369
+
+# gather all hourly variables
+point_out <- point_nc_to_df(nc = my_nc, x = long, y = lat,
+                            start_time = st_time,  end_time = en_time)
+head(point_out)
+
+# gather daily precipitation
+point_out_precip <- point_nc_to_df_precip(nc = my_nc, x = long, y = lat,
+                                          start_time = st_time,  
+                                          end_time = en_time)
+```
+
+The dataframe created by `point_nc_to_df` and vector created by `point_nc_to_df_precip` are ready to be used as inputs to the `runauto` function from the `microclima` package:
+
+```{r runauto_example, eval = FALSE}
+# create a 200 x 200 30 m spatial resoltuion DEM for location
+r <- microclima::get_dem(lat = lat, long = long, resolution = 30)
+
+# change date format to fit runauto requirements
+temps <- microclima::runauto(r = r, dstart = "26/02/2010",dfinish = "01/03/2010", 
+                             hgt = 0.1, l = NA, x = NA, 
+                             habitat = "Barren or sparsely vegetated",
+                             hourlydata = point_out, 
+                             dailyprecip = point_out_precip, 
+                             plot.progress= FALSE)
+```
+
+#### Acknowledgements
+
+Thank you to Koen Hufkens, creator of the `ecwmfr` package for making the aquisition of ECWMF data through R possible. 
