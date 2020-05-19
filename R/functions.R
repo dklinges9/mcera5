@@ -188,8 +188,13 @@ build_era5_request <- function(xmin, xmax, ymin, ymax, start_time, end_time,
   if(missing(start_time)) { stop("start_time is missing")}
   if(missing(end_time)) { stop("end_time is missing")}
 
+  # round to regular grid
+  xmin_r <- plyr::round_any(xmin, .25, f = floor)
+  xmax_r <- plyr::round_any(xmax, .25, f = ceiling)
+  ymin_r <- plyr::round_any(ymin, .25, f = floor)
+  ymax_r <- plyr::round_any(ymax, .25, f = ceiling)
   # area of interest
-  ar <- paste0(ymax,"/",xmin,"/",ymin,"/",xmax)
+  ar <- paste0(ymax_r,"/",xmin_r,"/",ymin_r,"/",xmax_r)
   # month/year combos
   ut <- .uni_dates(start_time, end_time)
   request <- list()
