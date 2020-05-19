@@ -301,8 +301,8 @@ point_nc_to_df <- function(nc, x, y, start_time, end_time, lsm = TRUE,
                              latitude = latitude >= y -0.5 & latitude <= y + 0.5) %>%
         tidync::hyper_tibble() %>%
         dplyr::filter(., lsm > lsm_thresh) %>%
-        dplyr::distinct(.) %>%
-        dplyr::select(., x = longitude, y = latitude, lsm)
+        dplyr::select(., x = longitude, y = latitude, lsm) %>%
+        dplyr::distinct(.)
 
       focal <- .focal_dist(x, y) %>%
         dplyr::mutate(., inverse_weight = 1/sum(1/(1/sum(xy_dist) * xy_dist)) * 1/(1/sum(xy_dist) * xy_dist)) %>%
