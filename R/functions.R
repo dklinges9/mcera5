@@ -219,7 +219,7 @@ build_era5_request <- function(xmin, xmax, ymin, ymax, start_time, end_time,
                    "mean_surface_net_long_wave_radiation_flux",
                    "mean_surface_downward_long_wave_radiation_flux",
                    "total_sky_direct_solar_radiation_at_surface",
-                   "surface_solar_radiation_downwards","land_sea_mask"),
+                   "surface_solar_radiation_downwards", "land_sea_mask"),
       year = as.character(yr),
       month = as.character(sub_mon$mon),
       day = c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11",
@@ -277,7 +277,7 @@ request_era5 <- function(request, uid, out_path) {
 #' are required.
 #' @param end_time a POSIXlt object indicating the last hour for which data
 #' are required.
-#' @param lsm_nc character vector containing the ERA5 land/sea mask nc filename.
+#' @param lsm default TRUE. Use land sea mask filtering?
 #' @param lsm_thresh threshold to divide sea (0) and land (1). Default = 0.05.
 #'
 #' @return a data frame containing hourly values for a suite of climate
@@ -286,29 +286,26 @@ request_era5 <- function(request, uid, out_path) {
 #'
 #' @examples
 #'
-point_nc_to_df <- function(nc, x, y, start_time, end_time, lsm_nc = NULL,
+point_nc_to_df <- function(nc, x, y, start_time, end_time, lsm = TRUE,
                            lsm_thresh = 0.05) {
-
-  if(!is.null(lsm_nc)) {
-
-    # load and correct land sea mask / apply threshold
-    lsm <- tidync::tidync(lsm_nc) %>%
-      tidync::hyper_tibble() %>%
-      dplyr::filter(., lsm > lsm_thresh) %>%
-      dplyr::select(x = longitude, y = latitude, lsm) %>%
-      dplyr::mutate(., x = dplyr::case_when(
-        x > 180 ~ (x - 360),
-        TRUE ~ as.numeric(x)))
-  }
 
   # if the desired coords fall right on an ERA5 point - weighting calc not needed
   if(sum((x %% .25) + (y %% .25)) != 0) {
 
     # if using lsm
-    if(!is.null(lsm_nc)) {
+    if(lsm == TRUE) {
+
+      # pull lsm_vals for x/y and surrounding points from nc file + apply threshold
+      lsm_vals <- tidync::tidync(nc) %>%
+        tidync::hyper_filter(longitude = longitude >= x - 0.5 & longitude <= x + 0.5,
+                             latitude = latitude >= y -0.5 & latitude <= y + 0.5,
+                             lsm > lsm_thresh) %>%
+        hyper_tibble() %>%
+        dplyr::select(., x = longitude, y = latitude, lsm)
+
       focal <- .focal_dist(x, y) %>%
         dplyr::mutate(., inverse_weight = 1/sum(1/(1/sum(xy_dist) * xy_dist)) * 1/(1/sum(xy_dist) * xy_dist)) %>%
-        dplyr::inner_join(., lsm, by = c("x","y"))
+        dplyr::inner_join(., lsm_vals, by = c("x","y"))
 
       if(nrow(focal) == 0){
         stop(strwrap(paste0("No land pixels to use in weighting. Provide a different location or reduce the land/sea mask threshold.", collapse = "\n")))

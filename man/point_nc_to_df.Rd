@@ -5,15 +5,7 @@
 \title{Produces spatially weighted hourly data for a single location ready for use
 with microclima::runauto}
 \usage{
-point_nc_to_df(
-  nc,
-  x,
-  y,
-  start_time,
-  end_time,
-  lsm_nc = NULL,
-  lsm_thresh = 0.05
-)
+point_nc_to_df(nc, x, y, start_time, end_time, lsm = TRUE, lsm_thresh = 0.05)
 }
 \arguments{
 \item{nc}{character vector containing nc filename(s). Data within nc files
@@ -31,7 +23,7 @@ are required.}
 \item{end_time}{a POSIXlt object indicating the last hour for which data
 are required.}
 
-\item{lsm_nc}{character vector containing the ERA5 land/sea mask nc filename.}
+\item{lsm}{default TRUE. Use land sea mask filtering?}
 
 \item{lsm_thresh}{threshold to divide sea (0) and land (1). Default = 0.05.}
 }
