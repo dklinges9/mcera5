@@ -297,8 +297,8 @@ point_nc_to_df <- function(nc, x, y, start_time, end_time, lsm = TRUE,
 
       # pull lsm_vals for x/y and surrounding points from nc file + apply threshold
       lsm_vals <- tidync::tidync(nc) %>%
-        tidync::hyper_filter(longitude = longitude >= (x-0.5) & longitude <= (x+0.5),
-                             latitude = latitude >= (y-0.5) & latitude <= (y+0.5)) %>%
+        tidync::hyper_filter(longitude = longitude >= (x-0.5) & longitude <= (x + 0.5),
+                             latitude = latitude >= (y-0.5) & latitude <= (y + 0.5)) %>%
         tidync::hyper_tibble() %>%
         dplyr::filter(., lsm > lsm_thresh) %>%
         dplyr::select(., x = longitude, y = latitude, lsm) %>%
