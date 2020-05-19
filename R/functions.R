@@ -338,7 +338,7 @@ point_nc_to_df <- function(nc, x, y, start_time, end_time, lsm = TRUE,
         focal_collect[[j]] <- dat
       }
 
-      w_dat <- bind_rows(focal_collect, .id = "neighbour") %>%
+      w_dat <- dplyr::bind_rows(focal_collect, .id = "neighbour") %>%
         dplyr::group_by(., obs_time)%>%
         dplyr::summarise_at(., vars(temperature, humidity, pressure, windspeed,
                                     winddir, emissivity, cloudcover, netlong,
@@ -448,7 +448,7 @@ point_nc_to_df_precip <- function(nc, x, y, start_time, end_time, lsm_nc = NULL,
         focal_collect[[j]] <- dat
       }
 
-      w_dat <- bind_rows(focal_collect, .id = "neighbour") %>%
+      w_dat <- dplyr::bind_rows(focal_collect, .id = "neighbour") %>%
         dplyr::group_by(., obs_time) %>%
         dplyr::summarise(., precipitation = weighted.mean(precipitation,
                                                           w = inverse_weight))
