@@ -229,7 +229,7 @@ build_era5_request <- function(xmin, xmax, ymin, ymax, start_time, end_time,
                "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00",
                "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00",
                "21:00", "22:00", "23:00"),
-      dataset = "reanalysis-era5-single-levels",
+      dataset_short_name = "reanalysis-era5-single-levels",
       target = paste0(outfile_name,"_",yr,".nc"))
 
     request[[i]] <- sub_request
@@ -244,7 +244,7 @@ build_era5_request <- function(xmin, xmax, ymin, ymax, start_time, end_time,
 #'
 #' @param request a list of request(s) created with `build_era5_request`.
 #' @param uid character vector containing your CDS user ID.
-#' @out_path character vector of the location at which to download nc files.
+#' @param out_path character vector of the location at which to download nc files.
 #'
 request_era5 <- function(request, uid, out_path) {
 

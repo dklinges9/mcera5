@@ -10,6 +10,8 @@ request_era5(request, uid, out_path)
 \item{request}{a list of request(s) created with `build_era5_request`.}
 
 \item{uid}{character vector containing your CDS user ID.}
+
+\item{out_path}{character vector of the location at which to download nc files.}
 }
 \description{
 Uses the `ecwmfr` package to submit requests to the Climate

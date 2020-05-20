@@ -13,7 +13,7 @@ BugReports: http://github.com/everydayduffy/mcera5/issues
 Imports:
     plyr,
     dplyr,
-    ecmwfr,
+    ecmwfr (>= 1.2.3),
     lubridate,
     tidync
 Remotes:
