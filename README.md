@@ -4,4 +4,4 @@ A package to download and process ERA5 data ready for use in microclimate modell
 
 ## Install
 
-`remotes::install_github("everydayduffy/mcera5")
+`remotes::install_github("everydayduffy/mcera5")`
