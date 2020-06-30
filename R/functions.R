@@ -159,7 +159,7 @@
 #' @description `build_era5_request` creates a request or set of requests that
 #' can be submitted to the Climate Data Store (CDS) with the `ecmwfr` package.
 #' Spatial and temporal extents are defined by the user, and requests are
-#' automatically split by year. The following variables requested:
+#' automatically split by year. The following variables are requested:
 #' 2m_temperature, 2m_dewpoint_temperature, surface_pressure,
 #' 10m_u_component_of_wind, 10m_v_component_of_wind, total_precipitation,
 #' total_cloud_cover, mean_surface_net_long_wave_radiation_flux,
@@ -260,7 +260,7 @@ request_era5 <- function(request, uid, out_path) {
 }
 
 #' Produces spatially weighted hourly data for a single location ready for use
-#' with microclima::runauto
+#' with `microclima::runauto`.
 #'
 #' @description `point_nc_to_df` takes an nc file or set of nc files containing
 #' hourly ERA5 climate data, and for a given set of coordinates, produces an
@@ -369,7 +369,7 @@ point_nc_to_df <- function(nc, x, y, start_time, end_time, lsm = TRUE,
 }
 
 #' Produces spatially weighted hourly data for a single location ready for use
-#' with microclima::runauto
+#' with `microclima::runauto`.
 #'
 #' @description `point_nc_to_df_precip` takes an nc file or set of nc files
 #' containing hourly ERA5 climate data, and for a given set of coordinates,
@@ -478,6 +478,8 @@ point_nc_to_df_precip <- function(nc, x, y, start_time, end_time, lsm_nc = NULL,
     dplyr::group_by(., jd) %>%
     dplyr::summarise(., daily_precip = sum(precipitation)) %>%
     .$daily_precip
+
+  out <- out * 1000
 
   return(out)
 }
