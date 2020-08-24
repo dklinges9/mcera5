@@ -144,7 +144,7 @@
 # creates a data frame of unique month and year pairs from input start/end times
 .uni_dates <- function(start_time, end_time) {
 
-  tme <- as.POSIXlt(seq(start_time,end_time, by = 1))
+  tme <- seq(as.POSIXlt(start_time), as.POSIXlt(end_time), by = 1)
   mon <- lubridate::month(tme)
   yea <- lubridate::year(tme)
   df <- data.frame(mon,yea) %>%
