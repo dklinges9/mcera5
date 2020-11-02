@@ -89,6 +89,38 @@
 # process relevant hourly climate data from an ERA5 nc to data frame
 .nc_to_df <- function(nc, x, y, start_time, end_time) {
 
+  # Error trapping
+  # Check if start_time is after first time observation
+  start <- lubridate::ymd_hms("1900:01:01 00:00:00") + (nc_open(nc)$dim$time$vals[1] * 3600)
+  if (start_time < start) {
+    stop("Requested start time is before the beginning of time series of the ERA5 netCDF.")
+  }
+
+  # Check if end_time is before last time observation
+  end <- lubridate::ymd_hms("1900:01:01 00:00:00") + (tail(nc_open(nc)$dim$time$vals, n = 1) * 3600)
+  if (end_time > end) {
+    stop("Requested end time is after the end of time series of the ERA5 netCDF.")
+  }
+
+  # Check if requested latitude is in spatial grid
+  if(x < min(nc_data$dim$longitude$vals) | x > max(nc_data$dim$longitude$vals)) {
+    long_out <- TRUE
+  }
+
+  if(y < min(nc_data$dim$latitude$vals) | y > max(nc_data$dim$latitude$vals)) {
+    lat_out <- TRUE
+  }
+
+  if(long_out & lat_out) {
+    stop("Requested coordinates are not represented in the ERA5 netCDF (both longitude and latitude out of range).")
+  }
+  if(long_out) {
+    stop("Requested coordinates are not represented in the ERA5 netCDF (longitude out of range).")
+  }
+  if(lat_out) {
+    stop("Requested coordinates are not represented in the ERA5 netCDF (latitude out of range).")
+  }
+
   dat <- tidync::tidync(nc) %>%
     tidync::hyper_filter(longitude = longitude == x,
                          latitude = latitude == y) %>%
