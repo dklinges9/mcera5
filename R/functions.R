@@ -110,7 +110,7 @@
                   jd = microclima::julday(lubridate::year(obs_time),
                                           lubridate::month(obs_time),
                                           lubridate::day(obs_time)),
-                  si = microclima::siflat(lubridate::hour(obs_time), y, x, jd)) %>%
+                  si = microclima::siflat(lubridate::hour(obs_time), y, x, jd, merid = 0)) %>%
     dplyr::mutate(., rad_dni = fdir * 0.000001,
                   rad_glbl = ssrd * 0.000001,
                   rad_glbl = .rad_calc(rad_glbl, obs_time, x, y), # fix hourly rad
