@@ -77,7 +77,7 @@ point_nc_to_df <- function(nc, long, lat, start_time, end_time, d_weight = TRUE,
         dplyr::summarise_at(dplyr::vars(temperature, humidity, pressure, windspeed,
                                  winddir, emissivity, cloudcover, netlong,
                                  uplong, downlong, rad_dni, rad_dif, szenith),
-                            weighted.mean, w = quo(inverse_weight)) %>%
+                            weighted.mean, w = dplyr::quo(inverse_weight)) %>%
         dplyr::mutate(timezone = "UTC")
       message("Distance weighting applied.")
       if(dtr_cor == TRUE) {
