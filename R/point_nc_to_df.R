@@ -74,7 +74,7 @@ point_nc_to_df <- function(nc, long, lat, start_time, end_time, d_weight = TRUE,
       # create single weighted dataframe
       dat <- dplyr::bind_rows(focal_collect, .id = "neighbour") %>%
         dplyr::group_by(obs_time)%>%
-        dplyr::summarise_at(vars(temperature, humidity, pressure, windspeed,
+        dplyr::summarise_at(dplyr::vars(temperature, humidity, pressure, windspeed,
                                  winddir, emissivity, cloudcover, netlong,
                                  uplong, downlong, rad_dni, rad_dif, szenith),
                             weighted.mean, w = quo(inverse_weight)) %>%
