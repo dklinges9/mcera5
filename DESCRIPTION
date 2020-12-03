@@ -1,7 +1,7 @@
 Package: mcera5
 Type: Package
 Title: Tools to Acquire and Process ERA5 Data for use in Microclimate Modelling
-Version: 0.1.0
+Version: 0.2.0
 Author: James P. Duffy
 Maintainer: James P. Duffy <james.philip.duffy@gmail.com>
 Description: todo
@@ -15,10 +15,11 @@ Imports:
     dplyr,
     ecmwfr (>= 1.2.3),
     lubridate,
-    tidync
+    tidync,
+    magrittr
 Remotes:
     ilyamaclean/microclima
-RoxygenNote: 7.0.1
+RoxygenNote: 7.1.1
 Suggests: 
     knitr,
     rmarkdown
