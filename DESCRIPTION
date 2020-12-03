@@ -16,7 +16,8 @@ Imports:
     ecmwfr (>= 1.2.3),
     lubridate,
     tidync,
-    magrittr
+    magrittr,
+    ncdf4
 Remotes:
     ilyamaclean/microclima
 RoxygenNote: 7.1.1
