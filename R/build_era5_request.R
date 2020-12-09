@@ -44,7 +44,7 @@ build_era5_request <- function(xmin, xmax, ymin, ymax, start_time, end_time,
   # area of interest
   ar <- paste0(ymax_r,"/",xmin_r,"/",ymin_r,"/",xmax_r)
   # month/year combos
-  ut <- .uni_dates(start_time, end_time)
+  ut <- uni_dates(start_time, end_time)
   request <- list()
 
   # loop through focal years
