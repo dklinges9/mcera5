@@ -148,14 +148,14 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = FALSE,
                   jd = microclima::julday(lubridate::year(obs_time),
                                           lubridate::month(obs_time),
                                           lubridate::day(obs_time)),
-                  si = microclima::siflat(lubridate::hour(obs_time), y, x, jd, merid = 0)) %>%
+                  si = microclima::siflat(lubridate::hour(obs_time), lat, long, jd, merid = 0)) %>%
     dplyr::mutate(., rad_dni = fdir * 0.000001,
                   rad_glbl = ssrd * 0.000001,
-                  rad_glbl = rad_calc(rad_glbl, obs_time, x, y), # fix hourly rad
-                  rad_dni = rad_calc(rad_dni, obs_time, x ,y), # fix hourly rad
+                  rad_glbl = rad_calc(rad_glbl, obs_time, long, lat), # fix hourly rad
+                  rad_dni = rad_calc(rad_dni, obs_time, long, lat), # fix hourly rad
                   rad_dif = rad_glbl - rad_dni * si) %>% # converted to MJ m-2 hr-1 from J m-2 hr-1
     dplyr::mutate(., szenith = 90 - microclima::solalt(lubridate::hour(obs_time),
-                                                       y, x, jd, merid = 0)) %>%
+                                                       lat, long, jd, merid = 0)) %>%
     dplyr::select(.,obs_time, temperature, humidity, pressure, windspeed,
                   winddir, emissivity, cloudcover, netlong, uplong, downlong,
                   rad_dni, rad_dif, szenith, timezone)
