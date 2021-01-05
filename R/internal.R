@@ -124,6 +124,42 @@ focal_dist <- function(long, lat) {
 nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = FALSE,
                      dtr_cor_fac = 1) {
 
+  # Error trapping
+  # Check if start_time is after first time observation
+  start <- lubridate::ymd_hms("1900:01:01 00:00:00") + (nc_open(nc)$dim$time$vals[1] * 3600)
+  if (start_time < start) {
+    stop("Requested start time is before the beginning of time series of the ERA5 netCDF.")
+  }
+
+  # Check if end_time is before last time observation
+  end <- lubridate::ymd_hms("1900:01:01 00:00:00") + (tail(nc_open(nc)$dim$time$vals, n = 1) * 3600)
+  if (end_time > end) {
+    stop("Requested end time is after the end of time series of the ERA5 netCDF.")
+  }
+
+  # Check if requested latitude is in spatial grid
+  if(long < min(nc_open(nc)$dim$longitude$vals) | long > max(nc_open(nc)$dim$longitude$vals)) {
+    long_out <- TRUE
+  } else {
+    long_out <- FALSE
+  }
+
+  if(lat < min(nc_open(nc)$dim$latitude$vals) | lat > max(nc_open(nc)$dim$latitude$vals)) {
+    lat_out <- TRUE
+  } else {
+    lat_out <- FALSE
+  }
+
+  if(long_out & lat_out) {
+    stop("Requested coordinates are not represented in the ERA5 netCDF (both longitude and latitude out of range).")
+  }
+  if(long_out) {
+    stop("Requested coordinates are not represented in the ERA5 netCDF (longitude out of range).")
+  }
+  if(lat_out) {
+    stop("Requested coordinates are not represented in the ERA5 netCDF (latitude out of range).")
+  }
+
   dat <- tidync::tidync(nc) %>%
     tidync::hyper_filter(longitude = longitude == long,
                          latitude = latitude == lat) %>%
@@ -148,14 +184,14 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = FALSE,
                   jd = microclima::julday(lubridate::year(obs_time),
                                           lubridate::month(obs_time),
                                           lubridate::day(obs_time)),
-                  si = microclima::siflat(lubridate::hour(obs_time), y, x, jd, merid = 0)) %>%
+                  si = microclima::siflat(lubridate::hour(obs_time), lat, long, jd, merid = 0)) %>%
     dplyr::mutate(., rad_dni = fdir * 0.000001,
                   rad_glbl = ssrd * 0.000001,
-                  rad_glbl = rad_calc(rad_glbl, obs_time, x, y), # fix hourly rad
-                  rad_dni = rad_calc(rad_dni, obs_time, x ,y), # fix hourly rad
+                  rad_glbl = rad_calc(rad_glbl, obs_time, long, lat), # fix hourly rad
+                  rad_dni = rad_calc(rad_dni, obs_time, long, lat), # fix hourly rad
                   rad_dif = rad_glbl - rad_dni * si) %>% # converted to MJ m-2 hr-1 from J m-2 hr-1
     dplyr::mutate(., szenith = 90 - microclima::solalt(lubridate::hour(obs_time),
-                                                       y, x, jd, merid = 0)) %>%
+                                                       lat, long, jd, merid = 0)) %>%
     dplyr::select(.,obs_time, temperature, humidity, pressure, windspeed,
                   winddir, emissivity, cloudcover, netlong, uplong, downlong,
                   rad_dni, rad_dif, szenith, timezone)
@@ -174,6 +210,42 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = FALSE,
 #' @return vector of daily precipitation values
 #' @noRd
 nc_to_df_precip <- function(nc, long, lat, start_time, end_time) {
+
+  # Error trapping
+  # Check if start_time is after first time observation
+  start <- lubridate::ymd_hms("1900:01:01 00:00:00") + (nc_open(nc)$dim$time$vals[1] * 3600)
+  if (start_time < start) {
+    stop("Requested start time is before the beginning of time series of the ERA5 netCDF.")
+  }
+
+  # Check if end_time is before last time observation
+  end <- lubridate::ymd_hms("1900:01:01 00:00:00") + (tail(nc_open(nc)$dim$time$vals, n = 1) * 3600)
+  if (end_time > end) {
+    stop("Requested end time is after the end of time series of the ERA5 netCDF.")
+  }
+
+  # Check if requested latitude is in spatial grid
+  if(long < min(nc_open(nc)$dim$longitude$vals) | long > max(nc_open(nc)$dim$longitude$vals)) {
+    long_out <- TRUE
+  } else {
+    long_out <- FALSE
+  }
+
+  if(lat < min(nc_open(nc)$dim$latitude$vals) | lat > max(nc_open(nc)$dim$latitude$vals)) {
+    lat_out <- TRUE
+  } else {
+    lat_out <- FALSE
+  }
+
+  if(long_out & lat_out) {
+    stop("Requested coordinates are not represented in the ERA5 netCDF (both longitude and latitude out of range).")
+  }
+  if(long_out) {
+    stop("Requested coordinates are not represented in the ERA5 netCDF (longitude out of range).")
+  }
+  if(lat_out) {
+    stop("Requested coordinates are not represented in the ERA5 netCDF (latitude out of range).")
+  }
 
   dat <- tidync::tidync(nc) %>%
     tidync::hyper_filter(longitude = longitude == long,
