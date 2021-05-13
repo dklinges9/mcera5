@@ -2,7 +2,7 @@
 
 export("%>%")
 export(build_era5_request)
-export(point_nc_to_df)
-export(point_nc_to_df_precip)
+export(extract_clim)
+export(extract_precip)
 export(request_era5)
 importFrom(magrittr,"%>%")
