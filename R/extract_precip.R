@@ -1,7 +1,7 @@
 #' Produces daily precipitation data for a single location ready for use
 #' with `microclima::runauto`.
 #'
-#' @description `point_nc_to_df_precip` takes an nc file containing hourly ERA5
+#' @description `extract_precip` takes an nc file containing hourly ERA5
 #' climate data, and for a given set of coordinates, produces an (optionally)
 #' inverse distance weighted mean of daily precipitation, ready for
 #' use with `microclima::runauto`.
@@ -27,7 +27,7 @@
 #'
 #' @examples
 #'
-point_nc_to_df_precip <- function(nc, long, lat, start_time, end_time,
+extract_precip <- function(nc, long, lat, start_time, end_time,
                                   d_weight = TRUE) {
 
   if(sum((long %% .25) + (lat %% .25)) == 0 & d_weight == TRUE) {

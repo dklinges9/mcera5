@@ -1,7 +1,7 @@
 #' Produces hourly data for a single location ready for use with
 #' `microclima::runauto`.
 #'
-#' @description `point_nc_to_df` takes an nc file containing hourly ERA5 climate
+#' @description `extract_clim` takes an nc file containing hourly ERA5 climate
 #' data, and for a given set of coordinates, produces an (optionally) inverse
 #' distance weighted mean of each variable, ready for use with
 #' `microclima::runauto`. Also provides the option to implement a diurnal
@@ -34,7 +34,7 @@
 #' @examples
 #'
 
-point_nc_to_df <- function(nc, long, lat, start_time, end_time, d_weight = TRUE,
+extract_clim <- function(nc, long, lat, start_time, end_time, d_weight = TRUE,
                            dtr_cor = TRUE, dtr_cor_fac = 1) {
 
   if(dtr_cor == TRUE & !is.numeric(dtr_cor_fac)) {
