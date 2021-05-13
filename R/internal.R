@@ -2,7 +2,7 @@
 #' @param tdew dewpoint temperature (°C)
 #' @param tc air temperature (°C)
 #' @param p pressure (Pa)
-#' @return specific humidity (Pa)
+#' @return specific humidity (Kg/Kg)
 #' @noRd
 humfromdew <- function(tdew, tc, p) {
   pk <- p/1000
