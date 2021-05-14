@@ -37,8 +37,8 @@ library(NicheMapR) # remotes::install_github("mrke/NicheMapR")
 ##FUNCTIONS##
 #############
 
-#07/10/19 - Add catch for too many nc files - i.e. empty slices? to skip 
-source(here::here("R/functions.R"))
+files_source <- list.files(here::here("R/"), full.names = T)
+sapply(files_source,source)
 ```
 
 #### Set user credentials for API access
@@ -108,7 +108,7 @@ request_era5(request = req, uid = uid, out_path = op)
 
 #### Processing .nc files
 
-Once all .nc files are downloaded, the next step is to extract climate variables conforming to desired spatial and temporal extents from them. This can be done for a single point in space with `point_nc_to_df`. The function outputs a dataframe where each row is a single observation in time and space and each column is a climatic variable. Note that this function uses the same start and end times defined prior to building the request. Furthermore, the function (by default) uses the land-sea mask data (automatically downloaded alongside climate variables with `request_era5`), to filter out points that do not meet a land-sea threshold. 0 represents complete sea, and 1 complete land. By default, the threshold is liberally set to 0.05. Given that `runauto` in the `microclima` package only accepts date ranges within single years, you will need to create a data frame for each yearly block. For example, if your period of interest spans multiple years (and you have used the previous code to download multiple .nc files, run this next block of code for each year):
+Once all .nc files are downloaded, the next step is to extract climate variables conforming to desired spatial and temporal extents from them. This can be done for a single point in space with `extract_clim`. The function outputs a dataframe where each row is a single observation in time and space and each column is a climatic variable. Note that this function uses the same start and end times defined prior to building the request. Furthermore, the function (by default) uses the land-sea mask data (automatically downloaded alongside climate variables with `request_era5`), to filter out points that do not meet a land-sea threshold. 0 represents complete sea, and 1 complete land. By default, the threshold is liberally set to 0.05. Given that `runauto` in the `microclima` package only accepts date ranges within single years, you will need to create a data frame for each yearly block. For example, if your period of interest spans multiple years (and you have used the previous code to download multiple .nc files, run this next block of code for each year):
 
 ```{r process_nc, eval = FALSE}
 # list the path of the .nc file for a given year
@@ -119,17 +119,17 @@ long <- -3.654600
 lat <- 50.640369
 
 # gather all hourly variables
-point_out <- point_nc_to_df(nc = my_nc, x = long, y = lat,
+point_out <- extract_clim(nc = my_nc, x = long, y = lat,
                             start_time = st_time,  end_time = en_time)
 head(point_out)
 
 # gather daily precipitation
-point_out_precip <- point_nc_to_df_precip(nc = my_nc, x = long, y = lat,
+point_out_precip <- extract_precip(nc = my_nc, x = long, y = lat,
                                           start_time = st_time,  
                                           end_time = en_time)
 ```
 
-The dataframe created by `point_nc_to_df` and vector created by `point_nc_to_df_precip` are ready to be used as inputs to the `runauto` function from the `microclima` package:
+The dataframe created by `extract_clim` and vector created by `extract_precip` are ready to be used as inputs to the `runauto` function from the `microclima` package:
 
 ```{r runauto_example, eval = FALSE}
 # create a 200 x 200 30 m spatial resoltuion DEM for location
