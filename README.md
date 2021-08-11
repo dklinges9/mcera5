@@ -1,6 +1,6 @@
 # mcera5
 
-A package to download and process ERA5 data ready for use in microclimate modelling - specifically `microclima::runauto`.
+A package to download and process ERA5 data ready for use in microclimate modelling.
 
 ## Install
 
