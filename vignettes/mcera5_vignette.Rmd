@@ -25,7 +25,9 @@ The following packages are required:
 ```{r packages, warning = FALSE, message = FALSE}
 library(dplyr)
 library(ecmwfr)
+library(ncdf4)
 library(keyring)
+library(abind)
 library(lubridate)
 library(tidync)
 library(microclima) # remotes::install_github("ilyamaclean/microclima")
@@ -79,8 +81,9 @@ ymx <- 51
 st_time <- lubridate::ymd("2010:02:26")
 en_time <- lubridate::ymd("2010:03:01")
 
-# filename and location for downloaded .nc files
-file_prefix <- "era5_test"
+# Set a unique prefix for the filename, and the file path for 
+# downloaded .nc files
+file_prefix <- "era5"
 op <- "C:/Sandbox"
 
 # build a request (covering multiple years)
@@ -115,25 +118,27 @@ Once all .nc files are downloaded, the next step is to extract climate variables
 my_nc <- "C:/Sandbox/era5_test_2010.nc"
 
 # for a single point (make sure it's within the bounds of your .nc file)
-long <- -3.654600
-lat <- 50.640369
+x <- -3.654600
+y <- 50.640369
 
 # gather all hourly variables
-point_out <- extract_clim(nc = my_nc, x = long, y = lat,
+point_out <- extract_clim(nc = my_nc, long = x, lat = y,
                             start_time = st_time,  end_time = en_time)
 head(point_out)
 
-# gather daily precipitation
-point_out_precip <- extract_precip(nc = my_nc, x = long, y = lat,
-                                          start_time = st_time,  
-                                          end_time = en_time)
+# gather daily precipitation (we specify to convert precipitation from hourly
+# to daily, which is already the default behavior)
+point_out_precip <- extract_precip(nc = my_nc, long = x, lat = y,
+                                   start_time = st_time,  
+                                   end_time = en_time,
+                                   convert_daily = TRUE)
 ```
 
 The dataframe created by `extract_clim` and vector created by `extract_precip` are ready to be used as inputs to the `runauto` function from the `microclima` package:
 
 ```{r runauto_example, eval = FALSE}
 # create a 200 x 200 30 m spatial resoltuion DEM for location
-r <- microclima::get_dem(lat = lat, long = long, resolution = 30)
+r <- microclima::get_dem(lat = y, long = x, resolution = 30)
 
 # change date format to fit runauto requirements
 temps <- microclima::runauto(r = r, dstart = "26/02/2010",dfinish = "01/03/2010", 
