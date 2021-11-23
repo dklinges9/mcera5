@@ -11,8 +11,12 @@
 #' @export
 #'
 #'
-request_era5 <- function(request, uid, out_path, overwrite = FALSE) {
+request_era5 <- function(request, uid, out_path, overwrite = FALSE,
+                         combine = FALSE) {
 
+  if (length(request) == 1 & combine) {
+    cat("Your request will all be queried at once and does not need to be combined.\n")
+  }
   for(req in 1:length(request)) {
 
     # Check whether file already exists for requested out_path
@@ -38,5 +42,12 @@ request_era5 <- function(request, uid, out_path, overwrite = FALSE) {
         cat("ERA5 netCDF file successfully downloaded.\n")
       }
     }
+  }
+  if (length(request) > 1 & combine) {
+    cat("Now combining netCDF files...\n")
+    # Get list of filenames
+    fnames <- lapply(request, function(x) {x$target})
+    combine_netcdf(filenames = fnames, combined_name = "combined.nc")
+    cat("Finished.\n")
   }
 }
