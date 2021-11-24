@@ -25,11 +25,15 @@ The following packages are required:
 ```{r packages, warning = FALSE, message = FALSE}
 library(dplyr)
 library(ecmwfr)
+library(ncdf4)
+library(curl)
 library(keyring)
+library(abind)
 library(lubridate)
 library(tidync)
 library(microclima) # remotes::install_github("ilyamaclean/microclima")
 library(NicheMapR) # remotes::install_github("mrke/NicheMapR")
+library(mcera5)
 ```
 
 ```{r funs, include = FALSE}
@@ -58,12 +62,10 @@ ecmwfr::wf_set_key(user = uid,
 #### Building a request
 
 The first step is to decide on the spatial and temporal extents of the data retrieved from the CDS.
-There is a fair sized overhead in submitting a request (and consequently waiting in a queue) so it 
-is sensible to execute as few requests as possible. To this end, it is recommended to ensure the 
-spatial extent covers multiple areas of interest (within reason) and that the temporal extent covers
-multiple time periods of interest.
 
-Requests are submitted as whole months, and also they will be split by year, so that they are not too big to handle. The splitting of requests which overlap year boundaries is dealt with automatically. 
+There can overhead time of several hours for downloading data from the CDS, even for small amounts of data (<10 MB). Such overhead time is independent of mcera5, and is due to the slow speed of querying archival CDS data as well as based upon current CDS activity and the spatial/temporal dimensions of the query. Generally, querying temporal durations greater than one year causes a delay, while query of wide spatial extents can occur rapidly. It is therefore most efficient to download time series data in temporal chunks (e.g. monthly basis) each specifying a region encompassing multiple points of interest. We recommend users track current usage of the CDS at https://cds.climate.copernicus.eu/live/queue and ECMWF news (such as the migration of the MARS Data Centre between November 2021 and April 2022) at https://confluence.ecmwf.int/#all-updates.
+
+Requests are submitted as whole months, and they will also be split by year, so that they are not too big to handle and to expedite wait times. The splitting of requests which overlap year boundaries is dealt with automatically. Users can request files to be merged together in the `request_era5()` function (covered later on). 
 
 Once these parameters are decided, one can begin to build the request(s) as follows:
 
@@ -79,9 +81,10 @@ ymx <- 51
 st_time <- lubridate::ymd("2010:02:26")
 en_time <- lubridate::ymd("2010:03:01")
 
-# filename and location for downloaded .nc files
-file_prefix <- "era5_test"
-op <- "C:/Sandbox"
+# Set a unique prefix for the filename, and the file path for 
+# downloaded .nc files
+file_prefix <- "era5_-4_-2_49_51"
+op <- getwd()
 
 # build a request (covering multiple years)
 req <- build_era5_request(xmin = xmn, xmax = xmx, 
@@ -100,7 +103,7 @@ str(req)
 
 #### Obtaining data with a request
 
-The next step is to execute the requests, by sending them to the CDS. The `request_era5` function will deal with lists containing multiple requests (i.e. those created by `build_era5_request` with temporal extents spanning multiple years). Executing `request_era5` will download .nc files for each year to the location defined by `out_path`. The filenames will have a prefix defined by `outfile_name` in `build_era5_request`:
+The next step is to execute the requests, by sending them to the CDS. The `request_era5` function will deal with lists containing multiple requests (i.e. those created by `build_era5_request` with temporal extents spanning multiple years). Executing `request_era5` will download .nc files for each year to the location defined by `out_path`. The filenames will have a prefix defined by `outfile_name` in `build_era5_request`, followed by the year of the request (for each year of the desired duration). If multiple years are requested and `combine` = TRUE, the files are merged after downloading:  
 
 ```{r send_request, eval = FALSE}
 request_era5(request = req, uid = uid, out_path = op)
@@ -108,32 +111,34 @@ request_era5(request = req, uid = uid, out_path = op)
 
 #### Processing .nc files
 
-Once all .nc files are downloaded, the next step is to extract climate variables conforming to desired spatial and temporal extents from them. This can be done for a single point in space with `extract_clim`. The function outputs a dataframe where each row is a single observation in time and space and each column is a climatic variable. Note that this function uses the same start and end times defined prior to building the request. Furthermore, the function (by default) uses the land-sea mask data (automatically downloaded alongside climate variables with `request_era5`), to filter out points that do not meet a land-sea threshold. 0 represents complete sea, and 1 complete land. By default, the threshold is liberally set to 0.05. Given that `runauto` in the `microclima` package only accepts date ranges within single years, you will need to create a data frame for each yearly block. For example, if your period of interest spans multiple years (and you have used the previous code to download multiple .nc files, run this next block of code for each year):
+Once all .nc files are downloaded, the next step is to extract climate variables conforming to desired spatial and temporal extents from them. This can be done for a single point in space with `extract_clim`. The function outputs a dataframe where each row is a single observation in time and space and each column is a climatic variable. Note that this function uses the same start and end times defined prior to building the request. Furthermore, the function (by default) uses the land-sea mask data (automatically downloaded alongside climate variables with `request_era5`), to filter out points that do not meet a land-sea threshold. 0 represents complete sea, and 1 complete land. By default, the threshold is liberally set to 0.05. Given that `runauto` in the `microclima` package only accepts date ranges within single years, you will need to create a data frame for each yearly block. For example, if your period of interest spans multiple years (and you have used the previous code to download multiple .nc files, it is recommended to run this next block of code for each year)  
 
 ```{r process_nc, eval = FALSE}
 # list the path of the .nc file for a given year
-my_nc <- "C:/Sandbox/era5_test_2010.nc"
+my_nc <- paste0(getwd(), "/era5_test_-4_-2_49_51.nc")
 
 # for a single point (make sure it's within the bounds of your .nc file)
-long <- -3.654600
-lat <- 50.640369
+x <- -3.654600
+y <- 50.640369
 
 # gather all hourly variables
-point_out <- extract_clim(nc = my_nc, x = long, y = lat,
+point_out <- extract_clim(nc = my_nc, long = x, lat = y,
                             start_time = st_time,  end_time = en_time)
 head(point_out)
 
-# gather daily precipitation
-point_out_precip <- extract_precip(nc = my_nc, x = long, y = lat,
-                                          start_time = st_time,  
-                                          end_time = en_time)
+# gather daily precipitation (we specify to convert precipitation from hourly
+# to daily, which is already the default behavior)
+point_out_precip <- extract_precip(nc = my_nc, long = x, lat = y,
+                                   start_time = st_time,  
+                                   end_time = en_time,
+                                   convert_daily = TRUE)
 ```
 
 The dataframe created by `extract_clim` and vector created by `extract_precip` are ready to be used as inputs to the `runauto` function from the `microclima` package:
 
 ```{r runauto_example, eval = FALSE}
 # create a 200 x 200 30 m spatial resoltuion DEM for location
-r <- microclima::get_dem(lat = lat, long = long, resolution = 30)
+r <- microclima::get_dem(lat = y, long = x, resolution = 30)
 
 # change date format to fit runauto requirements
 temps <- microclima::runauto(r = r, dstart = "26/02/2010",dfinish = "01/03/2010", 

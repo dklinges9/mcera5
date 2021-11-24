@@ -276,3 +276,76 @@ uni_dates <- function(start_time, end_time) {
 
   return(df)
 }
+
+#' Combines a series of netCDFs that all have the same spatial extent and
+#' set of variables
+#' @param filenames a list of filenames for netCDFs you wish to combine
+#' @param combined_name the name of the combined netCDF
+#' @noRd
+combine_netcdf <- function(filenames, combined_name) {
+  files <- lapply(filenames, function(x) {
+    nc_open(x)
+  })
+
+  # Pull out first file for reference specs
+  nc <- files[[1]]
+  # Create an empty list to populate
+  vars_list <- vector(mode = "list", length = nc$nvars)
+  data_list <- vector(mode = "list", length = nc$nvars)
+  # One variable at a time
+  for (i in 1:length(names(nc$var))) {
+
+    varname <- names(nc$var)[i]
+    # Get the variable from each of the netCDFs
+    vars_dat <- lapply(files, function(x) {
+      ncvar_get(x, varname)
+    })
+
+    # Then bind all of the arrays together using abind, flexibly called via do.call
+    data_list[[i]] <- do.call(abind, list(... = vars_dat,
+                                          along = 3))
+
+    # To populate the time dimension, need to pull out the time values from each
+    # netCDF
+    timevals <- lapply(files, function(x) {
+      x$dim$time$vals
+    })
+
+    # Create a netCDF variable
+    vars_list[[i]] <- ncvar_def(
+      name = varname,
+      units =  nc$var[varname][[varname]]$units,
+      # Pull dimension names, units, and values from file1
+      dim = list(
+        # Longitude
+        ncdim_def(nc$dim$longitude$name, nc$dim$longitude$units,
+                  nc$dim$longitude$vals),
+        # Latitude
+        ncdim_def(nc$dim$latitude$name, nc$dim$latitude$units,
+                  nc$dim$latitude$vals),
+        # Time
+        ncdim_def(nc$dim$time$name, nc$dim$time$units,
+                  # Combination of values of all files
+                  do.call(c, timevals))
+      ))
+  }
+
+  # Create a new file
+  file_combined <- nc_create(
+    # Filename from param combined_name
+    filename = combined_name,
+    # We need to define the variables here
+    vars = vars_list)
+
+
+  # And write to it (must write one variable at a time with ncdf4)
+  for (i in 1:length(names(nc$var))) {
+    ncvar_put(
+      nc = file_combined,
+      varid = names(nc$var)[i],
+      vals = data_list[[i]])
+  }
+
+  # Finally, close the file
+  nc_close(file_combined)
+}

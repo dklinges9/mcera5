@@ -4,7 +4,7 @@
 \alias{request_era5}
 \title{Submit request(s) to CDS for ERA5 data download}
 \usage{
-request_era5(request, uid, out_path)
+request_era5(request, uid, out_path, overwrite = FALSE, combine = FALSE)
 }
 \arguments{
 \item{request}{a list of request(s) created with `build_era5_request`.}
@@ -12,6 +12,10 @@ request_era5(request, uid, out_path)
 \item{uid}{character vector containing your CDS user ID.}
 
 \item{out_path}{character vector of the location at which to download nc files.}
+
+\item{overwrite}{TRUE for overwriting a file of the same path. Default FALSE.}
+
+\item{combine}{TRUE for combining downloaded annual files into one file. Default FALSE.}
 }
 \description{
 Uses the `ecwmfr` package to submit requests to the Climate

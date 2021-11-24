@@ -45,8 +45,38 @@ range correction to air temperature values. Default = `TRUE`.}
 correction. Default = 1.}
 }
 \value{
-a data frame containing hourly values for a suite of climate
-variables.
+a data frame containing hourly values for a suite of climate variables:
+
+`obs_time` | the date-time (timezone specified in col timezone)
+
+`temperature` | (degrees celsius)
+
+`humidity` | specific humidity (kg / kg)
+
+`pressure` | (Pa)
+
+`windspeed` | (m / s)
+
+`winddir` | wind direction, azimuth (degrees from north)
+
+`emissivity` | downward long wave radiation flux divided by the sum
+of net long-wave radiation flux and downward long wave radiation flux (unitless)
+
+`cloudcover` | (%)
+
+`netlong` | Net longwave radiation (MJ / m2 / hr)
+
+`uplong` | Upward longwave radiation (MJ / m2 / hr)
+
+`downlong` | Downward longwave radiation (MJ / m2 / hr)
+
+`rad_dni` | Direct normal irradiance (MJ / m2 / hr)
+
+`rad_dif` | Diffuse normal irradiance (MJ / m2 / hr)
+
+`szenith` | Solar zenith angle (degrees from a horizontal plane)
+
+`timezone` | (unitless)
 }
 \description{
 `extract_clim` takes an nc file containing hourly ERA5 climate

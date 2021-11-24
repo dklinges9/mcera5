@@ -1,10 +1,10 @@
-#' Produces daily precipitation data for a single location ready for use
+#' Produces daily or hourly precipitation data for a single location ready for use
 #' with `microclima::runauto`.
 #'
 #' @description `extract_precip` takes an nc file containing hourly ERA5
 #' climate data, and for a given set of coordinates, produces an (optionally)
-#' inverse distance weighted mean of daily precipitation, ready for
-#' use with `microclima::runauto`.
+#' inverse distance weighted mean of precipitation (at daily or hourly resolution)
+#' ready for use with `microclima::runauto`.
 #'
 #' @param nc character vector containing the path to the nc file. Use the
 #' `build_era5_request` and `request_era5` functions to acquire an nc file with
@@ -21,14 +21,17 @@
 #' @param d_weight logical value indicating whether to apply inverse distance
 #' weighting using the 4 closest neighbouring points to the location defined by
 #' `long` and `lat`. Default = `TRUE`.
+#' @param convert_daily a flag indicating whether the user desires to convert the
+#' precipitation vector from hourly to daily averages (TRUE) or remain as hourly
+#' values (FALSE). Only daily precipitation will be accepted by `microclima::runauto`.
 #'
-#' @return a numeric vector of daily precipitation (mm).
+#' @return a numeric vector of daily or hourly precipitation (mm).
 #' @export
 #'
 #' @examples
 #'
 extract_precip <- function(nc, long, lat, start_time, end_time,
-                                  d_weight = TRUE) {
+                                  d_weight = TRUE, convert_daily = TRUE) {
 
   if(sum((long %% .25) + (lat %% .25)) == 0 & d_weight == TRUE) {
     message("Input coordinates match ERA5 grid, no distance weighting required.")
@@ -64,8 +67,12 @@ extract_precip <- function(nc, long, lat, start_time, end_time,
   }
 
   # convert to daily
-  daily_p <- matrix(dat,ncol=24,byrow=T) %>%
-    rowSums() * 1000
+  if (convert_daily) {
+    precip <- matrix(dat,ncol=24,byrow=T) %>%
+      rowSums() * 1000
+  } else {
+    precip <- dat
+  }
 
-  return(daily_p)
+  return(precip)
 }
