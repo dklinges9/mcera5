@@ -28,7 +28,7 @@ download data from the CDS. Make a note of these.
 3) You will also need to accept the Ts&Cs (whilst logged in) [here](https://cds.climate.copernicus.eu/cdsapp/#!/terms/licence-to-use-copernicus-products).
 
 The following packages are required:
-```{r packages, warning = FALSE, message = FALSE}
+```{r packages, eval = FALSE, warning = FALSE, message = FALSE}
 library(mcera5)
 library(dplyr)
 library(ecmwfr)
