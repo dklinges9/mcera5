@@ -17,11 +17,21 @@ Imports:
     lubridate,
     tidync,
     magrittr,
-    ncdf4
+    ncdf4,
+    abind,
+    microclima,
+    keyring,
+    curl
 Remotes:
     ilyamaclean/microclima
+    ilyamaclean/microclimc
+    ilyamaclean/microctools
+    mrke/NicheMapR
 RoxygenNote: 7.1.1
 Suggests: 
     knitr,
-    rmarkdown
+    rmarkdown,
+    microclimc,
+    microctools,
+    NicheMapR
 VignetteBuilder: knitr
