@@ -1,10 +1,16 @@
 ---
-title: "Downloading ERA5 data for use with `microclima`"
-output: html_document
+title: "Downloading ERA5 data for use with `microclima`, `NicheMapR`, and other microclimate packages"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{mcera5_vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE,
+                      collapse = TRUE,
+                      comment = "#>")
 ```
 
 ## Setup
@@ -23,6 +29,7 @@ download data from the CDS. Make a note of these.
 
 The following packages are required:
 ```{r packages, warning = FALSE, message = FALSE}
+library(mcera5)
 library(dplyr)
 library(ecmwfr)
 library(keyring)
