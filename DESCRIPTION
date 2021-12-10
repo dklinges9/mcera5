@@ -1,10 +1,14 @@
 Package: mcera5
 Type: Package
 Title: Tools to acquire and process ERA5 data for use in microclimate modelling
-Version: 0.2.0
-Author: James P. Duffy
-Maintainer: James P. Duffy <james.philip.duffy@gmail.com>
-Description: todo
+Version: 0.3.0
+Authors@R: c(
+    person("James", "Duffy", email = "james.philip.duffy@gmail.com", role = "cre", 
+    comment = "Original author and creator of mcera5, however no longer maintainer"),
+    person("David", "Klinges", email = "dklinges9@gmail.com", role = "aut",
+    comment = "package maintainer"))
+Maintainer: David H. Klinges <dklinges9@gmail.com>
+Description: A package to download and process ERA5 data ready for use in microclimate modelling.
 License: GPL-2
 Encoding: UTF-8
 LazyData: true
@@ -17,11 +21,22 @@ Imports:
     lubridate,
     tidync,
     magrittr,
-    ncdf4
+    ncdf4,
+    abind,
+    microclima,
+    keyring,
+    curl
 Remotes:
-    ilyamaclean/microclima
+    ilyamaclean/microclima,
+    ilyamaclean/microclimc,
+    ilyamaclean/microctools,
+    mrke/NicheMapR
 RoxygenNote: 7.1.1
 Suggests: 
     knitr,
-    rmarkdown
+    rmarkdown,
+    microclimc,
+    microctools,
+    NicheMapR
 VignetteBuilder: knitr
+Vignettes: mcera5_vignette

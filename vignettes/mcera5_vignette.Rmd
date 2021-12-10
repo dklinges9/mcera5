@@ -1,10 +1,16 @@
 ---
-title: "Downloading ERA5 data for use with `microclima`"
-output: html_document
+title: "Downloading ERA5 data for use with `microclima`, `NicheMapR`, and other microclimate packages"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{mcera5_vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE,
+                      collapse = TRUE,
+                      comment = "#>")
 ```
 
 ## Setup
@@ -22,7 +28,8 @@ download data from the CDS. Make a note of these.
 3) You will also need to accept the Ts&Cs (whilst logged in) [here](https://cds.climate.copernicus.eu/cdsapp/#!/terms/licence-to-use-copernicus-products).
 
 The following packages are required:
-```{r packages, warning = FALSE, message = FALSE}
+```{r packages, eval = FALSE, warning = FALSE, message = FALSE}
+library(mcera5)
 library(dplyr)
 library(ecmwfr)
 library(ncdf4)
@@ -33,7 +40,7 @@ library(lubridate)
 library(tidync)
 library(microclima) # remotes::install_github("ilyamaclean/microclima")
 library(NicheMapR) # remotes::install_github("mrke/NicheMapR")
-library(mcera5)
+library(microctools) # remotes::install_github("ilyamaclean/microctools")
 ```
 
 ```{r funs, include = FALSE}
@@ -61,9 +68,7 @@ ecmwfr::wf_set_key(user = uid,
 
 #### Building a request
 
-The first step is to decide on the spatial and temporal extents of the data retrieved from the CDS.
-
-There can overhead time of several hours for downloading data from the CDS, even for small amounts of data (<10 MB). Such overhead time is independent of mcera5, and is due to the slow speed of querying archival CDS data as well as based upon current CDS activity and the spatial/temporal dimensions of the query. Generally, querying temporal durations greater than one year causes a delay, while query of wide spatial extents can occur rapidly. It is therefore most efficient to download time series data in temporal chunks (e.g. monthly basis) each specifying a region encompassing multiple points of interest. We recommend users track current usage of the CDS at https://cds.climate.copernicus.eu/live/queue and ECMWF news (such as the migration of the MARS Data Centre between November 2021 and April 2022) at https://confluence.ecmwf.int/#all-updates.
+The first step is to decide on the spatial and temporal extents of the data retrieved from the CDS. There is can be a moderately-sized overhead when submitting a request (and consequently waiting in a queue); at times, when the CDS server is busy, this can entail several hours of waiting for a download to execute, even for small amounts of data (<10 MB). Such overhead time is independent of mcera5, yet can be reduced base upon the spatial/temporal dimensions of the query. It is therefore sensible to be strategic with the number and size of requests submitted. Generally, querying temporal durations greater than one year causes a delay, while query of wide spatial extents can occur rapidly. It is therefore most efficient to download time series data in temporal chunks (e.g. monthly basis) each specifying a region encompassing multiple points of interest. We recommend users [track current usage of the CDS](https://cds.climate.copernicus.eu/live/queue) and follow [ECMWF news](https://confluence.ecmwf.int/#all-updates) (such as the [migration of the MARS Data Centre](https://confluence.ecmwf.int/display/BONDUSER/Data+Centre+Migration+to+Bologna+-+User+Space+Home) between November 2021 and April 2022).
 
 Requests are submitted as whole months, and they will also be split by year, so that they are not too big to handle and to expedite wait times. The splitting of requests which overlap year boundaries is dealt with automatically. Users can request files to be merged together in the `request_era5()` function (covered later on). 
 
@@ -81,10 +86,12 @@ ymx <- 51
 st_time <- lubridate::ymd("2010:02:26")
 en_time <- lubridate::ymd("2010:03:01")
 
-# Set a unique prefix for the filename, and the file path for 
-# downloaded .nc files
+
+# Set a unique prefix for the filename (here based on spatial
+# coordinates), and the file path for downloaded .nc files
 file_prefix <- "era5_-4_-2_49_51"
 op <- getwd()
+
 
 # build a request (covering multiple years)
 req <- build_era5_request(xmin = xmn, xmax = xmx, 
@@ -103,19 +110,26 @@ str(req)
 
 #### Obtaining data with a request
 
-The next step is to execute the requests, by sending them to the CDS. The `request_era5` function will deal with lists containing multiple requests (i.e. those created by `build_era5_request` with temporal extents spanning multiple years). Executing `request_era5` will download .nc files for each year to the location defined by `out_path`. The filenames will have a prefix defined by `outfile_name` in `build_era5_request`, followed by the year of the request (for each year of the desired duration). If multiple years are requested and `combine` = TRUE, the files are merged after downloading:  
+The next step is to execute the requests, by sending them to the CDS. Executing `request_era5` will download .nc files for each year to the location defined by `out_path`. The filenames will have a prefix defined by `outfile_name` in `build_era5_request`. The `request_era5` function will deal with lists containing multiple requests (i.e. those created by `build_era5_request` with temporal extents spanning multiple years). If users specify a duration longer than one year, the query is downloaded as a separate netCDF file for each year; users can combine files into one by specifying the parameter `combine = TRUE` in `request_era5`. At this stage, the user then waits for the netCDF to be downloaded to their machine, and will receive a confirmation message ("ERA5 netCDF file successfully downloaded") from the R console upon completion:
 
 ```{r send_request, eval = FALSE}
-request_era5(request = req, uid = uid, out_path = op)
+request_era5(request = req, uid = uid, out_path = file_path)
 ```
 
 #### Processing .nc files
 
-Once all .nc files are downloaded, the next step is to extract climate variables conforming to desired spatial and temporal extents from them. This can be done for a single point in space with `extract_clim`. The function outputs a dataframe where each row is a single observation in time and space and each column is a climatic variable. Note that this function uses the same start and end times defined prior to building the request. Furthermore, the function (by default) uses the land-sea mask data (automatically downloaded alongside climate variables with `request_era5`), to filter out points that do not meet a land-sea threshold. 0 represents complete sea, and 1 complete land. By default, the threshold is liberally set to 0.05. Given that `runauto` in the `microclima` package only accepts date ranges within single years, you will need to create a data frame for each yearly block. For example, if your period of interest spans multiple years (and you have used the previous code to download multiple .nc files, it is recommended to run this next block of code for each year)  
 
-```{r process_nc, eval = FALSE}
+Once all .nc files are downloaded, the next step is to extract climate variables conforming to desired spatial and temporal extents from them. This can be done for a single point in space with `extract_clim`. The function outputs a dataframe where each row is a single observation in time and space and each column is a climatic variable. Note that this function uses the same start and end times defined prior to building the request.  
+
+By default, `extract_clim` applies an inverse distance weighting calculation (controlled by the parameter `d_weight`). This means that if the user requests data for a point that does not match the regular grid found in the ERA5 dataset (i.e., the centre point of each ERA5 grid cell), the four nearest neighbouring data points to the requested location will be used to create a weighted average of each climate variable, thereby providing a more likely estimate of location conditions. 
+
+Furthermore, `extract_clim` by default applies a diurnal temperature range correction to the data (when `dtr_cor = TRUE` and weighted according to `dtr_cor_fac`). The diurnal temperature ranges of ERA5 are artificially lower in grid cells classed as sea as opposed to land. It may thus be useful to apply a correction if estimates are required for a terrestrial location in predominantly marine grid cells. If applied, an internal function is evoked that uses the land/sea value in the downloaded NetCDF file to adjust temperature values by the factor provided using the formula $DTR_C=DTR[(1-p_l ) C_f+1]$ where $DTR_C$ is the corrected diurnal temperature range, $DTR$ is the diurnal temperature range in the ERA5 dataset, $p_l$ is the proportion of the grid cell that is land and $C_f$ is the correction factor. The default function input value is a correction based on calibration against the UK Met Office 1-km2 gridded dataset of daily maximum and minimum temperatures, itself calibrated and validated against a network of (on average) 1,203 weather stations distributed across the UK. 
+
+Given that `runauto` in the `microclima` package, as well as functions from the `NicheMapR` and `microclimc` microclimate modelling packages, all only accept date ranges within single years, you will need to create a separate data frame for each yearly block. For example, if your period of interest spans multiple years (and you have used the previous code to download multiple .nc files, run this next block of code for each year):
+
+```{r process_clim, eval = FALSE}
 # list the path of the .nc file for a given year
-my_nc <- paste0(getwd(), "/era5_test_-4_-2_49_51.nc")
+my_nc <- paste0(getwd(), "/era5_test_-4_-2_49_51_2010.nc")
 
 # for a single point (make sure it's within the bounds of your .nc file)
 x <- -3.654600
@@ -125,7 +139,13 @@ y <- 50.640369
 point_out <- extract_clim(nc = my_nc, long = x, lat = y,
                             start_time = st_time,  end_time = en_time)
 head(point_out)
+```
 
+
+
+In the same fashion, use `extract_precip` to acquire precipitation from your downloaded netCDF file, which also applies an inverse distance weighting calculation. By default, `extract_precip` sums up hourly ERA5 precipitation to the daily level, which is required for the aforementioned microclimate models. However users can instead receive hourly values by setting `convert_daily = FALSE`. 
+
+```{r process_precip, eval = FALSE}
 # gather daily precipitation (we specify to convert precipitation from hourly
 # to daily, which is already the default behavior)
 point_out_precip <- extract_precip(nc = my_nc, long = x, lat = y,
@@ -148,6 +168,13 @@ temps <- microclima::runauto(r = r, dstart = "26/02/2010",dfinish = "01/03/2010"
                              dailyprecip = point_out_precip, 
                              plot.progress= FALSE)
 ```
+
+For use of climate data with other microclimate packages, such as `microclimc` and `microclimf`, you may need to reformat the climate data using `microctools::hourlyncep_convert`:
+
+```{r hourlyncep_convert_example, eval = FALSE}
+climdata <- hourlyncep_convert(climdata = point_out, lat = y, long = x)
+```
+
 
 #### Acknowledgements
 
