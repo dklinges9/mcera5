@@ -20,7 +20,10 @@
 #' are required.
 #' @param end_time a POSIXlt object indicating the last hour for which data
 #' are required.
-#' @param outfile_name character prefix for .nc files when downloaded.
+#' @param outfile_name character prefix for .nc files when downloaded (the year and file extension is automatically added). Keep in
+#' mind that you may want to submit multiple (or many) requests, and therefore
+#' this prefix should adequately describe a unique query (e.g. by its
+#' spatial or temporal extent).
 #'
 #' @export
 #'

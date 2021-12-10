@@ -30,7 +30,10 @@ are required.}
 \item{end_time}{a POSIXlt object indicating the last hour for which data
 are required.}
 
-\item{outfile_name}{character prefix for .nc files when downloaded.}
+\item{outfile_name}{character prefix for .nc files when downloaded (the year and file extension is automatically added). Keep in
+mind that you may want to submit multiple (or many) requests, and therefore
+this prefix should adequately describe a unique query (e.g. by its
+spatial or temporal extent).}
 }
 \description{
 `build_era5_request` creates a request or set of requests that

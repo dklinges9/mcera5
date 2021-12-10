@@ -27,8 +27,24 @@
 #' @param dtr_cor_fac numeric value to be used in the diurnal temperature range
 #' correction. Default = 1.
 #'
-#' @return a data frame containing hourly values for a suite of climate
-#' variables.
+#' @return a data frame containing hourly values for a suite of climate variables:
+#' @return `obs_time` | the date-time (timezone specified in col timezone)
+#' @return `temperature` | (degrees celsius)
+#' @return `humidity` | specific humidity (kg / kg)
+#' @return `pressure` | (Pa)
+#' @return `windspeed` | (m / s)
+#' @return `winddir` | wind direction, azimuth (degrees from north)
+#' @return `emissivity` | downward long wave radiation flux divided by the sum
+#' of net long-wave radiation flux and downward long wave radiation flux (unitless)
+#' @return `cloudcover` | (%)
+#' @return `netlong` | Net longwave radiation (MJ / m2 / hr)
+#' @return `uplong` | Upward longwave radiation (MJ / m2 / hr)
+#' @return `downlong` | Downward longwave radiation (MJ / m2 / hr)
+#' @return `rad_dni` | Direct normal irradiance (MJ / m2 / hr)
+#' @return `rad_dif` | Diffuse normal irradiance (MJ / m2 / hr)
+#' @return `szenith` | Solar zenith angle (degrees from a horizontal plane)
+#' @return `timezone` | (unitless)
+#'
 #' @export
 #'
 #' @examples

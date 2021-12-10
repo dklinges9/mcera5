@@ -2,10 +2,18 @@
 % Please edit documentation in R/extract_precip.R
 \name{extract_precip}
 \alias{extract_precip}
-\title{Produces daily precipitation data for a single location ready for use
+\title{Produces daily or hourly precipitation data for a single location ready for use
 with `microclima::runauto`.}
 \usage{
-extract_precip(nc, long, lat, start_time, end_time, d_weight = TRUE)
+extract_precip(
+  nc,
+  long,
+  lat,
+  start_time,
+  end_time,
+  d_weight = TRUE,
+  convert_daily = TRUE
+)
 }
 \arguments{
 \item{nc}{character vector containing the path to the nc file. Use the
@@ -28,15 +36,19 @@ are required.}
 \item{d_weight}{logical value indicating whether to apply inverse distance
 weighting using the 4 closest neighbouring points to the location defined by
 `long` and `lat`. Default = `TRUE`.}
+
+\item{convert_daily}{a flag indicating whether the user desires to convert the
+precipitation vector from hourly to daily averages (TRUE) or remain as hourly
+values (FALSE). Only daily precipitation will be accepted by `microclima::runauto`.}
 }
 \value{
-a numeric vector of daily precipitation (mm).
+a numeric vector of daily or hourly precipitation (mm).
 }
 \description{
 `extract_precip` takes an nc file containing hourly ERA5
 climate data, and for a given set of coordinates, produces an (optionally)
-inverse distance weighted mean of daily precipitation, ready for
-use with `microclima::runauto`.
+inverse distance weighted mean of precipitation (at daily or hourly resolution)
+ready for use with `microclima::runauto`.
 }
 \examples{
 
