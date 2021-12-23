@@ -7,7 +7,7 @@
 #' @param uid character vector containing your CDS user ID.
 #' @param out_path character vector of the location at which to download nc files.
 #' @param overwrite TRUE for overwriting a file of the same path. Default FALSE.
-#' @param combine TRUE for combining downloaded annual files into one file. Default FALSE.
+#' @param combine TRUE for combining downloaded annual files into one file. Default TRUE.
 #'
 #' @export
 #'

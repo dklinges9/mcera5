@@ -4,7 +4,7 @@
 \alias{request_era5}
 \title{Submit request(s) to CDS for ERA5 data download}
 \usage{
-request_era5(request, uid, out_path, overwrite = FALSE, combine = FALSE)
+request_era5(request, uid, out_path, overwrite = FALSE, combine = TRUE)
 }
 \arguments{
 \item{request}{a list of request(s) created with `build_era5_request`.}
@@ -15,7 +15,7 @@ request_era5(request, uid, out_path, overwrite = FALSE, combine = FALSE)
 
 \item{overwrite}{TRUE for overwriting a file of the same path. Default FALSE.}
 
-\item{combine}{TRUE for combining downloaded annual files into one file. Default FALSE.}
+\item{combine}{TRUE for combining downloaded annual files into one file. Default TRUE.}
 }
 \description{
 Uses the `ecwmfr` package to submit requests to the Climate

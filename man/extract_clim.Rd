@@ -62,7 +62,7 @@ a data frame containing hourly values for a suite of climate variables:
 `emissivity` | downward long wave radiation flux divided by the sum
 of net long-wave radiation flux and downward long wave radiation flux (unitless)
 
-`cloudcover` | (%)
+`cloudcover` | (percent)
 
 `netlong` | Net longwave radiation (MJ / m2 / hr)
 
