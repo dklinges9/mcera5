@@ -13,7 +13,7 @@
 #'
 #'
 request_era5 <- function(request, uid, out_path, overwrite = FALSE,
-                         combine = FALSE) {
+                         combine = TRUE) {
 
   if (length(request) == 1 & combine) {
     cat("Your request will all be queried at once and does not need to be combined.\n")
