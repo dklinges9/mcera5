@@ -19,7 +19,6 @@ Imports:
     curl,
     dplyr,
     ecmwfr (>= 1.2.3),
-    here,
     keyring,
     lubridate,
     magrittr,
@@ -37,10 +36,12 @@ Remotes:
     mrke/NicheMapR
 RoxygenNote: 7.1.2
 Suggests: 
+    here,
     knitr,
-    rmarkdown,
+    markdown,
     microclimc,
     microctools,
-    NicheMapR
+    NicheMapR,
+    rmarkdown
 VignetteBuilder: knitr
 Vignettes: mcera5_vignette
