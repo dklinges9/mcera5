@@ -50,6 +50,3 @@ climate data, and for a given set of coordinates, produces an (optionally)
 inverse distance weighted mean of precipitation (at daily or hourly resolution)
 ready for use with `microclima::runauto`.
 }
-\examples{
-
-}
