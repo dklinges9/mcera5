@@ -47,7 +47,6 @@
 #'
 #' @export
 #'
-#' @examples
 #'
 
 extract_clim <- function(nc, long, lat, start_time, end_time, d_weight = TRUE,

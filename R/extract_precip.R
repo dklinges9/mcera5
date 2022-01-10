@@ -28,7 +28,6 @@
 #' @return a numeric vector of daily or hourly precipitation (mm).
 #' @export
 #'
-#' @examples
 #'
 extract_precip <- function(nc, long, lat, start_time, end_time,
                                   d_weight = TRUE, convert_daily = TRUE) {

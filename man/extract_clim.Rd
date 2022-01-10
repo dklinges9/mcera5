@@ -85,6 +85,3 @@ distance weighted mean of each variable, ready for use with
 `microclima::runauto`. Also provides the option to implement a diurnal
 temperature range correction to air temperatures.
 }
-\examples{
-
-}
