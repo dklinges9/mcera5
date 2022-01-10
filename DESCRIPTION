@@ -15,23 +15,27 @@ LazyData: true
 URL: http://github.com/everydayduffy/mcera5
 BugReports: http://github.com/everydayduffy/mcera5/issues
 Imports:
-    plyr,
+    abind,
+    curl,
     dplyr,
     ecmwfr (>= 1.2.3),
-    lubridate,
-    tidync,
-    magrittr,
-    ncdf4,
-    abind,
-    microclima,
+    here,
     keyring,
-    curl
+    lubridate,
+    magrittr,
+    microclima,
+    ncdf4,
+    plyr,
+    remotes,
+    tibble,
+    tidync,
+    utils
 Remotes:
     ilyamaclean/microclima,
     ilyamaclean/microclimc,
     ilyamaclean/microctools,
     mrke/NicheMapR
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Suggests: 
     knitr,
     rmarkdown,
