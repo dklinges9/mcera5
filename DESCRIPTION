@@ -1,6 +1,6 @@
 Package: mcera5
 Type: Package
-Title: Tools to acquire and process ERA5 data for use in microclimate modelling
+Title: Tools to Acquire and Process ERA5 Data for Use in Microclimate Modelling
 Version: 0.3.0
 Authors@R: c(
     person("James", "Duffy", email = "james.philip.duffy@gmail.com", role = "cre", 
@@ -8,12 +8,12 @@ Authors@R: c(
     person("David", "Klinges", email = "dklinges9@gmail.com", role = "aut",
     comment = "package maintainer"))
 Maintainer: David H. Klinges <dklinges9@gmail.com>
-Description: A package to download and process ERA5 data ready for use in microclimate modelling.
+Description: Download and process ERA5 data ready for use in microclimate modelling.
 License: GPL-2
 Encoding: UTF-8
 LazyData: true
-URL: http://github.com/dklinges9/mcera5
-BugReports: http://github.com/dklinges9/mcera5/issues
+URL: https://github.com/dklinges9/mcera5
+BugReports: https://github.com/dklinges9/mcera5/issues
 Imports:
     abind,
     curl,
@@ -44,4 +44,3 @@ Suggests:
     NicheMapR,
     rmarkdown
 VignetteBuilder: knitr
-Vignettes: mcera5_vignette
