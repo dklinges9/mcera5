@@ -134,7 +134,7 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = FALSE,
   }
 
   # Check if end_time is before last time observation
-  end <- lubridate::ymd_hms("1900:01:01 00:00:00") + (tail(nc_dat$dim$time$vals, n = 1) * 3600)
+  end <- lubridate::ymd_hms("1900:01:01 00:00:00") + (utils::tail(nc_dat$dim$time$vals, n = 1) * 3600)
   if (end_time > end) {
     stop("Requested end time is after the end of time series of the ERA5 netCDF.")
   }
@@ -225,7 +225,7 @@ nc_to_df_precip <- function(nc, long, lat, start_time, end_time) {
   }
 
   # Check if end_time is before last time observation
-  end <- lubridate::ymd_hms("1900:01:01 00:00:00") + (tail(nc_dat$dim$time$vals, n = 1) * 3600)
+  end <- lubridate::ymd_hms("1900:01:01 00:00:00") + (utils::tail(nc_dat$dim$time$vals, n = 1) * 3600)
   if (end_time > end) {
     stop("Requested end time is after the end of time series of the ERA5 netCDF.")
   }
