@@ -302,7 +302,7 @@ combine_netcdf <- function(filenames, combined_name) {
     })
 
     # Then bind all of the arrays together using abind, flexibly called via do.call
-    data_list[[i]] <- do.call(abind, list(... = vars_dat,
+    data_list[[i]] <- do.call(abind::abind, list(... = vars_dat,
                                           along = 3))
 
     # To populate the time dimension, need to pull out the time values from each
