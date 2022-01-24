@@ -125,7 +125,7 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = FALSE,
                      dtr_cor_fac = 1) {
 
   #open nc file
-  nc_dat = nc_open(nc)
+  nc_dat = ncdf4::nc_open(nc)
   # Error trapping
   # Check if start_time is after first time observation
   start <- lubridate::ymd_hms("1900:01:01 00:00:00") + (nc_dat$dim$time$vals[1] * 3600)
@@ -199,7 +199,7 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = FALSE,
                   rad_dni, rad_dif, szenith, timezone)
 
   # close nc file
-  nc_close(nc_dat)
+  ncdf4::nc_close(nc_dat)
   return(dat)
 }
 
@@ -216,7 +216,7 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = FALSE,
 nc_to_df_precip <- function(nc, long, lat, start_time, end_time) {
 
   # open nc file
-  nc_dat = nc_open(nc)
+  nc_dat = ncdf4::nc_open(nc)
   # Error trapping
   # Check if start_time is after first time observation
   start <- lubridate::ymd_hms("1900:01:01 00:00:00") + (nc_dat$dim$time$vals[1] * 3600)
@@ -264,7 +264,7 @@ nc_to_df_precip <- function(nc, long, lat, start_time, end_time) {
     dplyr::select(., obs_time, precipitation)
 
   # close nc file
-  nc_close(nc_dat)
+  ncdf4::nc_close(nc_dat)
   return(dat)
 }
 
