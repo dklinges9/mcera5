@@ -70,7 +70,7 @@ rad_calc <- function(rad, tme, long, lat) {
   # length to interpolate to
   n <- length(tme1h_2) * 2
   # work out od values for every half hour
-  od1h <- spline(tme1h_2, od, n = n)$y
+  od1h <- stats::spline(tme1h_2, od, n = n)$y
   # select just the ones on the hour
   od1h <- od1h[seq(2,length(od1h),2)]
   # csr on the hour
@@ -292,7 +292,7 @@ uni_dates <- function(start_time, end_time) {
 #' @noRd
 combine_netcdf <- function(filenames, combined_name) {
   files <- lapply(filenames, function(x) {
-    nc_open(x)
+    ncdf4::nc_open(x)
   })
 
   # Pull out first file for reference specs
@@ -306,7 +306,7 @@ combine_netcdf <- function(filenames, combined_name) {
     varname <- names(nc$var)[i]
     # Get the variable from each of the netCDFs
     vars_dat <- lapply(files, function(x) {
-      ncvar_get(x, varname)
+      ncdf4::ncvar_get(x, varname)
     })
 
     # Then bind all of the arrays together using abind, flexibly called via do.call
@@ -320,26 +320,26 @@ combine_netcdf <- function(filenames, combined_name) {
     })
 
     # Create a netCDF variable
-    vars_list[[i]] <- ncvar_def(
+    vars_list[[i]] <- ncdf4::ncvar_def(
       name = varname,
       units =  nc$var[varname][[varname]]$units,
       # Pull dimension names, units, and values from file1
       dim = list(
         # Longitude
-        ncdim_def(nc$dim$longitude$name, nc$dim$longitude$units,
+        ncdf4::ncdim_def(nc$dim$longitude$name, nc$dim$longitude$units,
                   nc$dim$longitude$vals),
         # Latitude
-        ncdim_def(nc$dim$latitude$name, nc$dim$latitude$units,
+        ncdf4::ncdim_def(nc$dim$latitude$name, nc$dim$latitude$units,
                   nc$dim$latitude$vals),
         # Time
-        ncdim_def(nc$dim$time$name, nc$dim$time$units,
+        ncdf4::ncdim_def(nc$dim$time$name, nc$dim$time$units,
                   # Combination of values of all files
                   do.call(c, timevals))
       ))
   }
 
   # Create a new file
-  file_combined <- nc_create(
+  file_combined <- ncdf4::nc_create(
     # Filename from param combined_name
     filename = combined_name,
     # We need to define the variables here
@@ -348,12 +348,12 @@ combine_netcdf <- function(filenames, combined_name) {
 
   # And write to it (must write one variable at a time with ncdf4)
   for (i in 1:length(names(nc$var))) {
-    ncvar_put(
+    ncdf4::ncvar_put(
       nc = file_combined,
       varid = names(nc$var)[i],
       vals = data_list[[i]])
   }
 
   # Finally, close the file
-  nc_close(file_combined)
+  ncdf4::nc_close(file_combined)
 }

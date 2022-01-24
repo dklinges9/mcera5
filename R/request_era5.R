@@ -7,13 +7,13 @@
 #' @param uid character vector containing your CDS user ID.
 #' @param out_path character vector of the location at which to download nc files.
 #' @param overwrite TRUE for overwriting a file of the same path. Default FALSE.
-#' @param combine TRUE for combining downloaded annual files into one file. Default FALSE.
+#' @param combine TRUE for combining downloaded annual files into one file. Default TRUE.
 #'
 #' @export
 #'
 #'
 request_era5 <- function(request, uid, out_path, overwrite = FALSE,
-                         combine = FALSE) {
+                         combine = TRUE) {
 
   if (length(request) == 1 & combine) {
     cat("Your request will all be queried at once and does not need to be combined.\n")

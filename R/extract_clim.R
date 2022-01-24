@@ -36,7 +36,7 @@
 #' @return `winddir` | wind direction, azimuth (degrees from north)
 #' @return `emissivity` | downward long wave radiation flux divided by the sum
 #' of net long-wave radiation flux and downward long wave radiation flux (unitless)
-#' @return `cloudcover` | (%)
+#' @return `cloudcover` | (percent)
 #' @return `netlong` | Net longwave radiation (MJ / m2 / hr)
 #' @return `uplong` | Upward longwave radiation (MJ / m2 / hr)
 #' @return `downlong` | Downward longwave radiation (MJ / m2 / hr)
@@ -47,7 +47,6 @@
 #'
 #' @export
 #'
-#' @examples
 #'
 
 extract_clim <- function(nc, long, lat, start_time, end_time, d_weight = TRUE,
