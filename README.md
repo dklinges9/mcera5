@@ -1,6 +1,8 @@
+[![DOI](https://zenodo.org/badge/260175954.svg)](https://zenodo.org/badge/latestdoi/260175954)
+
 # mcera5
 
-A package to download and process ERA5 data ready for use in microclimate modelling. Corresponding paper in review at _Methods in Ecology and Evolution_.
+A package to download and process ERA5 data ready for use in microclimate modelling. Corresponding paper accepted at _Methods in Ecology and Evolution_ (DOI pending).
 
 ## Install
 
