@@ -2,7 +2,7 @@
 
 # mcera5
 
-A package to download and process ERA5 data ready for use in microclimate modelling. Corresponding paper accepted at _Methods in Ecology and Evolution_ (DOI pending).
+A package to download and process ERA5 data ready for use in microclimate modelling. Corresponding paper describing the package [here in _Methods in Ecology and Evolution_](https://doi.org/10.1111/2041-210X.13877).
 
 ## Install
 
