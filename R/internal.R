@@ -171,6 +171,9 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = FALSE,
     dplyr::filter(., obs_time >= start_time & obs_time < end_time + 1) %>%
     dplyr::rename(., pressure = sp) %>%
     dplyr::mutate(., temperature = t2m - 273.15, # kelvin to celcius
+                  lsm = dplyr::case_when(
+                    lsm < 0 ~ 0,
+                    lsm >= 0 ~ lsm),
                   temperature = dplyr::case_when(
                     dtr_cor == TRUE ~ coastal_correct(temperature, lsm, dtr_cor_fac),
                     dtr_cor == FALSE ~ temperature),
