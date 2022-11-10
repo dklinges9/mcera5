@@ -13,7 +13,7 @@ extract_clim(
   end_time,
   d_weight = TRUE,
   dtr_cor = TRUE,
-  dtr_cor_fac = 1
+  dtr_cor_fac = 1.285
 )
 }
 \arguments{
@@ -42,7 +42,8 @@ weighting using the 4 closest neighbouring points to the location defined by
 range correction to air temperature values. Default = `TRUE`.}
 
 \item{dtr_cor_fac}{numeric value to be used in the diurnal temperature range
-correction. Default = 1.}
+correction. Default = 1.285, based on calibration against UK Met Office
+observations.}
 }
 \value{
 a data frame containing hourly values for a suite of climate variables:
