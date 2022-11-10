@@ -119,9 +119,13 @@ focal_dist <- function(long, lat) {
 #' @param lat latitude
 #' @param start_time start time for data required
 #' @param end_time end time for data required
+#' @param dtr_cor logical value indicating whether to apply a diurnal temperature
+#' range correction to air temperature values. Default = `TRUE`.
+#' @param dtr_cor_fac numeric value to be used in the diurnal temperature range
+#' correction. Default = 1.
 #' @return data frame of hourly climate variables
 #' @noRd
-nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = FALSE,
+nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
                      dtr_cor_fac = 1) {
 
   #open nc file
