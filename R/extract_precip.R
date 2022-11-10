@@ -37,6 +37,16 @@ extract_precip <- function(nc, long, lat, start_time, end_time,
 
   ## Error trapping
 
+  # Confirm that start_time and end_time are date-time objects
+  if (any(!class(start_time) %in% c("Date", "POSIXct", "POSIXt", "POSIXlt")) |
+      any(!class(end_time) %in% c("Date", "POSIXct", "POSIXt", "POSIXlt"))) {
+    stop("`start_time` and `end_time` must be provided as date-time objects.")
+  }
+  # Confirm that start_time and end_time are same class of date-time objects
+  if (any(class(start_time) != class(end_time))) {
+    stop("`start_time` and `end_time` must be of the same date-time class.")
+  }
+
   # Check if start_time is after first time observation
   start <- lubridate::ymd_hms("1900:01:01 00:00:00") + (nc_dat$dim$time$vals[1] * 3600)
   if (start_time < start) {
