@@ -52,6 +52,49 @@
 extract_clim <- function(nc, long, lat, start_time, end_time, d_weight = TRUE,
                            dtr_cor = TRUE, dtr_cor_fac = 1) {
 
+  # Open nc file for error trapping
+  nc_dat = ncdf4::nc_open(nc)
+
+  ## Error trapping
+
+  # Check if start_time is after first time observation
+  start <- lubridate::ymd_hms("1900:01:01 00:00:00") + (nc_dat$dim$time$vals[1] * 3600)
+  if (start_time < start) {
+    stop("Requested start time is before the beginning of time series of the ERA5 netCDF.")
+  }
+
+  # Check if end_time is before last time observation
+  end <- lubridate::ymd_hms("1900:01:01 00:00:00") + (utils::tail(nc_dat$dim$time$vals, n = 1) * 3600)
+  if (end_time > end) {
+    stop("Requested end time is after the end of time series of the ERA5 netCDF.")
+  }
+
+  # Check if requested coordinates are in spatial grid
+  if(long < min(nc_dat$dim$longitude$vals) | long > max(nc_dat$dim$longitude$vals)) {
+    long_out <- TRUE
+  } else {
+    long_out <- FALSE
+  }
+
+  if(lat < min(nc_dat$dim$latitude$vals) | lat > max(nc_dat$dim$latitude$vals)) {
+    lat_out <- TRUE
+  } else {
+    lat_out <- FALSE
+  }
+
+  # close nc file
+  ncdf4::nc_close(nc_dat)
+
+  if(long_out & lat_out) {
+    stop("Requested coordinates are not represented in the ERA5 netCDF (both longitude and latitude out of range).")
+  }
+  if(long_out) {
+    stop("Requested coordinates are not represented in the ERA5 netCDF (longitude out of range).")
+  }
+  if(lat_out) {
+    stop("Requested coordinates are not represented in the ERA5 netCDF (latitude out of range).")
+  }
+
   if(dtr_cor == TRUE & !is.numeric(dtr_cor_fac)) {
     stop("Invalid diurnal temperature range correction value provided.")}
 
