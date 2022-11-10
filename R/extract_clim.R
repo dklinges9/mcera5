@@ -25,7 +25,8 @@
 #' @param dtr_cor logical value indicating whether to apply a diurnal temperature
 #' range correction to air temperature values. Default = `TRUE`.
 #' @param dtr_cor_fac numeric value to be used in the diurnal temperature range
-#' correction. Default = 1.
+#' correction. Default = 1.285, based on calibration against UK Met Office
+#' observations.
 #'
 #' @return a data frame containing hourly values for a suite of climate variables:
 #' @return `obs_time` | the date-time (timezone specified in col timezone)
@@ -50,7 +51,7 @@
 #'
 
 extract_clim <- function(nc, long, lat, start_time, end_time, d_weight = TRUE,
-                           dtr_cor = TRUE, dtr_cor_fac = 1) {
+                           dtr_cor = TRUE, dtr_cor_fac = 1.285) {
 
   # Open nc file for error trapping
   nc_dat = ncdf4::nc_open(nc)
