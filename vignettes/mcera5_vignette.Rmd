@@ -90,7 +90,7 @@ en_time <- lubridate::ymd("2010:03:01")
 # Set a unique prefix for the filename (here based on spatial
 # coordinates), and the file path for downloaded .nc files
 file_prefix <- "era5_-4_-2_49_51"
-op <- getwd()
+file_path <- getwd()
 
 
 # build a request (covering multiple years)
@@ -129,7 +129,7 @@ Given that `runauto` in the `microclima` package, as well as functions from the 
 
 ```{r process_clim, eval = FALSE}
 # list the path of the .nc file for a given year
-my_nc <- paste0(getwd(), "/era5_test_-4_-2_49_51_2010.nc")
+my_nc <- paste0(getwd(), "/era5_-4_-2_49_51_2010.nc")
 
 # for a single point (make sure it's within the bounds of your .nc file)
 x <- -3.654600
