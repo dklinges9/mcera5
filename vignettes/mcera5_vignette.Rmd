@@ -11,6 +11,9 @@ vignette: >
 knitr::opts_chunk$set(echo = TRUE,
                       collapse = TRUE,
                       comment = "#>")
+# This option allows the displayed title ("Downloading ERA5 data for use...") to
+# be different from the \VignetteIndexEntry{} title:
+options(rmarkdown.html_vignette.check_title = FALSE)
 ```
 
 ## Setup
