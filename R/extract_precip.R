@@ -123,7 +123,7 @@ extract_precip <- function(nc, long, lat, start_time, end_time,
     precip <- matrix(dat,ncol=24,byrow=T) %>%
       rowSums() * 1000
   } else {
-    precip <- dat
+    precip <- dat * 1000
   }
 
   return(precip)
