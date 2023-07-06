@@ -4,8 +4,7 @@
 #' @description `extract_clima` takes an nc file containing hourly ERA5 climate
 #' data, and for a given set of coordinates, reconverts climate variables to make
 #' ready for use with `microclimf::modelina` by default. Also provides the option
-#' to implement a diurnal
-#' temperature range correction to air temperatures.
+#' to implement a diurnal temperature range correction to air temperatures.
 #'
 #' @param nc character vector containing the path to the nc file. Use the
 #' `build_era5_request` and `request_era5` functions to acquire an nc file with
@@ -94,6 +93,19 @@ extract_clima <- function(
     stop("Requested end time is after the end of time series of the ERA5 netCDF.")
   }
 
+  if (long_max <= long_min) {
+    stop("Maximum longitude must be greater than minimum longitude.")
+  }
+
+  if (lat_max <= lat_min) {
+    stop("Maximum longitude must be greater than minimum longitude.")
+  }
+
+  if (abs(long_min) > 180 | abs(long_max) > 180 |
+      abs(lat_min) > 90 | abs(lat_max) > 90) {
+    stop("Coordinates must be provided in decimal degrees (longitude between -180 and 180, latitude between -90 and 90).")
+  }
+
   # Check if requested coordinates are in spatial grid
   if (long_min < min(nc_dat$dim$longitude$vals) | long_min > max(nc_dat$dim$longitude$vals) |
      long_max < min(nc_dat$dim$longitude$vals) | long_max > max(nc_dat$dim$longitude$vals)
@@ -108,14 +120,6 @@ extract_clima <- function(
     lat_out <- TRUE
   } else {
     lat_out <- FALSE
-  }
-
-  if (long_max <= long_min) {
-    stop("Maximum longitude must be greater than minimum longitude.")
-  }
-
-  if (lat_max <= lat_min) {
-    stop("Maximum longitude must be greater than minimum longitude.")
   }
 
   # close nc file
@@ -139,33 +143,29 @@ extract_clima <- function(
   tme <- as.POSIXct(seq(lubridate::ymd_hm(paste0(start_time, " 00:00")),
                         lubridate::ymd_hm(paste0(end_time, " 23:00")), by = 3600), tz = "UTC")
 
-  ## Load in netCDF variables --------------
+  ## Load in and subset netCDF variables --------------
 
-  t2m <- terra::rast(nc, subds = "t2m")
-  d2m <- terra::rast(nc, subds = "d2m")
-  sp <- terra::rast(nc, subds = "sp")
-  u10 <- terra::rast(nc, subds = "u10")
-  v10 <- terra::rast(nc, subds = "v10")
-  tp <- terra::rast(nc, subds = "tp")
-  tcc <- terra::rast(nc, subds = "tcc")
-  msnlwrf <- terra::rast(nc, subds = "msnlwrf")
-  msdwlwrf <- terra::rast(nc, subds = "msdwlwrf")
-  fdir <- terra::rast(nc, subds = "fdir")
-  ssrd <- terra::rast(nc, subds = "ssrd")
+  varname_list <- c("t2m", "d2m", "sp", "u10" , "v10", "tcc", "msnlwrf",
+                "msdwlwrf", "fdir", "ssrd", "lsm")
 
-  # Subset down to desired time period
-  t2m <- t2m[[terra::time(t2m) %in% tme]]
-  d2m <- d2m[[terra::time(d2m) %in% tme]]
-  sp <- sp[[terra::time(sp) %in% tme]]
-  u10 <- u10[[terra::time(u10) %in% tme]]
-  v10 <- v10[[terra::time(v10) %in% tme]]
-  tp <- tp[[terra::time(tp) %in% tme]]
-  tcc <- tcc[[terra::time(tcc) %in% tme]]
-  msnlwrf <- msnlwrf[[terra::time(msnlwrf) %in% tme]]
-  msdwlwrf <- msdwlwrf[[terra::time(msdwlwrf) %in% tme]]
-  fdir <- fdir[[terra::time(fdir) %in% tme]]
-  ssrd <- ssrd[[terra::time(ssrd) %in% tme]]
-  lsm <- terra::rast(nc, subds = "lsm")[[1]] # only need one layer of land-sea mask
+  var_list <- lapply(varname_list, function(v) {
+
+    if (v == "lsm") {
+      # only need one timestep for land-sea mask
+      r <- terra::rast(nc, subds = v)[[1]]
+    } else {
+      # For all others, subset down to desired time period
+      r <- terra::rast(nc, subds = v)
+      r <- r[[terra::time(r) %in% tme]]
+    }
+
+    # Subset down to desired spatial extent
+    r <- terra::crop(r, ext(long_min, long_max, lat_min, lat_max))
+    return(r)
+  })
+
+  names(var_list) <- varname_list
+  list2env(var_list, globalenv())
 
   temperature <- t2m - 273.15 # kelvin to celcius
   ## Coastal correction ----------
