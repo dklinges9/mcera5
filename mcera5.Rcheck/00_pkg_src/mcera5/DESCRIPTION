@@ -1,0 +1,31 @@
+Package: mcera5
+Type: Package
+Title: Tools to Acquire and Process ERA5 Data for Use in Microclimate
+        Modelling
+Version: 0.3.0
+Authors@R: c(
+    person("James", "Duffy", email = "james.philip.duffy@gmail.com", role = "cre", 
+    comment = "Original author and creator of mcera5, however no longer maintainer"),
+    person("David", "Klinges", email = "dklinges9@gmail.com", role = "aut",
+    comment = "package maintainer"))
+Maintainer: David H. Klinges <dklinges9@gmail.com>
+Description: Download and process ERA5 data ready for use in microclimate modelling.
+License: GPL-2
+Encoding: UTF-8
+LazyData: true
+URL: https://github.com/dklinges9/mcera5
+BugReports: https://github.com/dklinges9/mcera5/issues
+Imports: abind, curl, dplyr, ecmwfr (>= 1.2.3), keyring, lubridate,
+        magrittr, microclima, ncdf4, plyr, remotes, tibble, tidync,
+        utils
+Remotes: ilyamaclean/microclima, ilyamaclean/microclimc,
+        ilyamaclean/microctools, mrke/NicheMapR
+RoxygenNote: 7.1.2
+Suggests: here, knitr, markdown, microclimc, microctools, NicheMapR,
+        rmarkdown
+VignetteBuilder: knitr
+NeedsCompilation: no
+Packaged: 2022-01-13 12:56:55 UTC; David
+Author: James Duffy [cre] (Original author and creator of mcera5, however no
+    longer maintainer),
+  David Klinges [aut] (package maintainer)

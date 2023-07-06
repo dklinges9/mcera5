@@ -3,7 +3,6 @@
 export("%>%")
 export(build_era5_request)
 export(extract_clim)
-export(extract_clima)
 export(extract_precip)
 export(request_era5)
 importFrom(magrittr,"%>%")
