@@ -107,7 +107,7 @@ extract_precipa <- function(nc, long_min, long_max, lat_min, lat_max,
   # Subset down to desired time period
   tp <- tp[[terra::time(tp) %in% tme]]
   # Subset down to desired spatial extent
-  tp <- terra::crop(tp, ext(long_min, long_max, lat_min, lat_max))
+  tp <- terra::crop(tp, terra::ext(long_min, long_max, lat_min, lat_max))
 
   # convert to daily
   if (convert_daily) {

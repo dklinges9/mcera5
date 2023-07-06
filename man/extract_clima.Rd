@@ -24,12 +24,14 @@ extract_clima(
 the correct set of variables. Data within nc file must span the period
 defined by start_time and end_time.}
 
-\item{long_min}{minimum longitude of the grid for which data are required (decimal
-#' @param long_max maximum longitude of the grid for which data are required (decimal
+\item{long_min}{minimum longitude of the grid for which data are required (decimal}
+
+\item{long_max}{maximum longitude of the grid for which data are required (decimal
 degrees, -ve west of Greenwich Meridian).}
 
-\item{lat_min}{minimum latitude of the grid for which data are required (decimal
-#' @param lat_max maximum latitude of the grid for which data are required (decimal
+\item{lat_min}{minimum latitude of the grid for which data are required (decimal}
+
+\item{lat_max}{maximum latitude of the grid for which data are required (decimal
 degrees, -ve south of the equator).}
 
 \item{start_time}{a POSIXlt object indicating the first day or hour for which data
@@ -103,6 +105,5 @@ of net long-wave radiation flux and downward long wave radiation flux (unitless)
 `extract_clima` takes an nc file containing hourly ERA5 climate
 data, and for a given set of coordinates, reconverts climate variables to make
 ready for use with `microclimf::modelina` by default. Also provides the option
-to implement a diurnal
-temperature range correction to air temperatures.
+to implement a diurnal temperature range correction to air temperatures.
 }

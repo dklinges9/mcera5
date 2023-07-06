@@ -160,7 +160,7 @@ extract_clima <- function(
     }
 
     # Subset down to desired spatial extent
-    r <- terra::crop(r, ext(long_min, long_max, lat_min, lat_max))
+    r <- terra::crop(r, terra::ext(long_min, long_max, lat_min, lat_max))
     return(r)
   })
 
