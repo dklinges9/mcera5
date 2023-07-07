@@ -86,8 +86,8 @@ ymn <- 49
 ymx <- 51
 
 # temporal extent
-st_time <- lubridate::ymd("2010:02:26")
-en_time <- lubridate::ymd("2010:03:01")
+st_time <- as.POSIXlt("2010-02-26 00:00", tz = "UTC")
+en_time <- as.POSIXlt("2010-03-01 23:00", tz = "UTC")
 
 
 # Set a unique prefix for the filename (here based on spatial

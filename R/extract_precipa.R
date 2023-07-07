@@ -15,10 +15,12 @@
 #' @param lat_min minimum latitude of the grid for which data are required (decimal
 #' @param lat_max maximum latitude of the grid for which data are required (decimal
 #' degrees, -ve south of the equator).
-#' @param start_time a POSIXlt object indicating the first day or hour for which data
-#' are required.
-#' @param end_time a POSIXlt object indicating the last day or hour for which data are
-#' required.
+#' @param start_time a POSIXlt or POSIXct object indicating the first day or hour
+#' for which data are required. Encouraged to specify desired timezone as UTC (ERA5
+#' data are in UTC by default), but any timezone is accepted.
+#' @param end_time a POSIXlt or POSIXct object indicating the last day or hour for
+#' which data are required. Encouraged to specify desired timezone as UTC (ERA5
+#' data are in UTC by default), but any timezone is accepted.
 #' @param convert_daily a flag indicating whether the user desires to convert the
 #'  precipitation spatRaster from hourly to daily averages (TRUE) or remain as hourly
 #' values (FALSE). Only daily precipitation will be accepted by `microclimf::modelina`.
@@ -99,8 +101,24 @@ extract_precipa <- function(nc, long_min, long_max, lat_min, lat_max,
     stop("Requested coordinates are not represented in the ERA5 netCDF (latitude out of range).")
   }
 
-  tme <- as.POSIXct(seq(lubridate::ymd_hm(paste0(start_time, " 00:00")),
-                        lubridate::ymd_hm(paste0(end_time, " 23:00")), by = 3600), tz = "UTC")
+  if (lubridate::tz(start_time) != lubridate::tz(end_time)) {
+    stop("start_time and end_time are not in the same timezone.")
+  }
+
+  if (lubridate::tz(start_time) != "UTC" | lubridate::tz(end_time) != "UTC") {
+    warning("provided times (start_time and end_time) are not in timezone UTC (default timezone of ERA5 data). Output will be provided in timezone UTC however.")
+  }
+
+  # Specify hour of end_time as last hour of day, if not specified
+  if (lubridate::hour(end_time) == 0) {
+    end_time <- as.POSIXlt(paste0(lubridate::year(end_time), "-",
+                                  lubridate::month(end_time), "-",
+                                  lubridate::day(end_time),
+                                  " 23:00"), tz = lubridate::tz(end_time))
+  }
+
+  tme <- as.POSIXct(seq(start_time,
+                        end_time, by = 3600), tz = lubridate::tz(end_time))
 
   # Load in netCDF variable
   tp <- terra::rast(nc, subds = "tp")
@@ -115,6 +133,13 @@ extract_precipa <- function(nc, long_min, long_max, lat_min, lat_max,
   }
   # convert from m to mm of rain
   precip <- tp * 1000
+
+  # Add timesteps back to names
+  if (convert_daily) {
+    names(precip) <- terra::time(precip)
+  } else {
+    names(precip) <- paste(terra::time(precip), lubridate::tz(terra::time(precip)))
+  }
 
   return(precip)
 }

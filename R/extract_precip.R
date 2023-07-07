@@ -14,10 +14,12 @@
 #' degrees, -ve west of Greenwich Meridian).
 #' @param lat latitude of the location for which data are required (decimal
 #' degrees, -ve south of the equator).
-#' @param start_time a POSIXlt object indicating the first hour for which data
-#' are required.
-#' @param end_time a POSIXlt object indicating the last hour for which data
-#' are required.
+#' @param start_time a POSIXlt or POSIXct object indicating the first day or hour
+#' for which data are required. Encouraged to specify desired timezone as UTC (ERA5
+#' data are in UTC by default), but any timezone is accepted.
+#' @param end_time a POSIXlt or POSIXct object indicating the last day or hour for
+#' which data are required. Encouraged to specify desired timezone as UTC (ERA5
+#' data are in UTC by default), but any timezone is accepted.
 #' @param d_weight logical value indicating whether to apply inverse distance
 #' weighting using the 4 closest neighbouring points to the location defined by
 #' `long` and `lat`. Default = `TRUE`.
@@ -83,6 +85,22 @@ extract_precip <- function(nc, long, lat, start_time, end_time,
   }
   if(lat_out) {
     stop("Requested coordinates are not represented in the ERA5 netCDF (latitude out of range).")
+  }
+
+  if (lubridate::tz(start_time) != lubridate::tz(end_time)) {
+    stop("start_time and end_time are not in the same timezone.")
+  }
+
+  if (lubridate::tz(start_time) != "UTC" | lubridate::tz(end_time) != "UTC") {
+    warning("provided times (start_time and end_time) are not in timezone UTC (default timezone of ERA5 data). Output will be provided in timezone UTC however.")
+  }
+
+  # Specify hour of end_time as last hour of day, if not specified
+  if (lubridate::hour(end_time) == 0) {
+    end_time <- as.POSIXlt(paste0(lubridate::year(end_time), "-",
+                                  lubridate::month(end_time), "-",
+                                  lubridate::day(end_time),
+                                  " 23:00"), tz = lubridate::tz(end_time))
   }
 
   if(sum((long %% .25) + (lat %% .25)) == 0 & d_weight == TRUE) {
