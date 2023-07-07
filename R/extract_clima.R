@@ -227,7 +227,7 @@ extract_clima <- function(
                           sp)
   windspeed = sqrt(u10^2 + v10^2)
   windspeed = microclima::windheight(windspeed, 10, 2)
-  winddir = (atan2(u10, v10) * 180/pi + 180)%%360
+  winddir = (terra::atan2(u10, v10) * 180/pi + 180)%%360
   cloudcover = tcc * 100
   netlong = abs(msnlwrf) * 0.0036
   downlong = msdwlwrf * 0.0036
