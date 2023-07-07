@@ -28,11 +28,13 @@ degrees, -ve west of Greenwich Meridian).}
 \item{lat}{latitude of the location for which data are required (decimal
 degrees, -ve south of the equator).}
 
-\item{start_time}{a POSIXlt object indicating the first hour for which data
-are required.}
+\item{start_time}{a POSIXlt or POSIXct object indicating the first day or hour
+for which data are required. Encouraged to specify desired timezone as UTC (ERA5
+data are in UTC by default), but any timezone is accepted.}
 
-\item{end_time}{a POSIXlt object indicating the last hour for which data
-are required.}
+\item{end_time}{a POSIXlt or POSIXct object indicating the last day or hour for
+which data are required. Encouraged to specify desired timezone as UTC (ERA5
+data are in UTC by default), but any timezone is accepted.}
 
 \item{d_weight}{logical value indicating whether to apply inverse distance
 weighting using the 4 closest neighbouring points to the location defined by
