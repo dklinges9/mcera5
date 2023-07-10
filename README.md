@@ -6,12 +6,12 @@ A package to download and process ERA5 data ready for use in microclimate modell
 
 ## Install
 
-When installing, make sure to specify `build_vignettes = TRUE` in order to access the package's vignette tutorial:
+When installing, make sure to specify `build_vignettes = TRUE` in order to access the package's vignette tutorial:  
 `remotes::install_github("dklinges9/mcera5", build_vignettes = TRUE)`
 
 ## Tutorial
 
-The vignette can then be accessed via:
+The vignette can then be accessed via:   
 `vignette("mcera5_vignette")`  
 
 Alternatively you can navigate to the vignette manually [here](https://github.com/dklinges9/mcera5/blob/master/vignettes/mcera5_vignette.Rmd) on the GitHub repository.  
