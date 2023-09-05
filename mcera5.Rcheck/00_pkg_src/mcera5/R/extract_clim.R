@@ -15,20 +15,17 @@
 #' degrees, -ve west of Greenwich Meridian).
 #' @param lat latitude of the location for which data are required (decimal
 #' degrees, -ve south of the equator).
-#' @param start_time a POSIXlt or POSIXct object indicating the first day or hour
-#' for which data are required. Encouraged to specify desired timezone as UTC (ERA5
-#' data are in UTC by default), but any timezone is accepted.
-#' @param end_time a POSIXlt or POSIXct object indicating the last day or hour for
-#' which data are required. Encouraged to specify desired timezone as UTC (ERA5
-#' data are in UTC by default), but any timezone is accepted.
+#' @param start_time a POSIXlt object indicating the first hour for which data
+#' are required.
+#' @param end_time a POSIXlt object indicating the last hour for which data
+#' are required.
 #' @param d_weight logical value indicating whether to apply inverse distance
 #' weighting using the 4 closest neighbouring points to the location defined by
 #' `long` and `lat`. Default = `TRUE`.
 #' @param dtr_cor logical value indicating whether to apply a diurnal temperature
 #' range correction to air temperature values. Default = `TRUE`.
 #' @param dtr_cor_fac numeric value to be used in the diurnal temperature range
-#' correction. Default = 1.285, based on calibration against UK Met Office
-#' observations.
+#' correction. Default = 1.
 #'
 #' @return a data frame containing hourly values for a suite of climate variables:
 #' @return `obs_time` | the date-time (timezone specified in col timezone)
@@ -53,76 +50,7 @@
 #'
 
 extract_clim <- function(nc, long, lat, start_time, end_time, d_weight = TRUE,
-                           dtr_cor = TRUE, dtr_cor_fac = 1.285) {
-
-  # Open nc file for error trapping
-  nc_dat = ncdf4::nc_open(nc)
-
-  ## Error trapping
-
-  # Confirm that start_time and end_time are date-time objects
-  if (any(!class(start_time) %in% c("Date", "POSIXct", "POSIXt", "POSIXlt")) |
-      any(!class(end_time) %in% c("Date", "POSIXct", "POSIXt", "POSIXlt"))) {
-    stop("`start_time` and `end_time` must be provided as date-time objects.")
-  }
-  # Confirm that start_time and end_time are same class of date-time objects
-  if (any(class(start_time) != class(end_time))) {
-    stop("`start_time` and `end_time` must be of the same date-time class.")
-  }
-
-  # Check if start_time is after first time observation
-  start <- lubridate::ymd_hms("1900:01:01 00:00:00") + (nc_dat$dim$time$vals[1] * 3600)
-  if (start_time < start) {
-    stop("Requested start time is before the beginning of time series of the ERA5 netCDF.")
-  }
-
-  # Check if end_time is before last time observation
-  end <- lubridate::ymd_hms("1900:01:01 00:00:00") + (utils::tail(nc_dat$dim$time$vals, n = 1) * 3600)
-  if (end_time > end) {
-    stop("Requested end time is after the end of time series of the ERA5 netCDF.")
-  }
-
-  # Check if requested coordinates are in spatial grid
-  if(long < min(nc_dat$dim$longitude$vals) | long > max(nc_dat$dim$longitude$vals)) {
-    long_out <- TRUE
-  } else {
-    long_out <- FALSE
-  }
-
-  if(lat < min(nc_dat$dim$latitude$vals) | lat > max(nc_dat$dim$latitude$vals)) {
-    lat_out <- TRUE
-  } else {
-    lat_out <- FALSE
-  }
-
-  # close nc file
-  ncdf4::nc_close(nc_dat)
-
-  if(long_out & lat_out) {
-    stop("Requested coordinates are not represented in the ERA5 netCDF (both longitude and latitude out of range).")
-  }
-  if(long_out) {
-    stop("Requested coordinates are not represented in the ERA5 netCDF (longitude out of range).")
-  }
-  if(lat_out) {
-    stop("Requested coordinates are not represented in the ERA5 netCDF (latitude out of range).")
-  }
-
-  if (lubridate::tz(start_time) != lubridate::tz(end_time)) {
-    stop("start_time and end_time are not in the same timezone.")
-  }
-
-  if (lubridate::tz(start_time) != "UTC" | lubridate::tz(end_time) != "UTC") {
-    warning("provided times (start_time and end_time) are not in timezone UTC (default timezone of ERA5 data). Output will be provided in timezone UTC however.")
-  }
-
-  # Specify hour of end_time as last hour of day, if not specified
-  if (lubridate::hour(end_time) == 0) {
-    end_time <- as.POSIXlt(paste0(lubridate::year(end_time), "-",
-                                  lubridate::month(end_time), "-",
-                                  lubridate::day(end_time),
-                                  " 23:00"), tz = lubridate::tz(end_time))
-  }
+                           dtr_cor = TRUE, dtr_cor_fac = 1) {
 
   if(dtr_cor == TRUE & !is.numeric(dtr_cor_fac)) {
     stop("Invalid diurnal temperature range correction value provided.")}
@@ -165,7 +93,7 @@ extract_clim <- function(nc, long, lat, start_time, end_time, d_weight = TRUE,
                                  winddir, emissivity, cloudcover, netlong,
                                  uplong, downlong, rad_dni, rad_dif, szenith),
                             weighted.mean, w = dplyr::quo(inverse_weight)) %>%
-        dplyr::mutate(timezone = lubridate::tz(obs_time))
+        dplyr::mutate(timezone = "UTC")
       message("Distance weighting applied.")
       if(dtr_cor == TRUE) {
         message("Diurnal temperature range correction applied.")

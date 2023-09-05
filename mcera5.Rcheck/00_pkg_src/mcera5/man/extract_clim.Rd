@@ -13,7 +13,7 @@ extract_clim(
   end_time,
   d_weight = TRUE,
   dtr_cor = TRUE,
-  dtr_cor_fac = 1.285
+  dtr_cor_fac = 1
 )
 }
 \arguments{
@@ -28,13 +28,11 @@ degrees, -ve west of Greenwich Meridian).}
 \item{lat}{latitude of the location for which data are required (decimal
 degrees, -ve south of the equator).}
 
-\item{start_time}{a POSIXlt or POSIXct object indicating the first day or hour
-for which data are required. Encouraged to specify desired timezone as UTC (ERA5
-data are in UTC by default), but any timezone is accepted.}
+\item{start_time}{a POSIXlt object indicating the first hour for which data
+are required.}
 
-\item{end_time}{a POSIXlt or POSIXct object indicating the last day or hour for
-which data are required. Encouraged to specify desired timezone as UTC (ERA5
-data are in UTC by default), but any timezone is accepted.}
+\item{end_time}{a POSIXlt object indicating the last hour for which data
+are required.}
 
 \item{d_weight}{logical value indicating whether to apply inverse distance
 weighting using the 4 closest neighbouring points to the location defined by
@@ -44,8 +42,7 @@ weighting using the 4 closest neighbouring points to the location defined by
 range correction to air temperature values. Default = `TRUE`.}
 
 \item{dtr_cor_fac}{numeric value to be used in the diurnal temperature range
-correction. Default = 1.285, based on calibration against UK Met Office
-observations.}
+correction. Default = 1.}
 }
 \value{
 a data frame containing hourly values for a suite of climate variables:
