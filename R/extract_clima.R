@@ -326,9 +326,14 @@ cat("opening file\n")
                   vapour_pressure = ea))
     }
 
-    cat("as array\n")
+    cat("humidity as array\n")
+    cat(class(humidity))
     humidfoo <- as.array(humidity)
+    cat("temperature as array\n")
+    cat(class(temperature))
     tcfoo <- as.array(temperature)
+    cat("pres2 as array\n")
+    cat(class(pres2))
     pres2foo <- as.array(pres2)
     cat("run converthumidity2\n")
     vals <- converthumidity2(h = humidfoo,
