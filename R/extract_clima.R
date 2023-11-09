@@ -285,7 +285,7 @@ cat("opening file\n")
   cat("reformat\n")
   ## Equivalent of hourlyncep_convert
   if (reformat) {
-    pres <- sp / 1000
+    pres2 <- sp / 1000
     ## Convert humidity from specific to relative
     relhum <- humidity
     cat("converthumidity\n")
@@ -326,10 +326,15 @@ cat("opening file\n")
                   vapour_pressure = ea))
     }
 
-    vals <- converthumidity2(h = as.array(humidity),
+    cat("as array\n")
+    humidfoo <- as.array(humidity)
+    tcfoo <- as.array(temperature)
+    pres2foo <- as.array(pres2)
+    cat("run converthumidity2\n")
+    vals <- converthumidity2(h = humidfoo,
                                                           intype = "specific",
-                                                          tc  = as.array(temperature),
-                                                          pk = as.array(pres))$relative
+                                                          tc  = tcfoo,
+                                                          pk = pres2foo)$relative
     cat("save vals\n")
     terra::values(relhum) <- vals
     cat("correct\n")
@@ -344,7 +349,7 @@ cat("opening file\n")
   if (reformat) {
     return(list(temp = temperature,
                 relhum = relhum,
-                pres = pres,
+                pres = pres2,
                 swrad = swrad,
                 difrad = difrad,
                 skyem = emissivity,
