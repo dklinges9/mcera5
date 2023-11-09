@@ -178,13 +178,13 @@ extract_clima <- function(
     }
 
     # Name layers as timesteps
-    names(r) <- paste(terra::time(r), lubridate::tz(terra::time(r)))
+    terra::names(r) <- paste(terra::time(r), lubridate::tz(terra::time(r)))
     # Subset down to desired spatial extent
     r <- terra::crop(r, terra::ext(long_min, long_max, lat_min, lat_max))
     return(r)
   })
 
-  names(var_list) <- varname_list
+  base::names(var_list) <- varname_list
 
   t2m <- var_list$t2m
   d2m <- var_list$d2m
@@ -275,7 +275,7 @@ extract_clima <- function(
 
   ## Add timesteps back to names ---------------
   # Only necessary for temperature at the moment, all other variables retain info
-  names(temperature) <- names(t2m)
+  terra::names(temperature) <- terra::names(t2m)
   terra::time(temperature) <- terra::time(t2m)
 
   ## Reformat ----------
