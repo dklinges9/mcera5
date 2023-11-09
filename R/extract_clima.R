@@ -68,12 +68,12 @@ extract_clima <- function(
     dtr_cor = TRUE, dtr_cor_fac = 1.285,
     reformat = TRUE
   ) {
-
+cat("opening file\n")
   # Open nc file for error trapping
   nc_dat = ncdf4::nc_open(nc)
 
   ## Error trapping
-
+  cat("error trapping\n")
   # Confirm that start_time and end_time are date-time objects
   if (any(!class(start_time) %in% c("Date", "POSIXct", "POSIXt", "POSIXlt")) |
       any(!class(end_time) %in% c("Date", "POSIXct", "POSIXt", "POSIXlt"))) {
@@ -124,10 +124,10 @@ extract_clima <- function(
   } else {
     lat_out <- FALSE
   }
-
+  cat("close file\n")
   # close nc file
   ncdf4::nc_close(nc_dat)
-
+  cat("error messages\n")
   if(long_out & lat_out) {
     stop("Requested coordinates are not represented in the ERA5 netCDF (both longitude and latitude out of range).")
   }
@@ -149,7 +149,7 @@ extract_clima <- function(
   if (dtr_cor == TRUE & !is.numeric(dtr_cor_fac)) {
     stop("Invalid diurnal temperature range correction value provided.")
   }
-
+  cat("specify end time\n")
   # Specify hour of end_time as last hour of day, if not specified
   if (lubridate::hour(end_time) == 0) {
     end_time <- as.POSIXlt(paste0(lubridate::year(end_time), "-",
@@ -165,7 +165,7 @@ extract_clima <- function(
 
   varname_list <- c("t2m", "d2m", "sp", "u10" , "v10", "tcc", "msnlwrf",
                 "msdwlwrf", "fdir", "ssrd", "lsm")
-
+  cat("load in and subset\n")
   var_list <- lapply(varname_list, function(v) {
 
     if (v == "lsm") {
@@ -178,13 +178,13 @@ extract_clima <- function(
     }
 
     # Name layers as timesteps
-    terra::names(r) <- paste(terra::time(r), lubridate::tz(terra::time(r)))
+    names(r) <- paste(terra::time(r), lubridate::tz(terra::time(r)))
     # Subset down to desired spatial extent
     r <- terra::crop(r, terra::ext(long_min, long_max, lat_min, lat_max))
     return(r)
   })
-
-  base::names(var_list) <- varname_list
+  cat("varname_list to names(var_list)\n")
+  names(var_list) <- varname_list
 
   t2m <- var_list$t2m
   d2m <- var_list$d2m
@@ -203,7 +203,7 @@ extract_clima <- function(
 
   # see land-sea mask here:
   # https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=overview
-
+  cat("coastal correction\n")
   # Only conduct if there are cells with proximity to water
   if (any(terra::values(lsm) < 1)) {
     # Calculate daily average
@@ -221,7 +221,7 @@ extract_clima <- function(
     tdif <- (temperature - tmean) * m
     temperature <- tmean + tdif
   }
-
+  cat("humfromdew\n")
   humidity <- humfromdew(d2m - 273.15,
                                         temperature,
                           sp)
@@ -239,6 +239,7 @@ extract_clima <- function(
   rad_dni = fdir * 0.000001
   rad_glbl = ssrd * 0.000001
   ## si processing -----------------
+  cat("si processing\n")
   # use t2m as template of dimensions for iterating through
   si <- t2m
   foo <- t2m[[1]]
@@ -261,6 +262,7 @@ extract_clima <- function(
   # Calc rad_dif
   rad_dif = rad_glbl - rad_dni * si # converted to MJ m-2 hr-1 from J m-2 hr-1
   ## szenith processing -----------------
+  cat("szenith\n")
   # use t2m as template of dimensions for iterating through
   szenith <- t2m
   # Create a template with dimensions (x * y) and length(tme)
@@ -274,11 +276,13 @@ extract_clima <- function(
   szenith <- terra::setValues(szenith, out)
 
   ## Add timesteps back to names ---------------
+  cat("add timesteps back to names\n")
   # Only necessary for temperature at the moment, all other variables retain info
-  terra::names(temperature) <- terra::names(t2m)
+  names(temperature) <- names(t2m)
   terra::time(temperature) <- terra::time(t2m)
 
   ## Reformat ----------
+  cat("reformat\n")
   ## Equivalent of hourlyncep_convert
   if (reformat) {
     pres <- sp / 1000
@@ -294,7 +298,7 @@ extract_clima <- function(
     swrad <- raddr + difrad
   }
   ## Return list -----------
-
+  cat("return list\n")
   if (reformat) {
     return(list(temp = temperature,
                 relhum = relhum,
