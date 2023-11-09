@@ -288,11 +288,53 @@ cat("opening file\n")
     pres <- sp / 1000
     ## Convert humidity from specific to relative
     relhum <- humidity
-    terra::values(relhum) <- microctools::converthumidity(h = as.array(humidity),
+    cat("converthumidity\n")
+    converthumidity2 <- function (h, intype = "relative", tc = 11, pk = 101.3) {
+      tk <- tc + 273.15
+      cat("intype\n")
+      if (intype != "specific" & intype != "relative" & intype !=
+          "absolute") {
+        warning("No valid input humidity specified. Humidity assumed to be\n relative")
+        intype <- "relative"
+      }
+      cat("exp\n")
+      e0 <- 0.6108 * exp(17.27 * tc/(tc + 237.3))
+      ws <- (18.02/28.97) * (e0/pk)
+      cat("convert\n")
+      if (intype == "specific") {
+        hr <- (h/ws) * 100
+      }
+      if (intype == "absolute") {
+        ea <- (tk * h)/2.16679
+        hr <- (ea/e0) * 100
+      }
+      if (intype == "relative")
+        hr <- h
+      cat("warning\n")
+      if (max(hr, na.rm = T) > 100)
+        warning(paste("Some relative humidity values > 100%",
+                      max(hr, na.rm = T)))
+      if (intype == "vapour pressure") {
+        hr <- (ea/e0) * 100
+      }
+      cat("final\n")
+      ea <- e0 * (hr/100)
+      hs <- (hr/100) * ws
+      ha <- 2.16679 * (ea/tk)
+      cat("return\n")
+      return(list(relative = hr, absolute = ha, specific = hs,
+                  vapour_pressure = ea))
+    }
+
+    vals <- converthumidity2(h = as.array(humidity),
                                                           intype = "specific",
                                                           tc  = as.array(temperature),
                                                           pk = as.array(pres))$relative
+    cat("save vals\n")
+    terra::values(relhum) <- vals
+    cat("correct\n")
     relhum[relhum > 100] <- 100
+    cat("continue\n")
     raddr <- (rad_dni * si)/0.0036
     difrad <- rad_dif/0.0036
     swrad <- raddr + difrad
