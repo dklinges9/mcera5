@@ -67,13 +67,13 @@ extract_clima <- function(
     nc, long_min, long_max, lat_min, lat_max, start_time, end_time,
     dtr_cor = TRUE, dtr_cor_fac = 1.285,
     reformat = TRUE
-  ) {
-cat("opening file\n")
+) {
+
   # Open nc file for error trapping
   nc_dat = ncdf4::nc_open(nc)
 
   ## Error trapping
-  cat("error trapping\n")
+
   # Confirm that start_time and end_time are date-time objects
   if (any(!class(start_time) %in% c("Date", "POSIXct", "POSIXt", "POSIXlt")) |
       any(!class(end_time) %in% c("Date", "POSIXct", "POSIXt", "POSIXlt"))) {
@@ -111,23 +111,23 @@ cat("opening file\n")
 
   # Check if requested coordinates are in spatial grid
   if (long_min < min(nc_dat$dim$longitude$vals) | long_min > max(nc_dat$dim$longitude$vals) |
-     long_max < min(nc_dat$dim$longitude$vals) | long_max > max(nc_dat$dim$longitude$vals)
-     ) {
+      long_max < min(nc_dat$dim$longitude$vals) | long_max > max(nc_dat$dim$longitude$vals)
+  ) {
     long_out <- TRUE
   } else {
     long_out <- FALSE
   }
 
   if (lat_min < min(nc_dat$dim$latitude$vals) | lat_min > max(nc_dat$dim$latitude$vals) |
-     lat_max < min(nc_dat$dim$latitude$vals) | lat_max > max(nc_dat$dim$latitude$vals)) {
+      lat_max < min(nc_dat$dim$latitude$vals) | lat_max > max(nc_dat$dim$latitude$vals)) {
     lat_out <- TRUE
   } else {
     lat_out <- FALSE
   }
-  cat("close file\n")
+
   # close nc file
   ncdf4::nc_close(nc_dat)
-  cat("error messages\n")
+
   if(long_out & lat_out) {
     stop("Requested coordinates are not represented in the ERA5 netCDF (both longitude and latitude out of range).")
   }
@@ -149,7 +149,7 @@ cat("opening file\n")
   if (dtr_cor == TRUE & !is.numeric(dtr_cor_fac)) {
     stop("Invalid diurnal temperature range correction value provided.")
   }
-  cat("specify end time\n")
+
   # Specify hour of end_time as last hour of day, if not specified
   if (lubridate::hour(end_time) == 0) {
     end_time <- as.POSIXlt(paste0(lubridate::year(end_time), "-",
@@ -164,8 +164,8 @@ cat("opening file\n")
   ## Load in and subset netCDF variables --------------
 
   varname_list <- c("t2m", "d2m", "sp", "u10" , "v10", "tcc", "msnlwrf",
-                "msdwlwrf", "fdir", "ssrd", "lsm")
-  cat("load in and subset\n")
+                    "msdwlwrf", "fdir", "ssrd", "lsm")
+
   var_list <- lapply(varname_list, function(v) {
 
     if (v == "lsm") {
@@ -183,7 +183,7 @@ cat("opening file\n")
     r <- terra::crop(r, terra::ext(long_min, long_max, lat_min, lat_max))
     return(r)
   })
-  cat("varname_list to names(var_list)\n")
+
   names(var_list) <- varname_list
 
   t2m <- var_list$t2m
@@ -203,7 +203,7 @@ cat("opening file\n")
 
   # see land-sea mask here:
   # https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=overview
-  cat("coastal correction\n")
+
   # Only conduct if there are cells with proximity to water
   if (any(terra::values(lsm) < 1)) {
     # Calculate daily average
@@ -221,10 +221,10 @@ cat("opening file\n")
     tdif <- (temperature - tmean) * m
     temperature <- tmean + tdif
   }
-  cat("humfromdew\n")
+
   humidity <- humfromdew(d2m - 273.15,
-                                        temperature,
-                          sp)
+                         temperature,
+                         sp)
   windspeed = sqrt(u10^2 + v10^2)
   windspeed = microclima::windheight(windspeed, 10, 2)
   winddir = (terra::atan2(u10, v10) * 180/pi + 180)%%360
@@ -239,7 +239,6 @@ cat("opening file\n")
   rad_dni = fdir * 0.000001
   rad_glbl = ssrd * 0.000001
   ## si processing -----------------
-  cat("si processing\n")
   # use t2m as template of dimensions for iterating through
   si <- t2m
   foo <- t2m[[1]]
@@ -262,7 +261,6 @@ cat("opening file\n")
   # Calc rad_dif
   rad_dif = rad_glbl - rad_dni * si # converted to MJ m-2 hr-1 from J m-2 hr-1
   ## szenith processing -----------------
-  cat("szenith\n")
   # use t2m as template of dimensions for iterating through
   szenith <- t2m
   # Create a template with dimensions (x * y) and length(tme)
@@ -276,85 +274,31 @@ cat("opening file\n")
   szenith <- terra::setValues(szenith, out)
 
   ## Add timesteps back to names ---------------
-  cat("add timesteps back to names\n")
   # Only necessary for temperature at the moment, all other variables retain info
   names(temperature) <- names(t2m)
   terra::time(temperature) <- terra::time(t2m)
 
   ## Reformat ----------
-  cat("reformat\n")
   ## Equivalent of hourlyncep_convert
   if (reformat) {
-    pres2 <- sp / 1000
+    pres <- sp / 1000
     ## Convert humidity from specific to relative
     relhum <- humidity
-    cat("converthumidity\n")
-    converthumidity2 <- function (h, intype = "relative", tc = 11, pk = 101.3) {
-      tk <- tc + 273.15
-      cat("intype\n")
-      if (intype != "specific" & intype != "relative" & intype !=
-          "absolute") {
-        warning("No valid input humidity specified. Humidity assumed to be\n relative")
-        intype <- "relative"
-      }
-      cat("exp\n")
-      e0 <- 0.6108 * exp(17.27 * tc/(tc + 237.3))
-      ws <- (18.02/28.97) * (e0/pk)
-      cat("convert\n")
-      if (intype == "specific") {
-        hr <- (h/ws) * 100
-      }
-      if (intype == "absolute") {
-        ea <- (tk * h)/2.16679
-        hr <- (ea/e0) * 100
-      }
-      if (intype == "relative")
-        hr <- h
-      cat("warning\n")
-      if (max(hr, na.rm = T) > 100)
-        warning(paste("Some relative humidity values > 100%",
-                      max(hr, na.rm = T)))
-      if (intype == "vapour pressure") {
-        hr <- (ea/e0) * 100
-      }
-      cat("final\n")
-      ea <- e0 * (hr/100)
-      hs <- (hr/100) * ws
-      ha <- 2.16679 * (ea/tk)
-      cat("return\n")
-      return(list(relative = hr, absolute = ha, specific = hs,
-                  vapour_pressure = ea))
-    }
-
-    cat("humidity as array\n")
-    cat(class(humidity))
-    humidfoo <- as.array(humidity)
-    cat("temperature as array\n")
-    cat(class(temperature))
-    tcfoo <- as.array(temperature)
-    cat("pres2 as array\n")
-    cat(class(pres2))
-    pres2foo <- as.array(pres2)
-    cat("run converthumidity2\n")
-    vals <- converthumidity2(h = humidfoo,
+    terra::values(relhum) <- microctools::converthumidity(h = terra::as.array(humidity),
                                                           intype = "specific",
-                                                          tc  = tcfoo,
-                                                          pk = pres2foo)$relative
-    cat("save vals\n")
-    terra::values(relhum) <- vals
-    cat("correct\n")
+                                                          tc  = terra::as.array(temperature),
+                                                          pk = terra::as.array(pres))$relative
     relhum[relhum > 100] <- 100
-    cat("continue\n")
     raddr <- (rad_dni * si)/0.0036
     difrad <- rad_dif/0.0036
     swrad <- raddr + difrad
   }
   ## Return list -----------
-  cat("return list\n")
+
   if (reformat) {
     return(list(temp = temperature,
                 relhum = relhum,
-                pres = pres2,
+                pres = pres,
                 swrad = swrad,
                 difrad = difrad,
                 skyem = emissivity,
