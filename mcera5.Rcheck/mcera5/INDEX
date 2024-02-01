@@ -1,8 +1,0 @@
-build_era5_request      Builds a request compatible with the CDS for
-                        all microclimate relevant climate variables.
-extract_clim            Produces hourly data for a single location
-                        ready for use with 'microclima::runauto'.
-extract_precip          Produces daily or hourly precipitation data for
-                        a single location ready for use with
-                        'microclima::runauto'.
-request_era5            Submit request(s) to CDS for ERA5 data download
