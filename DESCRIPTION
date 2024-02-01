@@ -1,7 +1,7 @@
 Package: mcera5
 Type: Package
 Title: Tools to Acquire and Process ERA5 Data for Use in Microclimate Modelling
-Version: 0.3.0
+Version: 0.4.0
 Authors@R: c(
     person("James", "Duffy", email = "james.philip.duffy@gmail.com", role = "cre", 
     comment = "Original author and creator of mcera5, however no longer maintainer"),
@@ -22,7 +22,6 @@ Imports:
     keyring,
     lubridate,
     magrittr,
-    microclima,
     ncdf4,
     plyr,
     remotes,
@@ -35,11 +34,12 @@ Remotes:
     ilyamaclean/microclimc,
     ilyamaclean/microctools,
     mrke/NicheMapR
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3
 Suggests: 
     here,
     knitr,
     markdown,
+    microclima,
     microclimc,
     microctools,
     NicheMapR,
