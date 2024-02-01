@@ -119,7 +119,7 @@ The next step is to execute the requests, by sending them to the CDS. Executing 
 request_era5(request = req, uid = uid, out_path = file_path)
 ```
 
-#### Processing .nc files
+#### Extracting climate data for a spatial point using extract_clim() and extract_precip()
 
 
 Once all .nc files are downloaded, the next step is to extract climate variables conforming to desired spatial and temporal extents from them. This can be done for a single point in space with `extract_clim`. The function outputs a dataframe where each row is a single observation in time and space and each column is a climatic variable. Note that this function uses the same start and end times defined prior to building the request.  
@@ -139,9 +139,9 @@ x <- -3.654600
 y <- 50.640369
 
 # gather all hourly variables
-point_out <- extract_clim(nc = my_nc, long = x, lat = y,
-                            start_time = st_time,  end_time = en_time)
-head(point_out)
+clim_point <- extract_clim(nc = my_nc, long = x, lat = y,
+                            start_time = st_time, end_time = en_time)
+head(clim_point)
 ```
 
 
@@ -151,7 +151,7 @@ In the same fashion, use `extract_precip` to acquire precipitation from your dow
 ```{r process_precip, eval = FALSE}
 # gather daily precipitation (we specify to convert precipitation from hourly
 # to daily, which is already the default behavior)
-point_out_precip <- extract_precip(nc = my_nc, long = x, lat = y,
+precip_point <- extract_precip(nc = my_nc, long = x, lat = y,
                                    start_time = st_time,  
                                    end_time = en_time,
                                    convert_daily = TRUE)
@@ -167,15 +167,49 @@ r <- microclima::get_dem(lat = y, long = x, resolution = 30)
 temps <- microclima::runauto(r = r, dstart = "26/02/2010",dfinish = "01/03/2010", 
                              hgt = 0.1, l = NA, x = NA, 
                              habitat = "Barren or sparsely vegetated",
-                             hourlydata = point_out, 
-                             dailyprecip = point_out_precip, 
+                             hourlydata = clim_point, 
+                             dailyprecip = precip_point, 
                              plot.progress= FALSE)
 ```
 
 For use of climate data with other microclimate packages, such as `microclimc` and `microclimf`, you may need to reformat the climate data using `microctools::hourlyncep_convert`:
 
 ```{r hourlyncep_convert_example, eval = FALSE}
-climdata <- hourlyncep_convert(climdata = point_out, lat = y, long = x)
+climdata <- hourlyncep_convert(climdata = clim_point, lat = y, long = x)
+```
+
+#### Extracting climate data for a spatial grid/array using extract_clima() and extract_precipa()
+
+
+`mcera5` also can extract ERA5 climate data simultaneously across a spatial grid using `extract_clima()` and `extract_precipa()`, to be provided to functions such as `microclimf::modelina()`. `extract_clima()` and `extract_precipa()` follow the same format as `extract_clim()` and `extract_precip()`, except require as input the boundaries of a spatial grid rather than a single spatial point. Both functions will return spatRaster layers corresponding to the climate variables.
+
+`extract_clima` also includes the argument `reformat`, which when set to TRUE (the default value) will reformat climate data to be used for modeling with `microclimf`. Similarly, `extract_precipa` has the argument `convert_daily` to sum hourly preicipitation to daily precipitation, which is accepted by `microclimf` functions.
+
+```{r process_clima, eval = FALSE}
+# list the path of the .nc file for a given year
+my_nc <- paste0(getwd(), "/era5_-4_-2_49_51_2010.nc")
+
+# 4 corners of a spatial grid (make sure it's within the bounds of your .nc file)
+long_min <- -3.7
+long_max <- -2.9
+lat_min <- 50.1
+lat_max <- 50.8
+
+# gather all hourly variables
+clim_grid <- extract_clima(nc, long_min, long_max, lat_min, lat_max, 
+                          start_time = st_time,
+                          end_time = en_time,
+                          dtr_cor = TRUE, dtr_cor_fac = 1.285,
+                          reformat = TRUE)
+
+str(clim_grid)
+
+
+precip_grid <- extract_precipa(nc, long_min, long_max, lat_min, lat_max, start_time,
+                             end_time, convert_daily = TRUE)
+
+str(precip_grid)
+
 ```
 
 
