@@ -6,7 +6,10 @@ A package to download and process ERA5 data ready for use in microclimate modell
 
 ## Install
 
-When installing, make sure to specify `build_vignettes = TRUE` in order to access the package's vignette tutorial:  
+At present, `mcera5` has a dependency on the R package `microclima`, which in turn depends on `rgdal`. Given that `rgdal` has been retired, it is no longer available to be installed from CRAN. Thus, if you do not have `rgdal` available for your current version of R, _prior_ to attempting to install `mcera5`, please install `rgdal` from an archived source by running this line of code:  
+`remotes::install_url("https://cran.r-project.org/src/contrib/Archive/rgdal/rgdal_1.6-7.tar.gz", type="source")`
+
+Then when installing `mcera5`, make sure to specify `build_vignettes = TRUE` in order to access the package's vignette tutorial:  
 `remotes::install_github("dklinges9/mcera5", build_vignettes = TRUE)`
 
 ## Tutorial
