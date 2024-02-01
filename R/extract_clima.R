@@ -226,14 +226,14 @@ extract_clima <- function(
                                         temperature,
                           sp)
   windspeed = sqrt(u10^2 + v10^2)
-  windspeed = microclima::windheight(windspeed, 10, 2)
+  windspeed = windheight(windspeed, 10, 2)
   winddir = (terra::atan2(u10, v10) * 180/pi + 180)%%360
   cloudcover = tcc * 100
   netlong = abs(msnlwrf) * 0.0036
   downlong = msdwlwrf * 0.0036
   uplong = netlong + downlong
   emissivity = downlong/uplong # converted to MJ m-2 hr-1
-  jd = microclima::julday(lubridate::year(tme),
+  jd = julday(lubridate::year(tme),
                           lubridate::month(tme),
                           lubridate::day(tme))
   rad_dni = fdir * 0.000001
@@ -251,7 +251,7 @@ extract_clima <- function(
   # Create a template with dimensions (x * y) and length(tme)
   out <- array(NA, dim = c(nrow(coords), length(tme)))
   for (i in 1:nrow(coords)) {
-    out[i,] <- microclima::siflat(lubridate::hour(tme),
+    out[i,] <- siflat(lubridate::hour(tme),
                                   lat = coords$y[i],
                                   long = coords$x[i],
                                   jd)
@@ -266,7 +266,7 @@ extract_clima <- function(
   # Create a template with dimensions (x * y) and length(tme)
   out <- array(NA, dim = c(nrow(coords), length(tme)))
   for (i in 1:nrow(coords)) {
-    out[i,] <- microclima::solalt(lubridate::hour(tme),
+    out[i,] <- solalt(lubridate::hour(tme),
                                   lat = coords$y[i],
                                   long = coords$x[i],
                                   julian = jd)

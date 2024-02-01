@@ -53,7 +53,7 @@ rad_calc <- function(rad, tme, long, lat) {
                              to = as.POSIXlt(tme1h[length(tme1h)]),
                              by = "10 min"), origin = "1970-01-01 00:00",
                          tz = "UTC")
-  csr10min <- microclima::clearskyrad(tme10min, lat = lat , long = long,
+  csr10min <- clearskyrad(tme10min, lat = lat , long = long,
                                       merid = 0, dst = 0)
   # mean csr per hour (every 6 values)
   csr1h <- tibble::tibble(csr10min) %>%
@@ -74,7 +74,7 @@ rad_calc <- function(rad, tme, long, lat) {
   # select just the ones on the hour
   od1h <- od1h[seq(2,length(od1h),2)]
   # csr on the hour
-  csr1h_2 <- microclima::clearskyrad(tme1h, lat = lat, long = long, merid = 0, dst = 0)
+  csr1h_2 <- clearskyrad(tme1h, lat = lat, long = long, merid = 0, dst = 0)
   # calculate corrected rad on the hour
   rad_out <- csr1h_2 * od1h
   rad_out[is.na(rad_out)] <- 0
@@ -145,23 +145,23 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
                     dtr_cor == FALSE ~ temperature),
                   humidity = humfromdew(d2m - 273.15, temperature, pressure),
                   windspeed = sqrt(u10^2 + v10^2),
-                  windspeed = microclima::windheight(windspeed, 10, 2),
+                  windspeed = windheight(windspeed, 10, 2),
                   winddir = (atan2(u10, v10) * 180/pi + 180)%%360,
                   cloudcover = tcc * 100,
                   netlong = abs(msnlwrf) * 0.0036,
                   downlong = msdwlwrf * 0.0036,
                   uplong = netlong + downlong,
                   emissivity = downlong/uplong, # converted to MJ m-2 hr-1
-                  jd = microclima::julday(lubridate::year(obs_time),
+                  jd = julday(lubridate::year(obs_time),
                                           lubridate::month(obs_time),
                                           lubridate::day(obs_time)),
-                  si = microclima::siflat(lubridate::hour(obs_time), lat, long, jd, merid = 0)) %>%
+                  si = siflat(lubridate::hour(obs_time), lat, long, jd, merid = 0)) %>%
     dplyr::mutate(., rad_dni = fdir * 0.000001,
                   rad_glbl = ssrd * 0.000001,
                   rad_glbl = rad_calc(rad_glbl, obs_time, long, lat), # fix hourly rad
                   rad_dni = rad_calc(rad_dni, obs_time, long, lat), # fix hourly rad
                   rad_dif = rad_glbl - rad_dni * si) %>% # converted to MJ m-2 hr-1 from J m-2 hr-1
-    dplyr::mutate(., szenith = 90 - microclima::solalt(lubridate::hour(obs_time),
+    dplyr::mutate(., szenith = 90 - solalt(lubridate::hour(obs_time),
                                                        lat, long, jd, merid = 0)) %>%
     dplyr::select(.,obs_time, temperature, humidity, pressure, windspeed,
                   winddir, emissivity, cloudcover, netlong, uplong, downlong,
