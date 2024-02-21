@@ -12,6 +12,9 @@ At present, `mcera5` has a dependency on the R package `microclima`, which in tu
 Then when installing `mcera5`, make sure to specify `build_vignettes = TRUE` in order to access the package's vignette tutorial:  
 `remotes::install_github("dklinges9/mcera5", build_vignettes = TRUE)`
 
+If the above suggestion for handling a `rgdal` installation does not solve issues on your end, there is a developmental version of `mcera5` that does not rely on `microclima`, which you can install via the following line. _However_ (as of February 2024) this development version has not been sufficiently tested!  
+`remotes::install_github("dklinges9/mcera5", build_vignettes = TRUE, ref = "no_microclima")`
+
 ## Tutorial
 
 The vignette can then be accessed via:   
