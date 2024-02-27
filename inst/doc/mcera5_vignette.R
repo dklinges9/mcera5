@@ -16,11 +16,7 @@ library(keyring)
 library(abind)
 library(lubridate)
 library(tidync)
-<<<<<<< HEAD
 library(microclima)
-=======
-library(microclima) # remotes::install_github("ilyamaclean/microclima")
->>>>>>> master
 library(NicheMapR) # remotes::install_github("mrke/NicheMapR")
 library(microctools) # remotes::install_github("ilyamaclean/microctools")
 
@@ -82,24 +78,14 @@ str(req)
 #  y <- 50.640369
 #  
 #  # gather all hourly variables
-<<<<<<< HEAD
-#  point_out <- extract_clim(nc = my_nc, long = x, lat = y,
-#                              start_time = st_time,  end_time = en_time)
-#  head(point_out)
-=======
 #  clim_point <- extract_clim(nc = my_nc, long = x, lat = y,
 #                              start_time = st_time, end_time = en_time)
 #  head(clim_point)
->>>>>>> master
 
 ## ----process_precip, eval = FALSE-----------------------------------------------------------------------------
 #  # gather daily precipitation (we specify to convert precipitation from hourly
 #  # to daily, which is already the default behavior)
-<<<<<<< HEAD
-#  point_out_precip <- extract_precip(nc = my_nc, long = x, lat = y,
-=======
 #  precip_point <- extract_precip(nc = my_nc, long = x, lat = y,
->>>>>>> master
 #                                     start_time = st_time,
 #                                     end_time = en_time,
 #                                     convert_daily = TRUE)
@@ -112,14 +98,6 @@ str(req)
 #  temps <- microclima::runauto(r = r, dstart = "26/02/2010",dfinish = "01/03/2010",
 #                               hgt = 0.1, l = NA, x = NA,
 #                               habitat = "Barren or sparsely vegetated",
-<<<<<<< HEAD
-#                               hourlydata = point_out,
-#                               dailyprecip = point_out_precip,
-#                               plot.progress= FALSE)
-
-## ----hourlyncep_convert_example, eval = FALSE-----------------------------------------------------------------
-#  climdata <- hourlyncep_convert(climdata = point_out, lat = y, long = x)
-=======
 #                               hourlydata = clim_point,
 #                               dailyprecip = precip_point,
 #                               plot.progress= FALSE)
@@ -152,5 +130,4 @@ str(req)
 #  
 #  str(precip_grid)
 #  
->>>>>>> master
 
