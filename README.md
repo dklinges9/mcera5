@@ -13,7 +13,7 @@ Then when installing `mcera5`, make sure to specify `build_vignettes = TRUE` in 
 `remotes::install_github("dklinges9/mcera5", build_vignettes = TRUE)`
 
 If the above suggestion for handling a `rgdal` installation does not solve issues on your end, there is a developmental version of `mcera5` that does not rely on `microclima`, which you can install via the following line. _However_ (as of February 2024) this development version has not been sufficiently tested!  
-`remotes::install_github("dklinges9/mcera5", build_vignettes = TRUE, ref = "no_microclima")`
+`remotes::install_github("dklinges9/mcera5", ref = "no_microclima")`
 
 ## Tutorial
 
@@ -22,12 +22,12 @@ The vignette can then be accessed via:
 
 Alternatively you can navigate to the vignette manually [here](https://github.com/dklinges9/mcera5/blob/master/vignettes/mcera5_vignette.Rmd) on the GitHub repository.  
 
+## Questions, Concerns, Issues
+
+Before emailing about a concern, please submit a reproducible example as an issue on this Github repository. To do so, navigate to [the main page of this repository](https://github.com/dklinges9/mcera5/) and click on the "Issues" tab, and then "New Issue." If you do not have a GitHub account or are otherwise unable to submit an issue, then contact David Klinges at dklinges9@gmail.com.
+
 ## Contact and Contributors
 
 David Klinges: _Maintainer, primary contact_ (dklinges9@gmail.com)  
 James Duffy: _Creator_  
 Ilya Maclean: _Contributor_  
-
-## Issues
-
-Please submit reproducible examples as an issue on Github. 
