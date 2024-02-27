@@ -3,6 +3,7 @@
 export("%>%")
 export(build_era5_request)
 export(clearskyrad)
+export(converthumidity)
 export(extract_clim)
 export(extract_clima)
 export(extract_precip)

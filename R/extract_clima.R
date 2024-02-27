@@ -284,7 +284,7 @@ extract_clima <- function(
     pres <- sp / 1000
     ## Convert humidity from specific to relative
     relhum <- humidity
-    terra::values(relhum) <- microctools::converthumidity(h = terra::as.array(humidity),
+    terra::values(relhum) <- converthumidity(h = terra::as.array(humidity),
                                                           intype = "specific",
                                                           tc  = terra::as.array(temperature),
                                                           pk = terra::as.array(pres))$relative
