@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Downloading ERA5 data for use with microclima, NicheMapR, and other microclimate packages</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Downloading ERA5 data for use with
+<code>microclima</code>, <code>NicheMapR</code>, and other microclimate
+packages</h1>
+
+
+
+<div id="setup" class="section level2">
+<h2>Setup</h2>
+<p>ERA5 climate data can be downloaded from the climate data store
+(CDS). The following describes how to access the data using R:</p>
+<ol style="list-style-type: decimal">
+<li><p>Register <a href="https://cds.climate.copernicus.eu/user/register">here</a>.</p></li>
+<li><p>Then, navigate <a href="https://cds.climate.copernicus.eu/">here</a>, login, and click on
+your name (in the top right hand corner) to access your profile. Here
+you will find your user ID (UID) and API key, both which are required
+for you to remotely download data from the CDS. Make a note of
+these.</p></li>
+<li><p>You will also need to accept the Ts&amp;Cs (whilst logged in) <a href="https://cds.climate.copernicus.eu/cdsapp/#!/terms/licence-to-use-copernicus-products">here</a>.</p></li>
+</ol>
+<p>The following packages are required:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(mcera5)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">library</span>(ecmwfr)</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="fu">library</span>(ncdf4)</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="fu">library</span>(curl)</span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="fu">library</span>(keyring)</span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="fu">library</span>(abind)</span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a><span class="fu">library</span>(tidync)</span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a><span class="fu">library</span>(microclima) <span class="co"># remotes::install_github(&quot;ilyamaclean/microclima&quot;)</span></span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a><span class="fu">library</span>(NicheMapR) <span class="co"># remotes::install_github(&quot;mrke/NicheMapR&quot;)</span></span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a><span class="fu">library</span>(microctools) <span class="co"># remotes::install_github(&quot;ilyamaclean/microctools&quot;)</span></span></code></pre></div>
+<div id="set-user-credentials-for-api-access" class="section level4">
+<h4>Set user credentials for API access</h4>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># assign your credentials</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>uid <span class="ot">&lt;-</span> <span class="st">&quot;*****&quot;</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>cds_api_key <span class="ot">&lt;-</span> <span class="st">&quot;********-****-****-****-************&quot;</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>ecmwfr<span class="sc">::</span><span class="fu">wf_set_key</span>(<span class="at">user =</span> uid,</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>                   <span class="at">key =</span> cds_api_key,</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>                   <span class="at">service =</span> <span class="st">&quot;cds&quot;</span>)</span></code></pre></div>
+</div>
+</div>
+<div id="usage" class="section level2">
+<h2>Usage</h2>
+<div id="building-a-request" class="section level4">
+<h4>Building a request</h4>
+<p>The first step is to decide on the spatial and temporal extents of
+the data retrieved from the CDS. There is can be a moderately-sized
+overhead when submitting a request (and consequently waiting in a
+queue); at times, when the CDS server is busy, this can entail several
+hours of waiting for a download to execute, even for small amounts of
+data (&lt;10 MB). Such overhead time is independent of mcera5, yet can
+be reduced base upon the spatial/temporal dimensions of the query. It is
+therefore sensible to be strategic with the number and size of requests
+submitted. Generally, querying temporal durations greater than one year
+causes a delay, while query of wide spatial extents can occur rapidly.
+It is therefore most efficient to download time series data in temporal
+chunks (e.g. monthly basis) each specifying a region encompassing
+multiple points of interest. We recommend users <a href="https://cds.climate.copernicus.eu/live/queue">track current usage
+of the CDS</a> and follow <a href="https://confluence.ecmwf.int/#all-updates">ECMWF news</a> (such as
+the <a href="https://confluence.ecmwf.int/display/BONDUSER/Data+Centre+Migration+to+Bologna+-+User+Space+Home">migration
+of the MARS Data Centre</a> between November 2021 and April 2022).</p>
+<p>Requests are submitted as whole months, and they will also be split
+by year, so that they are not too big to handle and to expedite wait
+times. The splitting of requests which overlap year boundaries is dealt
+with automatically. Users can request files to be merged together in the
+<code>request_era5()</code> function (covered later on).</p>
+<p>Once these parameters are decided, one can begin to build the
+request(s) as follows:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co"># bounding coordinates (in WGS84 / EPSG:4326)</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>xmn <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">4</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>xmx <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">2</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>ymn <span class="ot">&lt;-</span> <span class="dv">49</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>ymx <span class="ot">&lt;-</span> <span class="dv">51</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co"># temporal extent</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>st_time <span class="ot">&lt;-</span> <span class="fu">as.POSIXlt</span>(<span class="st">&quot;2010-02-26 00:00&quot;</span>, <span class="at">tz =</span> <span class="st">&quot;UTC&quot;</span>)</span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>en_time <span class="ot">&lt;-</span> <span class="fu">as.POSIXlt</span>(<span class="st">&quot;2010-03-01 23:00&quot;</span>, <span class="at">tz =</span> <span class="st">&quot;UTC&quot;</span>)</span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="co"># Set a unique prefix for the filename (here based on spatial</span></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co"># coordinates), and the file path for downloaded .nc files</span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a>file_prefix <span class="ot">&lt;-</span> <span class="st">&quot;era5_-4_-2_49_51&quot;</span></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a>file_path <span class="ot">&lt;-</span> <span class="fu">getwd</span>()</span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a></span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a></span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a><span class="co"># build a request (covering multiple years)</span></span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a>req <span class="ot">&lt;-</span> <span class="fu">build_era5_request</span>(<span class="at">xmin =</span> xmn, <span class="at">xmax =</span> xmx, </span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a>                          <span class="at">ymin =</span> ymn, <span class="at">ymax =</span> ymx,</span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a>                          <span class="at">start_time =</span> st_time,</span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a>                          <span class="at">end_time =</span> en_time,</span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a>                          <span class="at">outfile_name =</span> file_prefix)</span></code></pre></div>
+<p>Requests are stored in list format. Each request (divided by year)
+are stored as list objects within the master list:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">str</span>(req)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt; List of 1</span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">#&gt;  $ :List of 10</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co">#&gt;   ..$ dataset_short_name: chr &quot;reanalysis-era5-single-levels&quot;</span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co">#&gt;   ..$ product_type      : chr &quot;reanalysis&quot;</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co">#&gt;   ..$ variable          : chr [1:12] &quot;2m_temperature&quot; &quot;2m_dewpoint_temperature&quot; &quot;surface_pressure&quot; &quot;10m_u_component_of_wind&quot; ...</span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="co">#&gt;   ..$ year              : chr &quot;2010&quot;</span></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt;   ..$ month             : chr [1:2] &quot;2&quot; &quot;3&quot;</span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt;   ..$ day               : chr [1:31] &quot;01&quot; &quot;02&quot; &quot;03&quot; &quot;04&quot; ...</span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&gt;   ..$ time              : chr [1:24] &quot;00:00&quot; &quot;01:00&quot; &quot;02:00&quot; &quot;03:00&quot; ...</span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt;   ..$ area              : chr &quot;51/-4/49/-2&quot;</span></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt;   ..$ format            : chr &quot;netcdf&quot;</span></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt;   ..$ target            : chr &quot;era5_-4_-2_49_51_2010.nc&quot;</span></span></code></pre></div>
+</div>
+<div id="obtaining-data-with-a-request" class="section level4">
+<h4>Obtaining data with a request</h4>
+<p>The next step is to execute the requests, by sending them to the CDS.
+Executing <code>request_era5</code> will download .nc files for each
+year to the location defined by <code>out_path</code>. The filenames
+will have a prefix defined by <code>outfile_name</code> in
+<code>build_era5_request</code>. The <code>request_era5</code> function
+will deal with lists containing multiple requests (i.e. those created by
+<code>build_era5_request</code> with temporal extents spanning multiple
+years). If users specify a duration longer than one year, the query is
+downloaded as a separate netCDF file for each year; users can combine
+files into one by specifying the parameter <code>combine = TRUE</code>
+in <code>request_era5</code>. At this stage, the user then waits for the
+netCDF to be downloaded to their machine, and will receive a
+confirmation message (“ERA5 netCDF file successfully downloaded”) from
+the R console upon completion:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">request_era5</span>(<span class="at">request =</span> req, <span class="at">uid =</span> uid, <span class="at">out_path =</span> file_path)</span></code></pre></div>
+</div>
+<div id="extracting-climate-data-for-a-spatial-point-using-extract_clim-and-extract_precip" class="section level4">
+<h4>Extracting climate data for a spatial point using extract_clim() and
+extract_precip()</h4>
+<p>Once all .nc files are downloaded, the next step is to extract
+climate variables conforming to desired spatial and temporal extents
+from them. This can be done for a single point in space with
+<code>extract_clim</code>. The function outputs a dataframe where each
+row is a single observation in time and space and each column is a
+climatic variable. Note that this function uses the same start and end
+times defined prior to building the request.</p>
+<p>By default, <code>extract_clim</code> applies an inverse distance
+weighting calculation (controlled by the parameter
+<code>d_weight</code>). This means that if the user requests data for a
+point that does not match the regular grid found in the ERA5 dataset
+(i.e., the centre point of each ERA5 grid cell), the four nearest
+neighbouring data points to the requested location will be used to
+create a weighted average of each climate variable, thereby providing a
+more likely estimate of location conditions.</p>
+<p>Furthermore, <code>extract_clim</code> by default applies a diurnal
+temperature range correction to the data (when
+<code>dtr_cor = TRUE</code> and weighted according to
+<code>dtr_cor_fac</code>). The diurnal temperature ranges of ERA5 are
+artificially lower in grid cells classed as sea as opposed to land. It
+may thus be useful to apply a correction if estimates are required for a
+terrestrial location in predominantly marine grid cells. If applied, an
+internal function is evoked that uses the land/sea value in the
+downloaded NetCDF file to adjust temperature values by the factor
+provided using the formula <span class="math inline">\(DTR_C=DTR[(1-p_l
+) C_f+1]\)</span> where <span class="math inline">\(DTR_C\)</span> is
+the corrected diurnal temperature range, <span class="math inline">\(DTR\)</span> is the diurnal temperature range in
+the ERA5 dataset, <span class="math inline">\(p_l\)</span> is the
+proportion of the grid cell that is land and <span class="math inline">\(C_f\)</span> is the correction factor. The default
+function input value is a correction based on calibration against the UK
+Met Office 1-km2 gridded dataset of daily maximum and minimum
+temperatures, itself calibrated and validated against a network of (on
+average) 1,203 weather stations distributed across the UK.</p>
+<p>Given that <code>runauto</code> in the <code>microclima</code>
+package, as well as functions from the <code>NicheMapR</code> and
+<code>microclimc</code> microclimate modelling packages, all only accept
+date ranges within single years, you will need to create a separate data
+frame for each yearly block. For example, if your period of interest
+spans multiple years (and you have used the previous code to download
+multiple .nc files, run this next block of code for each year):</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># list the path of the .nc file for a given year</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>my_nc <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="fu">getwd</span>(), <span class="st">&quot;/era5_-4_-2_49_51_2010.nc&quot;</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co"># for a single point (make sure it&#39;s within the bounds of your .nc file)</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">3.654600</span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fl">50.640369</span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="co"># gather all hourly variables</span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>clim_point <span class="ot">&lt;-</span> <span class="fu">extract_clim</span>(<span class="at">nc =</span> my_nc, <span class="at">long =</span> x, <span class="at">lat =</span> y,</span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>                            <span class="at">start_time =</span> st_time, <span class="at">end_time =</span> en_time)</span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="fu">head</span>(clim_point)</span></code></pre></div>
+<p>In the same fashion, use <code>extract_precip</code> to acquire
+precipitation from your downloaded netCDF file, which also applies an
+inverse distance weighting calculation. By default,
+<code>extract_precip</code> sums up hourly ERA5 precipitation to the
+daily level, which is required for the aforementioned microclimate
+models. However users can instead receive hourly values by setting
+<code>convert_daily = FALSE</code>.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co"># gather daily precipitation (we specify to convert precipitation from hourly</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="co"># to daily, which is already the default behavior)</span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>precip_point <span class="ot">&lt;-</span> <span class="fu">extract_precip</span>(<span class="at">nc =</span> my_nc, <span class="at">long =</span> x, <span class="at">lat =</span> y,</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>                                   <span class="at">start_time =</span> st_time,  </span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>                                   <span class="at">end_time =</span> en_time,</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>                                   <span class="at">convert_daily =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p>The dataframe created by <code>extract_clim</code> and vector created
+by <code>extract_precip</code> are ready to be used as inputs to the
+<code>runauto</code> function from the <code>microclima</code>
+package:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="co"># create a 200 x 200 30 m spatial resoltuion DEM for location</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>r <span class="ot">&lt;-</span> microclima<span class="sc">::</span><span class="fu">get_dem</span>(<span class="at">lat =</span> y, <span class="at">long =</span> x, <span class="at">resolution =</span> <span class="dv">30</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="co"># change date format to fit runauto requirements</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>temps <span class="ot">&lt;-</span> microclima<span class="sc">::</span><span class="fu">runauto</span>(<span class="at">r =</span> r, <span class="at">dstart =</span> <span class="st">&quot;26/02/2010&quot;</span>,<span class="at">dfinish =</span> <span class="st">&quot;01/03/2010&quot;</span>, </span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>                             <span class="at">hgt =</span> <span class="fl">0.1</span>, <span class="at">l =</span> <span class="cn">NA</span>, <span class="at">x =</span> <span class="cn">NA</span>, </span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>                             <span class="at">habitat =</span> <span class="st">&quot;Barren or sparsely vegetated&quot;</span>,</span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>                             <span class="at">hourlydata =</span> clim_point, </span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>                             <span class="at">dailyprecip =</span> precip_point, </span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>                             <span class="at">plot.progress=</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<p>For use of climate data with other microclimate packages, such as
+<code>microclimc</code> and <code>microclimf</code>, you may need to
+reformat the climate data using
+<code>microctools::hourlyncep_convert</code>:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>climdata <span class="ot">&lt;-</span> <span class="fu">hourlyncep_convert</span>(<span class="at">climdata =</span> clim_point, <span class="at">lat =</span> y, <span class="at">long =</span> x)</span></code></pre></div>
+</div>
+<div id="extracting-climate-data-for-a-spatial-gridarray-using-extract_clima-and-extract_precipa" class="section level4">
+<h4>Extracting climate data for a spatial grid/array using
+extract_clima() and extract_precipa()</h4>
+<p><code>mcera5</code> also can extract ERA5 climate data simultaneously
+across a spatial grid using <code>extract_clima()</code> and
+<code>extract_precipa()</code>, to be provided to functions such as
+<code>microclimf::modelina()</code>. <code>extract_clima()</code> and
+<code>extract_precipa()</code> follow the same format as
+<code>extract_clim()</code> and <code>extract_precip()</code>, except
+require as input the boundaries of a spatial grid rather than a single
+spatial point. Both functions will return spatRaster layers
+corresponding to the climate variables.</p>
+<p><code>extract_clima</code> also includes the argument
+<code>reformat</code>, which when set to TRUE (the default value) will
+reformat climate data to be used for modeling with
+<code>microclimf</code>. Similarly, <code>extract_precipa</code> has the
+argument <code>convert_daily</code> to sum hourly preicipitation to
+daily precipitation, which is accepted by <code>microclimf</code>
+functions.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co"># list the path of the .nc file for a given year</span></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>my_nc <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="fu">getwd</span>(), <span class="st">&quot;/era5_-4_-2_49_51_2010.nc&quot;</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="co"># 4 corners of a spatial grid (make sure it&#39;s within the bounds of your .nc file)</span></span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>long_min <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">3.7</span></span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>long_max <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">2.9</span></span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>lat_min <span class="ot">&lt;-</span> <span class="fl">50.1</span></span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a>lat_max <span class="ot">&lt;-</span> <span class="fl">50.8</span></span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a></span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a><span class="co"># gather all hourly variables</span></span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a>clim_grid <span class="ot">&lt;-</span> <span class="fu">extract_clima</span>(nc, long_min, long_max, lat_min, lat_max, </span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a>                          <span class="at">start_time =</span> st_time,</span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a>                          <span class="at">end_time =</span> en_time,</span>
+<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a>                          <span class="at">dtr_cor =</span> <span class="cn">TRUE</span>, <span class="at">dtr_cor_fac =</span> <span class="fl">1.285</span>,</span>
+<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a>                          <span class="at">reformat =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb10-16"><a href="#cb10-16" tabindex="-1"></a></span>
+<span id="cb10-17"><a href="#cb10-17" tabindex="-1"></a><span class="fu">str</span>(clim_grid)</span>
+<span id="cb10-18"><a href="#cb10-18" tabindex="-1"></a></span>
+<span id="cb10-19"><a href="#cb10-19" tabindex="-1"></a></span>
+<span id="cb10-20"><a href="#cb10-20" tabindex="-1"></a>precip_grid <span class="ot">&lt;-</span> <span class="fu">extract_precipa</span>(nc, long_min, long_max, lat_min, lat_max, start_time,</span>
+<span id="cb10-21"><a href="#cb10-21" tabindex="-1"></a>                             end_time, <span class="at">convert_daily =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb10-22"><a href="#cb10-22" tabindex="-1"></a></span>
+<span id="cb10-23"><a href="#cb10-23" tabindex="-1"></a><span class="fu">str</span>(precip_grid)</span></code></pre></div>
+</div>
+<div id="acknowledgements" class="section level4">
+<h4>Acknowledgements</h4>
+<p>Thank you to Koen Hufkens, creator of the <code>ecwmfr</code> package
+for making the aquisition of ECWMF data through R possible.</p>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
