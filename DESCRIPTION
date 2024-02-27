@@ -20,6 +20,7 @@ Imports:
     dplyr,
     ecmwfr (>= 1.2.3),
     keyring,
+    knitr,
     lubridate,
     magrittr,
     ncdf4,
@@ -37,7 +38,6 @@ Remotes:
 RoxygenNote: 7.2.3
 Suggests: 
     here,
-    knitr,
     markdown,
     microclima,
     microclimc,
