@@ -16,6 +16,7 @@ library(keyring)
 library(abind)
 library(lubridate)
 library(tidync)
+library(microclima)
 library(NicheMapR) # remotes::install_github("mrke/NicheMapR")
 library(microctools) # remotes::install_github("ilyamaclean/microctools")
 
