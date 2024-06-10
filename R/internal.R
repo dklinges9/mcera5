@@ -17,16 +17,30 @@ humfromdew <- function(tdew, tc, p) {
 #' function to apply a correction to ERA5 temperatures based on proximity to the
 #' coast
 #' @param tc air temperature (°C)
+#' @param tme a POSIXlt or POSIXct object corresponding to the timeseries of air temperatures
 #' @param landprop single numeric value indicating proportion of grid cell that
 #' is land (0 = all sea, 1 = all land)
 #' @param cor_fac correction factor to be applied (default to 1.285 for UK)
 #' @return air temperature (°C)
 #' @noRd
-coastal_correct <- function(tc, landprop, cor_fac = 1.285) {
-  td <- matrix(tc, ncol=24, byrow=T)
-  tmean <- rep(apply(td, 1, mean), each=24)
+coastal_correct <- function(tc, tme, landprop, cor_fac = 1.285) {
+  tcdf <- data.frame(tc = tc,
+                     tme = tme) %>%
+    mutate(yday = lubridate::yday(tme),
+           year = lubridate::year(tme))
+  # Group by yday and year.....
+  tcdf <- tcdf %>%
+    group_by(year, yday) %>%
+    dplyr::summarize(tmean = mean(tc, na.rm = T), .groups = "keep") %>%
+    ungroup() %>%
+    full_join(tcdf, by = join_by(year, yday)) %>%
+    dplyr::filter(complete.cases(tme, tc))
+  # ....to find daily temperature means
+  tmean <- dplyr::pull(tcdf, tmean)
   m <- (1 - landprop) * cor_fac + 1
+  # Subtract daily means, applying correction factor
   tdif <- (tc - tmean) * m
+  # Add back daily means
   tco <- tmean + tdif
   return(tco)
 }
@@ -141,7 +155,7 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
                     lsm < 0 ~ 0,
                     lsm >= 0 ~ lsm),
                   temperature = dplyr::case_when(
-                    dtr_cor == TRUE ~ coastal_correct(temperature, lsm, dtr_cor_fac),
+                    dtr_cor == TRUE ~ coastal_correct(temperature, obs_time, lsm, dtr_cor_fac),
                     dtr_cor == FALSE ~ temperature),
                   humidity = humfromdew(d2m - 273.15, temperature, pressure),
                   windspeed = sqrt(u10^2 + v10^2),
