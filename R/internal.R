@@ -26,15 +26,15 @@ humfromdew <- function(tdew, tc, p) {
 coastal_correct <- function(tc, tme, landprop, cor_fac = 1.285) {
   tcdf <- data.frame(tc = tc,
                      tme = tme) %>%
-    mutate(yday = lubridate::yday(tme),
+    dplyr::mutate(yday = lubridate::yday(tme),
            year = lubridate::year(tme))
   # Group by yday and year.....
   tcdf <- tcdf %>%
-    group_by(year, yday) %>%
+    dplyr::group_by(year, yday) %>%
     dplyr::summarize(tmean = mean(tc, na.rm = T), .groups = "keep") %>%
-    ungroup() %>%
-    full_join(tcdf, by = join_by(year, yday)) %>%
-    dplyr::filter(complete.cases(tme, tc))
+    dplyr::ungroup() %>%
+    dplyr::full_join(tcdf, by = dplyr::join_by(year, yday)) %>%
+    dplyr::filter(stats::complete.cases(tme, tc))
   # ....to find daily temperature means
   tmean <- dplyr::pull(tcdf, tmean)
   m <- (1 - landprop) * cor_fac + 1
@@ -72,7 +72,7 @@ rad_calc <- function(rad, tme, long, lat) {
   # mean csr per hour (every 6 values)
   csr1h <- tibble::tibble(csr10min) %>%
     dplyr::group_by(group = gl(length(csr10min)/6, 6)) %>%
-    dplyr::summarise(csr1h = mean(csr10min)) %>%
+    dplyr::summarize(csr1h = mean(csr10min)) %>%
     .$csr1h
   # watch out for NAs here - need modding?
   od <- bound(rad / csr1h)
