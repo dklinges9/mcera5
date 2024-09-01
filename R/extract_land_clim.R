@@ -37,7 +37,6 @@
 #'
 
 extract_land_clim <- function(nc, long, lat, start_time, end_time, d_weight = TRUE) {
-
   # Open nc file for error trapping
   nc_dat <- ncdf4::nc_open(nc)
 

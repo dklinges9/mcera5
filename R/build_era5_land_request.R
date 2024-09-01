@@ -61,8 +61,11 @@ build_era5_land_request <- function(xmin, xmax, ymin, ymax, start_time, end_time
     list(
       "dataset_short_name" = "reanalysis-era5-land",
       "product_type" = "reanalysis",
-      "variable" = c("2m_temperature", "2m_dewpoint_temperature", "surface_pressure",
-                     "10m_u_component_of_wind", "10m_v_component_of_wind", "total_precipitation"),
+      "variable" = c(
+        "2m_temperature", "2m_dewpoint_temperature", "surface_pressure",
+        "10m_u_component_of_wind", "10m_v_component_of_wind", "total_precipitation",
+        "surface_solar_radiation_downwards"
+      ),
       "year" = as.character(time[2]),
       "month" = as.character(time[1]),
       "day" = c(
@@ -78,9 +81,7 @@ build_era5_land_request <- function(xmin, xmax, ymin, ymax, start_time, end_time
       ),
       "area" = ar,
       "format" = "netcdf",
-      # "format" = "grib",
       "target" = paste0(outfile_name, "_", time[2], "_", time[1], ".nc")
-      # "target" = paste0(outfile_name, "_", time[2], "_", time[1], ".grib")
     )
   })
 
