@@ -109,23 +109,24 @@ rad_calc <- function(rad, tme, long, lat) {
 #' the xy distance and inverse weight of each.
 #' @param long longitude
 #' @param lat latitude
+#' @param margin distance to the nearest neighbours. Default is 0.25° of ERA5 single levels
 #' @return data frame of longitude, latitude, xy distance and inverse weight of
 #' each neighbouring point
 #' @noRd
-focal_dist <- function(long, lat) {
-  # round to nearest 0.25
-  x_r <- plyr::round_any(long, .25)
-  y_r <- plyr::round_any(lat, .25)
+focal_dist <- function(long, lat, margin = .25) {
+  # round to nearest margin
+  x_r <- plyr::round_any(long, margin)
+  y_r <- plyr::round_any(lat, margin)
   # work out locations of the four neighbour points in the ERA5 dataset
   if (long >= x_r) {
-    focal_x <- c(x_r, x_r, x_r + 0.25, x_r + 0.25)
+    focal_x <- c(x_r, x_r, x_r + margin, x_r + margin)
   } else {
-    focal_x <- c(x_r - 0.25, x_r - 0.25, x_r, x_r)
+    focal_x <- c(x_r - margin, x_r - margin, x_r, x_r)
   }
   if (lat >= y_r) {
-    focal_y <- c(y_r, y_r + 0.25, y_r, y_r + 0.25)
+    focal_y <- c(y_r, y_r + margin, y_r, y_r + margin)
   } else {
-    focal_y <- c(y_r - 0.25, y_r, y_r - 0.25, y_r)
+    focal_y <- c(y_r - margin, y_r, y_r - margin, y_r)
   }
   # work out weighting based on dist between input & 4 surrounding points
   x_dist <- abs(long - focal_x)
@@ -139,7 +140,7 @@ focal_dist <- function(long, lat) {
 
 #' function to  process relevant hourly climate data from an ERA5 nc to
 #' a data frame
-#' @param nc path to nc file downloaded with `request_era5`
+#' @param nc nc path to nc file requested with `build_era5_request` and downloaded with `request_era5`
 #' @param long longitude
 #' @param lat latitude
 #' @param start_time start time for data required
@@ -152,6 +153,7 @@ focal_dist <- function(long, lat) {
 #' @noRd
 nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
                      dtr_cor_fac = 1) {
+  browser()
   dat <- tidync::tidync(nc) %>%
     tidync::hyper_filter(
       longitude = longitude == long,
@@ -205,6 +207,54 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
       ., obs_time, temperature, humidity, pressure, windspeed,
       winddir, emissivity, cloudcover, netlong, uplong, downlong,
       rad_dni, rad_dif, szenith, timezone
+    )
+
+  return(dat)
+}
+
+#' function to  process relevant hourly climate data from an ERA5-Land nc to
+#' a data frame
+#' @param nc path to nc file requested with `build_era5_land_request` and downloaded with `request_era5`
+#' @param long longitude
+#' @param lat latitude
+#' @param start_time start time for data required
+#' @param end_time end time for data required
+#' @return data frame of hourly climate variables
+#' @noRd
+nc_to_df_land <- function(nc, long, lat, start_time, end_time) {
+  dat <- tidync::tidync(nc) %>%
+    tidync::hyper_filter(
+      # ERA5-Land does not return precise coordinate values
+      longitude = longitude <= long + 1e-6 & longitude >= long - 1e-6,
+      latitude = latitude <= lat + 1e-6 & latitude >= lat - 1e-6
+    ) %>%
+    tidync::hyper_tibble() %>%
+    dplyr::mutate(.,
+      obs_time = lubridate::ymd_hms("1900:01:01 00:00:00") + (time * 3600),
+      timezone = lubridate::tz(obs_time)
+    ) %>% # convert to readable times
+    dplyr::filter(., obs_time >= start_time & obs_time < end_time + 1) %>%
+    dplyr::rename(., pressure = sp) %>%
+    dplyr::mutate(.,
+      temperature = t2m - 273.15, # kelvin to celcius
+      humidity = humfromdew(d2m - 273.15, temperature, pressure),
+      windspeed = sqrt(u10^2 + v10^2),
+      windspeed = windheight(windspeed, 10, 2),
+      winddir = (atan2(u10, v10) * 180 / pi + 180) %% 360,
+      jd = julday(
+        lubridate::year(obs_time),
+        lubridate::month(obs_time),
+        lubridate::day(obs_time)
+      ),
+      si = siflat(lubridate::hour(obs_time), lat, long, jd, merid = 0)
+    ) %>%
+    dplyr::mutate(., szenith = 90 - solalt(lubridate::hour(obs_time),
+      lat, long, jd,
+      merid = 0
+    )) %>%
+    dplyr::select(
+      ., obs_time, temperature, humidity, pressure, windspeed,
+      winddir, szenith, timezone
     )
 
   return(dat)
