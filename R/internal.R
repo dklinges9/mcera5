@@ -297,8 +297,8 @@ nc_to_df_precip <- function(nc, long, lat, start_time, end_time) {
 uni_dates <- function(start_time, end_time) {
   date_seq <- seq(lubridate::floor_date(as.Date(start_time), "month"), lubridate::ceiling_date(as.Date(end_time), "month") - lubridate::days(1), by = "month")
   df <- data.frame(
-    mon = month(date_seq),
-    yea = year(date_seq)
+    mon = lubridate::month(date_seq),
+    yea = lubridate::year(date_seq)
   )
   return(df)
 }
