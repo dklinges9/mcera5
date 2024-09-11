@@ -12,7 +12,7 @@
 
 
 
-<title>Downloading ERA5 data for use with microclima, NicheMapR, and other microclimate packages</title>
+<title>Downloading ERA5 data for use with NicheMapR, microclimf, microclimc, and other microclimate packages</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -337,23 +337,33 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 <h1 class="title toc-ignore">Downloading ERA5 data for use with
-<code>microclima</code>, <code>NicheMapR</code>, and other microclimate
-packages</h1>
+<code>NicheMapR</code>, <code>microclimf</code>,
+<code>microclimc</code>, and other microclimate packages</h1>
 
 
 
 <div id="setup" class="section level2">
 <h2>Setup</h2>
-<p>ERA5 climate data can be downloaded from the climate data store
-(CDS). The following describes how to access the data using R:</p>
+<p>ERA5 climate data can be downloaded from the ECMWF climate data store
+(CDS). Note that in July 2024 the CDS migrated to a new platform, and
+the old platform was deprecated in Sept 2024. The following describes
+how to access the data using R:</p>
 <ol style="list-style-type: decimal">
-<li><p>Register <a href="https://cds.climate.copernicus.eu/user/register">here</a>.</p></li>
-<li><p>Then, navigate <a href="https://cds.climate.copernicus.eu/">here</a>, login, and click on
-your name (in the top right hand corner) to access your profile. Here
-you will find your user ID (UID) and API key, both which are required
-for you to remotely download data from the CDS. Make a note of
-these.</p></li>
-<li><p>You will also need to accept the Ts&amp;Cs (whilst logged in) <a href="https://cds.climate.copernicus.eu/cdsapp/#!/terms/licence-to-use-copernicus-products">here</a>.</p></li>
+<li><p>Register for an ECMWF account <a href="https://accounts.ecmwf.int/auth/realms/ecmwf/login-actions/registration?client_id=cds&amp;tab_id=IA1LKqgLVc0">here</a>.
+Upon registering you will need to accept all of the Terms and Conditions
+listed at the bottom of the form.</p></li>
+<li><p>Then, navigate to the CDS site <a href="https://cds-beta.climate.copernicus.eu/">here</a> and login using
+the button in the top right. Once logged in, hover your mouse over your
+name in the top right, and click on the option “Your profile” that
+appears (this should bring you to <a href="https://cds-beta.climate.copernicus.eu/profile">this page</a>.
+Here you will find your User ID (UID) and Personal Access Token, both
+which are required for you to remotely download data from the CDS. Make
+a note of these.</p></li>
+<li><p>Each CDS dataset has its own unique Terms of Use. You will need
+to accept these Terms for ERA5-reanalysis at <a href="https://cds-beta.climate.copernicus.eu/datasets/reanalysis-era5-single-levels?tab=download">this
+page</a> (scroll down to “Terms of use” and accept). This same set of
+terms also applies for other Copernicus products, including
+ERA5-land.</p></li>
 </ol>
 <p>The following packages are required:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(mcera5)</span>
@@ -365,17 +375,16 @@ these.</p></li>
 <span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="fu">library</span>(abind)</span>
 <span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span>
 <span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a><span class="fu">library</span>(tidync)</span>
-<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a><span class="fu">library</span>(microclima)</span>
-<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a><span class="fu">library</span>(NicheMapR) <span class="co"># remotes::install_github(&quot;mrke/NicheMapR&quot;)</span></span>
-<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a><span class="fu">library</span>(microctools) <span class="co"># remotes::install_github(&quot;ilyamaclean/microctools&quot;)</span></span></code></pre></div>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a><span class="fu">library</span>(NicheMapR) <span class="co"># remotes::install_github(&quot;mrke/NicheMapR&quot;)</span></span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a><span class="fu">library</span>(microctools) <span class="co"># remotes::install_github(&quot;ilyamaclean/microctools&quot;)</span></span></code></pre></div>
 <div id="set-user-credentials-for-api-access" class="section level4">
 <h4>Set user credentials for API access</h4>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># assign your credentials</span></span>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># assign your credentials from the CDS User ID and Personal Access Token</span></span>
 <span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>uid <span class="ot">&lt;-</span> <span class="st">&quot;*****&quot;</span></span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>cds_api_key <span class="ot">&lt;-</span> <span class="st">&quot;********-****-****-****-************&quot;</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>cds_access_token <span class="ot">&lt;-</span> <span class="st">&quot;********-****-****-****-************&quot;</span></span>
 <span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a></span>
 <span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>ecmwfr<span class="sc">::</span><span class="fu">wf_set_key</span>(<span class="at">user =</span> uid,</span>
-<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>                   <span class="at">key =</span> cds_api_key,</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>                   <span class="at">key =</span> cds_access_token,</span>
 <span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>                   <span class="at">service =</span> <span class="st">&quot;cds&quot;</span>)</span></code></pre></div>
 </div>
 </div>
@@ -433,18 +442,29 @@ request(s) as follows:</p>
 <p>Requests are stored in list format. Each request (divided by year)
 are stored as list objects within the master list:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">str</span>(req)</span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt; List of 1</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt; List of 2</span></span>
 <span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">#&gt;  $ :List of 10</span></span>
 <span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co">#&gt;   ..$ dataset_short_name: chr &quot;reanalysis-era5-single-levels&quot;</span></span>
 <span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co">#&gt;   ..$ product_type      : chr &quot;reanalysis&quot;</span></span>
 <span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co">#&gt;   ..$ variable          : chr [1:12] &quot;2m_temperature&quot; &quot;2m_dewpoint_temperature&quot; &quot;surface_pressure&quot; &quot;10m_u_component_of_wind&quot; ...</span></span>
 <span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="co">#&gt;   ..$ year              : chr &quot;2010&quot;</span></span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt;   ..$ month             : chr [1:2] &quot;2&quot; &quot;3&quot;</span></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt;   ..$ month             : chr &quot;2&quot;</span></span>
 <span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt;   ..$ day               : chr [1:31] &quot;01&quot; &quot;02&quot; &quot;03&quot; &quot;04&quot; ...</span></span>
 <span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&gt;   ..$ time              : chr [1:24] &quot;00:00&quot; &quot;01:00&quot; &quot;02:00&quot; &quot;03:00&quot; ...</span></span>
 <span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt;   ..$ area              : chr &quot;51/-4/49/-2&quot;</span></span>
 <span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt;   ..$ format            : chr &quot;netcdf&quot;</span></span>
-<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt;   ..$ target            : chr &quot;era5_-4_-2_49_51_2010.nc&quot;</span></span></code></pre></div>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt;   ..$ target            : chr &quot;era5_-4_-2_49_51_2010_2.nc&quot;</span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co">#&gt;  $ :List of 10</span></span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co">#&gt;   ..$ dataset_short_name: chr &quot;reanalysis-era5-single-levels&quot;</span></span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="co">#&gt;   ..$ product_type      : chr &quot;reanalysis&quot;</span></span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="co">#&gt;   ..$ variable          : chr [1:12] &quot;2m_temperature&quot; &quot;2m_dewpoint_temperature&quot; &quot;surface_pressure&quot; &quot;10m_u_component_of_wind&quot; ...</span></span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="co">#&gt;   ..$ year              : chr &quot;2010&quot;</span></span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="co">#&gt;   ..$ month             : chr &quot;3&quot;</span></span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a><span class="co">#&gt;   ..$ day               : chr [1:31] &quot;01&quot; &quot;02&quot; &quot;03&quot; &quot;04&quot; ...</span></span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a><span class="co">#&gt;   ..$ time              : chr [1:24] &quot;00:00&quot; &quot;01:00&quot; &quot;02:00&quot; &quot;03:00&quot; ...</span></span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a><span class="co">#&gt;   ..$ area              : chr &quot;51/-4/49/-2&quot;</span></span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a><span class="co">#&gt;   ..$ format            : chr &quot;netcdf&quot;</span></span>
+<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a><span class="co">#&gt;   ..$ target            : chr &quot;era5_-4_-2_49_51_2010_3.nc&quot;</span></span></code></pre></div>
 </div>
 <div id="obtaining-data-with-a-request" class="section level4">
 <h4>Obtaining data with a request</h4>
@@ -463,6 +483,9 @@ netCDF to be downloaded to their machine, and will receive a
 confirmation message (“ERA5 netCDF file successfully downloaded”) from
 the R console upon completion:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">request_era5</span>(<span class="at">request =</span> req, <span class="at">uid =</span> uid, <span class="at">out_path =</span> file_path)</span></code></pre></div>
+<p>Common errors when for CDS requests can be found on the corresponding
+<a href="https://confluence.ecmwf.int/display/CKB/Common+Error+Messages+for+CDS+Requests">ECMWF
+Confluence page</a>.</p>
 </div>
 <div id="extracting-climate-data-for-a-spatial-point-using-extract_clim-and-extract_precip" class="section level4">
 <h4>Extracting climate data for a spatial point using extract_clim() and
