@@ -1,16 +1,12 @@
 #' Builds a request compatible with the CDS for all microclimate relevant climate
-#' variables.
+#' variables of ERA5-Land.
 #'
-#' @description `build_era5_request` creates a request or set of requests that
+#' @description `build_era5_request` creates a request or set of requests of ERA5-Land data that
 #' can be submitted to the Climate Data Store (CDS) with the `ecmwfr` package.
 #' Spatial and temporal extents are defined by the user, and requests are
 #' automatically split by month. The following variables are requested:
 #' 2m_temperature, 2m_dewpoint_temperature, surface_pressure,
-#' 10m_u_component_of_wind, 10m_v_component_of_wind, total_precipitation,
-#' total_cloud_cover, mean_surface_net_long_wave_radiation_flux,
-#' mean_surface_downward_long_wave_radiation_flux,
-#' total_sky_direct_solar_radiation_at_surface,
-#' surface_solar_radiation_downwards.
+#' 10m_u_component_of_wind, 10m_v_component_of_wind, total_precipitation.
 #'
 #' @param xmin The minimum longitude to request data for.
 #' @param xmax The maximum longitude to request data for.
@@ -28,8 +24,8 @@
 #' @export
 #'
 #'
-build_era5_request <- function(xmin, xmax, ymin, ymax, start_time, end_time,
-                               outfile_name = "era5_out") {
+build_era5_land_request <- function(xmin, xmax, ymin, ymax, start_time, end_time,
+                                    outfile_name = "era5_land_out") {
   # input checks
   if (missing(xmin)) {
     stop("xmin is missing")
@@ -51,10 +47,10 @@ build_era5_request <- function(xmin, xmax, ymin, ymax, start_time, end_time,
   }
 
   # round to regular grid
-  xmin_r <- plyr::round_any(xmin, .25, f = floor)
-  xmax_r <- plyr::round_any(xmax, .25, f = ceiling)
-  ymin_r <- plyr::round_any(ymin, .25, f = floor)
-  ymax_r <- plyr::round_any(ymax, .25, f = ceiling)
+  xmin_r <- plyr::round_any(xmin, .1, f = floor)
+  xmax_r <- plyr::round_any(xmax, .1, f = ceiling)
+  ymin_r <- plyr::round_any(ymin, .1, f = floor)
+  ymax_r <- plyr::round_any(ymax, .1, f = ceiling)
   # area of interest
   ar <- paste0(ymax_r, "/", xmin_r, "/", ymin_r, "/", xmax_r)
   # month/year combos
@@ -63,16 +59,12 @@ build_era5_request <- function(xmin, xmax, ymin, ymax, start_time, end_time,
   # iterate over all focal months
   request <- apply(ut, 1, function(time) {
     list(
-      "dataset_short_name" = "reanalysis-era5-single-levels",
+      "dataset_short_name" = "reanalysis-era5-land",
       "product_type" = "reanalysis",
       "variable" = c(
         "2m_temperature", "2m_dewpoint_temperature", "surface_pressure",
-        "10m_u_component_of_wind", "10m_v_component_of_wind",
-        "total_precipitation", "total_cloud_cover",
-        "mean_surface_net_long_wave_radiation_flux",
-        "mean_surface_downward_long_wave_radiation_flux",
-        "total_sky_direct_solar_radiation_at_surface",
-        "surface_solar_radiation_downwards", "land_sea_mask"
+        "10m_u_component_of_wind", "10m_v_component_of_wind", "total_precipitation",
+        "surface_solar_radiation_downwards"
       ),
       "year" = as.character(time[2]),
       "month" = as.character(time[1]),
@@ -95,4 +87,3 @@ build_era5_request <- function(xmin, xmax, ymin, ymax, start_time, end_time,
 
   return(request)
 }
-
