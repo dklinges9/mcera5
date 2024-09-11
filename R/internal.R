@@ -152,8 +152,7 @@ focal_dist <- function(long, lat, margin = .25) {
 #' @return data frame of hourly climate variables
 #' @noRd
 nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
-                     dtr_cor_fac = 1) {
-  browser()
+                     dtr_cor_fac = 1, reformat= NULL) {
   dat <- tidync::tidync(nc) %>%
     tidync::hyper_filter(
       longitude = longitude == long,
@@ -202,12 +201,29 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
     dplyr::mutate(., szenith = 90 - solalt(lubridate::hour(obs_time),
       lat, long, jd,
       merid = 0
-    )) %>%
-    dplyr::select(
-      ., obs_time, temperature, humidity, pressure, windspeed,
-      winddir, emissivity, cloudcover, netlong, uplong, downlong,
-      rad_dni, rad_dif, szenith, timezone
+    ))
+
+  if(reformat == "micropoint") {
+    dat = dat %>%
+      dplyr::mutate(raddr = (rad_dni * si)/3600,
+                    difrad = rad_dif/0.0036,
+                    swdown = raddr + difrad,
+                    pres = pressure/1000, # convert to kPa,
+                    difrad = rad_dif/0.0036) %>%
+      rename(lwdown = downlong, temp = temperature)
+    dat$relhum = converthumidity(dat$humidity, intype = "specific",
+                                 tc = dat$temp, pk = dat$pres)[["relative"]]
+    dat$relhum = ifelse(dat$relhum > 100, 100, dat$relhum)
+    dat = dat %>% dplyr::select(obs_time, temp, relhum, pres, swdown, difrad, lwdown, windspeed, winddir)
+  } else {
+    dat = dat %>%
+      dplyr::select(
+        ., obs_time, temperature, humidity, pressure, windspeed,
+        winddir, emissivity, cloudcover, netlong, uplong, downlong,
+        rad_dni, rad_dif, szenith, timezone
     )
+  }
+
 
   return(dat)
 }
