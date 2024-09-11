@@ -30,7 +30,7 @@ are required.}
 \item{end_time}{a POSIXlt object indicating the last hour for which data
 are required.}
 
-\item{outfile_name}{character prefix for .nc files when downloaded (the year and file extension is automatically added). Keep in
+\item{outfile_name}{character prefix for .nc files when downloaded (the year, month, and file extension is automatically added). Keep in
 mind that you may want to submit multiple (or many) requests, and therefore
 this prefix should adequately describe a unique query (e.g. by its
 spatial or temporal extent).}
@@ -39,7 +39,7 @@ spatial or temporal extent).}
 `build_era5_request` creates a request or set of requests that
 can be submitted to the Climate Data Store (CDS) with the `ecmwfr` package.
 Spatial and temporal extents are defined by the user, and requests are
-automatically split by year. The following variables are requested:
+automatically split by month. The following variables are requested:
 2m_temperature, 2m_dewpoint_temperature, surface_pressure,
 10m_u_component_of_wind, 10m_v_component_of_wind, total_precipitation,
 total_cloud_cover, mean_surface_net_long_wave_radiation_flux,
