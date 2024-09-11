@@ -27,11 +27,11 @@
 #' @param dtr_cor_fac numeric value to be used in the diurnal temperature range
 #' correction. Default = 1.285, based on calibration against UK Met Office
 #' observations.
-#' @param reformat a logical indicating whether to reformat the climate variables to be suitable for modeling with microclimf. Default to TRUE.
+#' @param reformat a logical indicating whether to reformat the climate variables
+#' to be suitable for modeling with microclimf. Default to reformat = `microclimf`
 #'
-#' @return a list of spatRasters containing hourly values for a suite of climate variables. The returned climate variables depends on whether the parameter
-#' `reformat` is TRUE or FALSE.
-#' If `reformat` is TRUE:
+#' @return a list of spatRasters containing hourly values for a suite of climate variables. The returned climate variables depends on whether the parameter `reformat` is `microclimf`.
+#' If `reformat` == "microclimf":
 #' @return `temp` | (degrees celsius)
 #' @return `relhum` | relative humidity (ercentage)
 #' @return `pres` | atmospheric press (kPa)
@@ -42,7 +42,7 @@
 #' @return `windspeed` | (m / s)
 #' @return `winddir` | wind direction, azimuth (decimal degrees from north)
 #'
-#' If `reformat` is FALSE:
+#' If `reformat` is NULL or some other value:
 #' @return `obs_time` | the date-time (timezone specified in col timezone)
 #' @return `temperature` | (degrees celsius)
 #' @return `humidity` | specific humidity (kg / kg)
@@ -66,7 +66,7 @@
 extract_clima <- function(
     nc, long_min, long_max, lat_min, lat_max, start_time, end_time,
     dtr_cor = TRUE, dtr_cor_fac = 1.285,
-    reformat = TRUE
+    reformat = "microclimf"
   ) {
 
   # Open nc file for error trapping
@@ -280,7 +280,7 @@ extract_clima <- function(
 
   ## Reformat ----------
   ## Equivalent of hourlyncep_convert
-  if (reformat) {
+  if (reformat == "microclimf") {
     pres <- sp / 1000
     ## Convert humidity from specific to relative
     relhum <- humidity
@@ -295,7 +295,7 @@ extract_clima <- function(
   }
   ## Return list -----------
 
-  if (reformat) {
+  if (reformat == "microclimf") {
     return(list(temp = temperature,
                 relhum = relhum,
                 pres = pres,

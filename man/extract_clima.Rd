@@ -15,7 +15,7 @@ extract_clima(
   end_time,
   dtr_cor = TRUE,
   dtr_cor_fac = 1.285,
-  reformat = TRUE
+  reformat = "microclimf"
 )
 }
 \arguments{
@@ -49,12 +49,12 @@ range correction to air temperature values. Default = `TRUE`.}
 correction. Default = 1.285, based on calibration against UK Met Office
 observations.}
 
-\item{reformat}{a logical indicating whether to reformat the climate variables to be suitable for modeling with microclimf. Default to TRUE.}
+\item{reformat}{a logical indicating whether to reformat the climate variables
+to be suitable for modeling with microclimf. Default to reformat = `microclimf`}
 }
 \value{
-a list of spatRasters containing hourly values for a suite of climate variables. The returned climate variables depends on whether the parameter
-`reformat` is TRUE or FALSE.
-If `reformat` is TRUE:
+a list of spatRasters containing hourly values for a suite of climate variables. The returned climate variables depends on whether the parameter `reformat` is `microclimf`.
+If `reformat` == "microclimf":
 
 `temp` | (degrees celsius)
 
@@ -73,7 +73,7 @@ of net long-wave radiation flux and downward long wave radiation flux (unitless,
 
 `winddir` | wind direction, azimuth (decimal degrees from north)
 
-If `reformat` is FALSE:
+If `reformat` is NULL or some other value:
 
 `obs_time` | the date-time (timezone specified in col timezone)
 
