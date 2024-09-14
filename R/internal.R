@@ -209,8 +209,9 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
                     difrad = rad_dif/0.0036,
                     swdown = raddr + difrad,
                     pres = pressure/1000, # convert to kPa,
-                    difrad = rad_dif/0.0036) %>%
-      rename(lwdown = downlong, temp = temperature)
+                    difrad = rad_dif/0.0036,
+                    lwdown = downlong/0.0036) %>%
+      rename(temp = temperature)
     dat$relhum = converthumidity(dat$humidity, intype = "specific",
                                  tc = dat$temp, pk = dat$pres)[["relative"]]
     dat$relhum = ifelse(dat$relhum > 100, 100, dat$relhum)
