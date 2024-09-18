@@ -16,6 +16,17 @@ The vignette can then be accessed via:
 
 Alternatively you can navigate to the vignette manually [here](https://github.com/dklinges9/mcera5/blob/master/vignettes/mcera5_vignette.Rmd) on the GitHub repository.  
 
+## Setup
+
+ERA5 climate data can be downloaded from the ECMWF climate data store (CDS). Note that in July 2024 the CDS migrated to a new platform, and the old platform was deprecated in Sept 2024. The following describes how to access the data using R:
+
+1) Register for an ECMWF account [here](https://accounts.ecmwf.int/auth/realms/ecmwf/login-actions/registration?client_id=cds&tab_id=IA1LKqgLVc0). Upon registering you will need to accept all of the Terms and Conditions listed at the bottom of the form.
+
+2) Then, navigate to the CDS site [here](https://cds-beta.climate.copernicus.eu/) and login using the button in the top right. Once logged in, hover your mouse over your name in the top right, and click on the option "Your profile" that appears (this should bring you to [this page](https://cds-beta.climate.copernicus.eu/profile). Here you will 
+find your User ID (UID) and Personal Access Token, both which are required for you to remotely download data from the CDS. Make a note of these.  
+
+3) Each CDS dataset has its own unique Terms of Use. You will need to accept these Terms for ERA5-reanalysis at [this page](https://cds-beta.climate.copernicus.eu/datasets/reanalysis-era5-single-levels?tab=download) (scroll down to "Terms of use" and accept). This same set of terms also applies for other Copernicus products, including ERA5-land.
+
 ## Questions, Concerns, Issues
 
 Before emailing about a concern, please submit a reproducible example as an issue on this Github repository. To do so, navigate to [the main page of this repository](https://github.com/dklinges9/mcera5/) and click on the "Issues" tab, and then "New Issue." If you do not have a GitHub account or are otherwise unable to submit an issue, then contact David Klinges at dklinges9@gmail.com.
