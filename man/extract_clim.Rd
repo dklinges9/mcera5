@@ -13,7 +13,8 @@ extract_clim(
   end_time,
   d_weight = TRUE,
   dtr_cor = TRUE,
-  dtr_cor_fac = 1.285
+  dtr_cor_fac = 1.285,
+  reformat = NULL
 )
 }
 \arguments{
@@ -46,6 +47,9 @@ range correction to air temperature values. Default = `TRUE`.}
 \item{dtr_cor_fac}{numeric value to be used in the diurnal temperature range
 correction. Default = 1.285, based on calibration against UK Met Office
 observations.}
+
+\item{reformat}{if set to "micropoint", the function will return a dataframe
+formated for input to runpointmodel from micropoint package}
 }
 \value{
 a data frame containing hourly values for a suite of climate variables:
@@ -87,4 +91,5 @@ data, and for a given set of coordinates, produces an (optionally) inverse
 distance weighted mean of each variable, ready for use with
 `microclima::runauto`. Also provides the option to implement a diurnal
 temperature range correction to air temperatures.
+If reformat == "micropoint" produces a dataframe ready for use with `micropoint::runpointmodel`.
 }

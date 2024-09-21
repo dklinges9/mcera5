@@ -56,7 +56,7 @@
 #'
 
 extract_clim <- function(nc, long, lat, start_time, end_time, d_weight = TRUE,
-                           dtr_cor = TRUE, dtr_cor_fac = 1.285, reformat = NULL) {
+                         dtr_cor = TRUE, dtr_cor_fac = 1.285, reformat = NULL) {
 
   # Open nc file for error trapping
   nc_dat = ncdf4::nc_open(nc)
@@ -133,14 +133,14 @@ extract_clim <- function(nc, long, lat, start_time, end_time, d_weight = TRUE,
   if(sum((long %% .25) + (lat %% .25)) == 0 & d_weight == TRUE) {
     message("Input coordinates match ERA5 grid, no distance weighting required.")
     d_weight = FALSE
-    }
+  }
 
   # no distance weighting - dtr_cor passed to processing function
   if(d_weight == FALSE) {
     long <- plyr::round_any(long, 0.25)
     lat <- plyr::round_any(lat, 0.25)
     dat <- nc_to_df(nc, long, lat, start_time, end_time, dtr_cor = dtr_cor,
-                    dtr_cor_fac = dtr_cor_fac)
+                    dtr_cor_fac = dtr_cor_fac, reformat = reformat)
     message("No distance weighting applied, nearest point used.")
     if(dtr_cor == TRUE) {
       message("Diurnal temperature range correction applied.")
@@ -149,41 +149,41 @@ extract_clim <- function(nc, long, lat, start_time, end_time, d_weight = TRUE,
     }
   }
 
-    # yes distance weighting - dtr_cor passed to processing function
-    if(d_weight == TRUE) {
-      focal <- focal_dist(long, lat)
-      # collector per weighted neighbour
-      focal_collect <- list()
-      for(j in 1:nrow(focal)) {
-        # applies DTR correction if TRUE
-        f_dat <- nc_to_df(nc, focal$x[j], focal$y[j], start_time, end_time,
-                          dtr_cor = dtr_cor, dtr_cor_fac = dtr_cor_fac, reformat = reformat) %>%
-          dplyr::mutate(inverse_weight = focal$inverse_weight[j])
-        focal_collect[[j]] <- f_dat
-      }
-      # create single weighted dataframe
-      if(reformat == "micropoint") {
-        dat <- dplyr::bind_rows(focal_collect, .id = "neighbour") %>%
-          dplyr::group_by(obs_time)%>%
-          dplyr::summarise_at(dplyr::vars(temp, relhum, pres, swdown, difrad,
-                                          lwdown, windspeed, winddir),
-                              weighted.mean, w = dplyr::quo(inverse_weight)) %>%
-          dplyr::mutate(timezone = lubridate::tz(obs_time))
-      } else {
-        dat <- dplyr::bind_rows(focal_collect, .id = "neighbour") %>%
+  # yes distance weighting - dtr_cor passed to processing function
+  if(d_weight == TRUE) {
+    focal <- focal_dist(long, lat)
+    # collector per weighted neighbour
+    focal_collect <- list()
+    for(j in 1:nrow(focal)) {
+      # applies DTR correction if TRUE
+      f_dat <- nc_to_df(nc, focal$x[j], focal$y[j], start_time, end_time,
+                        dtr_cor = dtr_cor, dtr_cor_fac = dtr_cor_fac, reformat = reformat) %>%
+        dplyr::mutate(inverse_weight = focal$inverse_weight[j])
+      focal_collect[[j]] <- f_dat
+    }
+    # create single weighted dataframe
+    if(reformat == "micropoint") {
+      dat <- dplyr::bind_rows(focal_collect, .id = "neighbour") %>%
         dplyr::group_by(obs_time)%>%
-        dplyr::summarise_at(dplyr::vars(temperature, humidity, pressure, windspeed,
-                                 winddir, emissivity, cloudcover, netlong,
-                                 uplong, downlong, rad_dni, rad_dif, szenith),
+        dplyr::summarise_at(dplyr::vars(temp, relhum, pres, swdown, difrad,
+                                        lwdown, windspeed, winddir, precip),
                             weighted.mean, w = dplyr::quo(inverse_weight)) %>%
         dplyr::mutate(timezone = lubridate::tz(obs_time))
-      }
-      message("Distance weighting applied.")
-      if(dtr_cor == TRUE) {
-        message("Diurnal temperature range correction applied.")
-      } else {
-        message("No diurnal temperature range correction applied.")
-      }
+    } else {
+      dat <- dplyr::bind_rows(focal_collect, .id = "neighbour") %>%
+        dplyr::group_by(obs_time)%>%
+        dplyr::summarise_at(dplyr::vars(temperature, humidity, pressure, windspeed,
+                                        winddir, emissivity, cloudcover, netlong,
+                                        uplong, downlong, rad_dni, rad_dif, szenith),
+                            weighted.mean, w = dplyr::quo(inverse_weight)) %>%
+        dplyr::mutate(timezone = lubridate::tz(obs_time))
     }
+    message("Distance weighting applied.")
+    if(dtr_cor == TRUE) {
+      message("Diurnal temperature range correction applied.")
+    } else {
+      message("No diurnal temperature range correction applied.")
+    }
+  }
   return(dat)
 }

@@ -184,6 +184,7 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
       downlong = msdwlwrf * 0.0036,
       uplong = netlong + downlong,
       emissivity = downlong / uplong, # converted to MJ m-2 hr-1
+      precip = tp * 1000,
       jd = julday(
         lubridate::year(obs_time),
         lubridate::month(obs_time),
@@ -210,12 +211,13 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
                     swdown = raddr + difrad,
                     pres = pressure/1000, # convert to kPa,
                     difrad = rad_dif/0.0036,
+                    precip = precip,
                     lwdown = downlong/0.0036) %>%
-      rename(temp = temperature)
+      dplyr::rename(temp = temperature)
     dat$relhum = converthumidity(dat$humidity, intype = "specific",
                                  tc = dat$temp, pk = dat$pres)[["relative"]]
     dat$relhum = ifelse(dat$relhum > 100, 100, dat$relhum)
-    dat = dat %>% dplyr::select(obs_time, temp, relhum, pres, swdown, difrad, lwdown, windspeed, winddir)
+    dat = dat %>% dplyr::select(obs_time, temp, relhum, pres, swdown, difrad, lwdown, windspeed, winddir, precip)
   } else {
     dat = dat %>%
       dplyr::select(
