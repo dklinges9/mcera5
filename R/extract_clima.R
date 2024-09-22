@@ -105,24 +105,23 @@ extract_clima <- function(
   }
 
   # Check if requested coordinates are in spatial grid
-  if (long_min < min(nc_dat$dim$longitude$vals) | long_min > max(nc_dat$dim$longitude$vals) |
-      long_max < min(nc_dat$dim$longitude$vals) | long_max > max(nc_dat$dim$longitude$vals)
+  if (long_min < (min(nc_dat$dim$longitude$vals) - 0.125) |
+      long_max > (max(nc_dat$dim$longitude$vals) + 0.125)
   ) {
     long_out <- TRUE
   } else {
     long_out <- FALSE
   }
 
-  if (lat_min < min(nc_dat$dim$latitude$vals) | lat_min > max(nc_dat$dim$latitude$vals) |
-      lat_max < min(nc_dat$dim$latitude$vals) | lat_max > max(nc_dat$dim$latitude$vals)) {
+  if (lat_min < (min(nc_dat$dim$latitude$vals) - 0.125) |
+      lat_min > (max(nc_dat$dim$latitude$vals) + 0.125)
+  ) {
     lat_out <- TRUE
   } else {
     lat_out <- FALSE
   }
-
   # close nc file
   ncdf4::nc_close(nc_dat)
-
   if(long_out & lat_out) {
     stop("Requested coordinates are not represented in the ERA5 netCDF (both longitude and latitude out of range).")
   }
