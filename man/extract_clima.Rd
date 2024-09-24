@@ -53,7 +53,7 @@ observations.}
 to be suitable for modeling with microclimf. Default to reformat = `microclimf`}
 }
 \value{
-a list of spatRasters containing hourly values for a suite of climate variables. The returned climate variables depends on whether the parameter `reformat` is `microclimf`.
+a list of wrapped spatRasters containing hourly values for a suite of climate variables. The returned climate variables depends on whether the parameter `reformat` is `microclimf`.
 If `reformat` == "microclimf":
 
 `temp` | (degrees celsius)
@@ -62,16 +62,17 @@ If `reformat` == "microclimf":
 
 `pres` | atmospheric press (kPa)
 
-`swrad` | Total incoming shortwave radiation (W / m^2)
+`swdown` | Flux density of total downward shortwave radiation on the horizontal (W / m^2)
 
 `difrad` | Diffuse radiation (W / m^2)
 
-`skyem` | Sky emissivity: downward long wave radiation flux divided by the sum
-of net long-wave radiation flux and downward long wave radiation flux (unitless, 0-1)
+`lwdown` | Flux density of total downward downward radiation (W / m^2)
 
 `windspeed` | (m / s)
 
 `winddir` | wind direction, azimuth (decimal degrees from north)
+
+`precip` | precipitation (mm)
 
 If `reformat` is NULL or some other value:
 

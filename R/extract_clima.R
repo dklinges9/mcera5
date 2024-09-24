@@ -30,17 +30,17 @@
 #' @param reformat a logical indicating whether to reformat the climate variables
 #' to be suitable for modeling with microclimf. Default to reformat = `microclimf`
 #'
-#' @return a list of spatRasters containing hourly values for a suite of climate variables. The returned climate variables depends on whether the parameter `reformat` is `microclimf`.
+#' @return a list of wrapped spatRasters containing hourly values for a suite of climate variables. The returned climate variables depends on whether the parameter `reformat` is `microclimf`.
 #' If `reformat` == "microclimf":
 #' @return `temp` | (degrees celsius)
 #' @return `relhum` | relative humidity (ercentage)
 #' @return `pres` | atmospheric press (kPa)
-#' @return `swrad` | Total incoming shortwave radiation (W / m^2)
+#' @return `swdown` | Flux density of total downward shortwave radiation on the horizontal (W / m^2)
 #' @return `difrad` | Diffuse radiation (W / m^2)
-#' @return `skyem` | Sky emissivity: downward long wave radiation flux divided by the sum
-#' of net long-wave radiation flux and downward long wave radiation flux (unitless, 0-1)
+#' @return `lwdown` | Flux density of total downward downward radiation (W / m^2)
 #' @return `windspeed` | (m / s)
 #' @return `winddir` | wind direction, azimuth (decimal degrees from north)
+#' @return `precip` | precipitation (mm)
 #'
 #' If `reformat` is NULL or some other value:
 #' @return `obs_time` | the date-time (timezone specified in col timezone)
@@ -60,15 +60,10 @@
 #' @return `szenith` | Solar zenith angle (degrees from a horizontal plane)
 #'
 #' @export
-#'
-#'
-
 extract_clima <- function(
     nc, long_min, long_max, lat_min, lat_max, start_time, end_time,
     dtr_cor = TRUE, dtr_cor_fac = 1.285,
-    reformat = "microclimf"
-  ) {
-
+    reformat = "microclimf") {
   # Open nc file for error trapping
   nc_dat = ncdf4::nc_open(nc)
 
@@ -110,24 +105,23 @@ extract_clima <- function(
   }
 
   # Check if requested coordinates are in spatial grid
-  if (long_min < min(nc_dat$dim$longitude$vals) | long_min > max(nc_dat$dim$longitude$vals) |
-     long_max < min(nc_dat$dim$longitude$vals) | long_max > max(nc_dat$dim$longitude$vals)
-     ) {
+  if (long_min < (min(nc_dat$dim$longitude$vals) - 0.125) |
+      long_max > (max(nc_dat$dim$longitude$vals) + 0.125)
+  ) {
     long_out <- TRUE
   } else {
     long_out <- FALSE
   }
 
-  if (lat_min < min(nc_dat$dim$latitude$vals) | lat_min > max(nc_dat$dim$latitude$vals) |
-     lat_max < min(nc_dat$dim$latitude$vals) | lat_max > max(nc_dat$dim$latitude$vals)) {
+  if (lat_min < (min(nc_dat$dim$latitude$vals) - 0.125) |
+      lat_min > (max(nc_dat$dim$latitude$vals) + 0.125)
+  ) {
     lat_out <- TRUE
   } else {
     lat_out <- FALSE
   }
-
   # close nc file
   ncdf4::nc_close(nc_dat)
-
   if(long_out & lat_out) {
     stop("Requested coordinates are not represented in the ERA5 netCDF (both longitude and latitude out of range).")
   }
@@ -163,8 +157,8 @@ extract_clima <- function(
 
   ## Load in and subset netCDF variables --------------
 
-  varname_list <- c("t2m", "d2m", "sp", "u10" , "v10", "tcc", "msnlwrf",
-                "msdwlwrf", "fdir", "ssrd", "lsm")
+  varname_list <- c("t2m", "d2m", "sp", "u10" , "v10",  "tp", "tcc", "msnlwrf",
+                    "msdwlwrf", "fdir", "ssrd", "lsm")
 
   var_list <- lapply(varname_list, function(v) {
 
@@ -196,8 +190,8 @@ extract_clima <- function(
   msdwlwrf <- var_list$msdwlwrf
   fdir <- var_list$fdir
   ssrd <- var_list$ssrd
+  prec <- var_list$tp * 1000 # convert form mm to metres
   lsm <- var_list$lsm
-
   temperature <- t2m - 273.15 # kelvin to celcius
   ## Coastal correction ----------
 
@@ -223,8 +217,8 @@ extract_clima <- function(
   }
 
   humidity <- humfromdew(d2m - 273.15,
-                                        temperature,
-                          sp)
+                         temperature,
+                         sp)
   windspeed = sqrt(u10^2 + v10^2)
   windspeed = windheight(windspeed, 10, 2)
   winddir = (terra::atan2(u10, v10) * 180/pi + 180)%%360
@@ -234,8 +228,8 @@ extract_clima <- function(
   uplong = netlong + downlong
   emissivity = downlong/uplong # converted to MJ m-2 hr-1
   jd = julday(lubridate::year(tme),
-                          lubridate::month(tme),
-                          lubridate::day(tme))
+              lubridate::month(tme),
+              lubridate::day(tme))
   rad_dni = fdir * 0.000001
   rad_glbl = ssrd * 0.000001
   ## si processing -----------------
@@ -252,9 +246,9 @@ extract_clima <- function(
   out <- array(NA, dim = c(nrow(coords), length(tme)))
   for (i in 1:nrow(coords)) {
     out[i,] <- siflat(lubridate::hour(tme),
-                                  lat = coords$y[i],
-                                  long = coords$x[i],
-                                  jd)
+                      lat = coords$y[i],
+                      long = coords$x[i],
+                      jd)
   }
   si <- terra::setValues(si, out)
 
@@ -267,9 +261,9 @@ extract_clima <- function(
   out <- array(NA, dim = c(nrow(coords), length(tme)))
   for (i in 1:nrow(coords)) {
     out[i,] <- solalt(lubridate::hour(tme),
-                                  lat = coords$y[i],
-                                  long = coords$x[i],
-                                  julian = jd)
+                      lat = coords$y[i],
+                      long = coords$x[i],
+                      julian = jd)
   }
   szenith <- terra::setValues(szenith, out)
 
@@ -285,39 +279,40 @@ extract_clima <- function(
     ## Convert humidity from specific to relative
     relhum <- humidity
     terra::values(relhum) <- converthumidity(h = terra::as.array(humidity),
-                                                          intype = "specific",
-                                                          tc  = terra::as.array(temperature),
-                                                          pk = terra::as.array(pres))$relative
+                                             intype = "specific",
+                                             tc  = terra::as.array(temperature),
+                                             pk = terra::as.array(pres))$relative
     relhum[relhum > 100] <- 100
     raddr <- (rad_dni * si)/0.0036
     difrad <- rad_dif/0.0036
     swrad <- raddr + difrad
   }
-  ## Return list -----------
-
+  # Return list - ## SpatRasters now wrapped as won't store as list if saved otherwise'
   if (reformat == "microclimf") {
-    return(list(temp = temperature,
-                relhum = relhum,
-                pres = pres,
-                swrad = swrad,
-                difrad = difrad,
-                skyem = emissivity,
-                windspeed = windspeed,
-                winddir = winddir))
+    return(list(temp = terra::wrap(temperature),
+                relhum = terra::wrap(relhum),
+                pres = terra::wrap(pres),
+                swdown = terra::wrap(swrad),
+                difrad = terra::wrap(difrad),
+                lwdown = terra::wrap(downlong),
+                windspeed = terra::wrap(windspeed),
+                winddir = terra::wrap(winddir),
+                precip = terra::wrap(prec)))
   } else {
     return(list(obs_time = tme,
-                temperature = temperature,
-                humidity = humidity,
-                pressure = sp,
-                windspeed = windspeed,
-                winddir = winddir,
-                emissivity = emissivity,
-                cloudcover = tcc,
-                netlong = netlong,
-                uplong = uplong,
-                downlong = downlong,
-                rad_dni = rad_dni,
-                rad_dif = rad_dif,
-                szenith = szenith))
+                temperature = terra::wrap(temperature),
+                humidity = terra::wrap(humidity),
+                pressure = terra::wrap(sp),
+                windspeed = terra::wrap(windspeed),
+                winddir = terra::wrap(winddir),
+                emissivity = terra::wrap(emissivity),
+                cloudcover = terra::wrap(tcc),
+                netlong = terra::wrap(netlong),
+                uplong = terra::wrap(uplong),
+                downlong = terra::wrap(downlong),
+                rad_dni = terra::wrap(rad_dni),
+                rad_dif = terra::wrap(rad_dif),
+                szenith = terra::wrap(szenith)))
   }
 }
+
