@@ -152,7 +152,7 @@ focal_dist <- function(long, lat, margin = .25) {
 #' @return data frame of hourly climate variables
 #' @noRd
 nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
-                     dtr_cor_fac = 1, reformat= NULL) {
+                     dtr_cor_fac = 1, reformat = NULL) {
   dat <- tidync::tidync(nc) %>%
     tidync::hyper_filter(
       longitude = longitude == long,
@@ -226,7 +226,6 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
         rad_dni, rad_dif, szenith, timezone
     )
   }
-
 
   return(dat)
 }
