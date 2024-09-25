@@ -153,6 +153,7 @@ focal_dist <- function(long, lat, margin = .25) {
 #' @noRd
 nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
                      dtr_cor_fac = 1, reformat = NULL) {
+
   dat <- tidync::tidync(nc) %>%
     tidync::hyper_filter(
       longitude = longitude == long,
@@ -160,7 +161,7 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
     ) %>%
     tidync::hyper_tibble() %>%
     dplyr::mutate(.,
-      obs_time = lubridate::ymd_hms("1970:01:01 00:00:00") + nc_dat$dim$valid_time$vals,
+      obs_time = lubridate::ymd_hms("1970:01:01 00:00:00") + ncdf4::nc_open(nc)$dim$valid_time$vals,
       timezone = lubridate::tz(obs_time)
     ) %>% # convert to readable times
     dplyr::filter(., obs_time >= start_time & obs_time < end_time + 1) %>%
