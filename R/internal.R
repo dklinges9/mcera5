@@ -313,7 +313,10 @@ nc_to_df_precip <- function(nc, long, lat, start_time, end_time) {
 #' @return data frame of unique months and years
 #' @noRd
 uni_dates <- function(start_time, end_time) {
-  date_seq <- seq(lubridate::floor_date(as.Date(start_time), "month"), lubridate::ceiling_date(as.Date(end_time), "month") - lubridate::days(1), by = "month")
+  date_seq <- seq(
+    lubridate::floor_date(as.Date(start_time), "month"),
+    lubridate::ceiling_date(as.Date(end_time), "month") - lubridate::days(1), by = "month"
+    )
   df <- data.frame(
     mon = lubridate::month(date_seq),
     yea = lubridate::year(date_seq)
@@ -407,8 +410,10 @@ combine_netcdf <- function(filenames, combined_name) {
   ncdf4::nc_close(file_combined)
 }
 
-# Function to find the longest shared substring among a vector of strings
-# Used to identify file_prefix for a list of requests
+#' Function to find the longest shared substring among a vector of strings, used
+#'to identify file_prefix for a list of requests
+#' @param strings a list or vector of strings to search for a common substring
+#' @noRd
 shared_substring <- function(strings) {
 
   # Helper function to get all substrings of a string
