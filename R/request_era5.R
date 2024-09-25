@@ -8,9 +8,8 @@
 #' @param out_path character vector of the location at which to download nc files.
 #' @param overwrite TRUE for overwriting a file of the same path. Default FALSE.
 #' @param combine TRUE for combining downloaded files into one file. Default is
-#' TRUE as current behavior is to download multiple monthly files, given recent
-#' decreases to CDS API limits.
-#' Default FALSE to maintain compatibility with NicheMapR::micro_era5().
+#' TRUE as current behavior is to download multiple monthly files, to stay below
+#' CDS API limits.
 #'
 #' @export
 #'
@@ -52,7 +51,15 @@ request_era5 <- function(request, uid, out_path, overwrite = FALSE,
     cat("Now combining netCDF files...\n")
     # Get list of filenames
     fnames <- lapply(request, function(x) {x$target})
-    combine_netcdf(filenames = fnames, combined_name = "combined.nc")
+    # Recover file prefix from filenames
+    file_prefix <- shared_substring(fnames)
+    # If last character is "_", remove
+    file_prefix <- ifelse(substr(file_prefix, nchar(file_prefix), nchar(file_prefix)) == "_",
+                          substr(file_prefix, 1, nchar(file_prefix) - 1),
+                          file_prefix)
+    # Combine netCDF files
+    combine_netcdf(filenames = fnames,
+                   combined_name = paste0(out_path, "/", file_prefix, ".nc"))
     cat("Finished.\n")
   }
 }

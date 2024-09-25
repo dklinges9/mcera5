@@ -333,12 +333,15 @@ combine_netcdf <- function(filenames, combined_name) {
 
   # Pull out first file for reference specs
   nc <- files[[1]]
+  # Remove file metadata from vars
+  varnames <- names(nc$var)
+  varnames <- varnames[!grepl("number|expver", varnames)]
   # Create an empty list to populate
-  vars_list <- vector(mode = "list", length = nc$nvars)
-  data_list <- vector(mode = "list", length = nc$nvars)
+  vars_list <- vector(mode = "list", length = length(varnames))
+  data_list <- vector(mode = "list", length = length(varnames))
   # One variable at a time
-  for (i in 1:length(names(nc$var))) {
-    varname <- names(nc$var)[i]
+  for (i in 1:length(varnames)) {
+    varname <- varnames[i]
     # Get the variable from each of the netCDFs
     vars_dat <- lapply(files, function(x) {
       ncdf4::ncvar_get(x, varname)
@@ -353,7 +356,7 @@ combine_netcdf <- function(filenames, combined_name) {
     # To populate the time dimension, need to pull out the time values from each
     # netCDF
     timevals <- lapply(files, function(x) {
-      x$dim$time$vals
+      x$dim$valid_time$vals
     })
 
     # Create a netCDF variable
@@ -374,7 +377,7 @@ combine_netcdf <- function(filenames, combined_name) {
         ),
         # Time
         ncdf4::ncdim_def(
-          nc$dim$time$name, nc$dim$time$units,
+          nc$dim$valid_time$name, nc$dim$valid_time$units,
           # Combination of values of all files
           do.call(c, timevals)
         )
@@ -392,10 +395,10 @@ combine_netcdf <- function(filenames, combined_name) {
 
 
   # And write to it (must write one variable at a time with ncdf4)
-  for (i in 1:length(names(nc$var))) {
+  for (i in 1:length(varnames)) {
     ncdf4::ncvar_put(
       nc = file_combined,
-      varid = names(nc$var)[i],
+      varid = varnames[i],
       vals = data_list[[i]]
     )
   }
@@ -403,3 +406,41 @@ combine_netcdf <- function(filenames, combined_name) {
   # Finally, close the file
   ncdf4::nc_close(file_combined)
 }
+
+# Function to find the longest shared substring among a vector of strings
+# Used to identify file_prefix for a list of requests
+shared_substring <- function(strings) {
+
+  # Helper function to get all substrings of a string
+  get_substrings <- function(string) {
+    substrings <- character(0)
+    n <- nchar(string)
+
+    for (i in 1:n) {
+      for (j in i:n) {
+        substrings <- c(substrings, substr(string, i, j))
+      }
+    }
+
+    return(substrings)
+  }
+
+  # Start with substrings of the first string in the vector
+  common_substrings <- get_substrings(strings[1])
+
+  # Intersect common substrings with each subsequent string in the vector
+  for (i in 2:length(strings)) {
+    substrings_i <- get_substrings(strings[i])
+    common_substrings <- intersect(common_substrings, substrings_i)
+
+    # If no common substring is found at any point, return an empty string
+    if (length(common_substrings) == 0) {
+      return("")
+    }
+  }
+
+  # If there are common substrings, return the longest one
+  longest_substring <- common_substrings[which.max(nchar(common_substrings))]
+  return(longest_substring)
+}
+
