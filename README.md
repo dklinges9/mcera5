@@ -9,6 +9,14 @@ A package to download and process ERA5 data ready for use in microclimate modell
 You can install the package from this GitHub repository via the follow line:  
 `remotes::install_github("dklinges9/mcera5")`
 
+## News
+
+_Sept 2024_: This package is going through a lot of development to keep up with changes as ECMWF migrates to the new [beta Climate Data Store](https://cds-beta.climate.copernicus.eu/). These changes include lower API limits, different variable names/netCDF file structures, and different credentials (see below for details). If you are facing unexplainable errors, please bring them to my attention (see Questions, Concerns, Issues below).  
+
+_25 Sept 2024_: ERA5-reanalysis and ERA5-land files downloaded from the beta CDS have a different structure to their time dimension. To extract climate data from these files (e.g. using `extract_clim()`), please see the developer branch "new_cds_time_edits". You can install this branch directly via:
+
+`remotes::install_github("dklinges9/mcera5", ref = "new_cds_time_edits")`
+
 ## Tutorial
 
 The vignette can then be accessed via:   
