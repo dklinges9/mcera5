@@ -67,7 +67,8 @@ build_era5_land_request <- function(xmin, xmax, ymin, ymax, start_time, end_time
       "variable" = c(
         "2m_temperature", "2m_dewpoint_temperature", "surface_pressure",
         "10m_u_component_of_wind", "10m_v_component_of_wind", "total_precipitation",
-        "surface_solar_radiation_downwards"
+        "surface_solar_radiation_downwards", "surface_net_thermal_radiation",
+        "surface_thermal_radiation_downwards"
       ),
       "year" = as.character(time[2]),
       "month" = as.character(time[1]),
