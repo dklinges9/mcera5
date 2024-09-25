@@ -56,7 +56,7 @@
 #'
 
 extract_clim <- function(nc, long, lat, start_time, end_time, d_weight = TRUE,
-                         dtr_cor = TRUE, dtr_cor_fac = 1.285, reformat = NULL) {
+                         dtr_cor = TRUE, dtr_cor_fac = 1.285, reformat = FALSE) {
 
   # Open nc file for error trapping
   nc_dat = ncdf4::nc_open(nc)
@@ -74,13 +74,13 @@ extract_clim <- function(nc, long, lat, start_time, end_time, d_weight = TRUE,
   }
 
   # Check if start_time is after first time observation
-  start <- lubridate::ymd_hms("1900:01:01 00:00:00") + (nc_dat$dim$time$vals[1] * 3600)
+  start <- lubridate::ymd_hms("1970:01:01 00:00:00") + (nc_dat$dim$valid_time$vals[1])
   if (start_time < start) {
     stop("Requested start time is before the beginning of time series of the ERA5 netCDF.")
   }
 
   # Check if end_time is before last time observation
-  end <- lubridate::ymd_hms("1900:01:01 00:00:00") + (utils::tail(nc_dat$dim$time$vals, n = 1) * 3600)
+  end <- lubridate::ymd_hms("1970:01:01 00:00:00") + (utils::tail(nc_dat$dim$valid_time$vals, n = 1))
   if (end_time > end) {
     stop("Requested end time is after the end of time series of the ERA5 netCDF.")
   }
