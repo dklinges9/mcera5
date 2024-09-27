@@ -80,6 +80,7 @@ extract_clima <- function(
   }
 
   # Check if start_time is after first time observation
+  nc_time = lubridate::ymd_hms("1970:01:01 00:00:00") + (nc_dat$dim$valid_time$vals)
   start <- lubridate::ymd_hms("1970:01:01 00:00:00") + (nc_dat$dim$valid_time$vals[1])
   if (start_time < start) {
     stop("Requested start time is before the beginning of time series of the ERA5 netCDF.")
@@ -168,6 +169,7 @@ extract_clima <- function(
     } else {
       # For all others, subset down to desired time period
       r <- terra::rast(nc, subds = v)
+      time(r) = nc_time
       r <- r[[terra::time(r) %in% tme]]
     }
 
