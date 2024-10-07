@@ -249,7 +249,7 @@ nc_to_df_land <- function(nc, long, lat, start_time, end_time) {
     ) %>%
     tidync::hyper_tibble() %>%
     dplyr::mutate(.,
-      obs_time = lubridate::ymd_hms("1900:01:01 00:00:00") + (time * 3600),
+      obs_time = lubridate::ymd_hms("1970:01:01 00:00:00") + c(ncdf4::nc_open(nc)$dim$valid_time$vals),,
       timezone = lubridate::tz(obs_time)
     ) %>% # convert to readable times
     dplyr::filter(., obs_time >= start_time & obs_time < end_time + 1) %>%
@@ -297,7 +297,7 @@ nc_to_df_precip <- function(nc, long, lat, start_time, end_time) {
     ) %>%
     tidync::hyper_tibble() %>%
     dplyr::mutate(.,
-      obs_time = lubridate::ymd_hms("1900:01:01 00:00:00") + (time * 3600),
+      obs_time = lubridate::ymd_hms("1970:01:01 00:00:00") + c(ncdf4::nc_open(nc)$dim$valid_time$vals),
       timezone = lubridate::tz(obs_time)
     ) %>% # convert to readable times
     dplyr::filter(., obs_time >= start_time & obs_time < end_time + 1) %>%
