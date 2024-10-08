@@ -129,6 +129,7 @@ By default, `extract_clim` applies an inverse distance weighting calculation (co
 Furthermore, `extract_clim` by default applies a diurnal temperature range correction to the data (when `dtr_cor = TRUE` and weighted according to `dtr_cor_fac`). The diurnal temperature ranges of ERA5 are artificially lower in grid cells classed as sea as opposed to land. It may thus be useful to apply a correction if estimates are required for a terrestrial location in predominantly marine grid cells. If applied, an internal function is evoked that uses the land/sea value in the downloaded NetCDF file to adjust temperature values by the factor provided using the formula $DTR_C=DTR[(1-p_l ) C_f+1]$ where $DTR_C$ is the corrected diurnal temperature range, $DTR$ is the diurnal temperature range in the ERA5 dataset, $p_l$ is the proportion of the grid cell that is land and $C_f$ is the correction factor. The default function input value is a correction based on calibration against the UK Met Office 1-km2 gridded dataset of daily maximum and minimum temperatures, itself calibrated and validated against a network of (on average) 1,203 weather stations distributed across the UK. 
 
 Given that `runauto` in the `microclima` package, as well as functions from the `NicheMapR` and `microclimc` microclimate modelling packages, all only accept date ranges within single years, you will need to create a separate data frame for each yearly block. For example, if your period of interest spans multiple years (and you have used the previous code to download multiple .nc files, run this next block of code for each year):
+The climate data that are extracted will have different formats according to the value provided to `format`. By default, `extract_clim()` will provide data formatted for `microclima`.
 
 ```{r process_clim, eval = FALSE}
 # list the path of the .nc file for a given year
@@ -140,10 +141,11 @@ y <- 50.640369
 
 # gather all hourly variables
 clim_point <- extract_clim(nc = my_nc, long = x, lat = y,
-                            start_time = st_time, end_time = en_time)
+                          start_time = st_time, end_time = en_time,
+                           format = "microclima")
+
 head(clim_point)
 ```
-
 
 
 In the same fashion, use `extract_precip` to acquire precipitation from your downloaded netCDF file, which also applies an inverse distance weighting calculation. By default, `extract_precip` sums up hourly ERA5 precipitation to the daily level, which is required for the aforementioned microclimate models. However users can instead receive hourly values by setting `convert_daily = FALSE`. 
@@ -172,18 +174,30 @@ temps <- microclima::runauto(r = r, dstart = "26/02/2010",dfinish = "01/03/2010"
                              plot.progress= FALSE)
 ```
 
-For use of climate data with other microclimate packages, such as `microclimc` and `microclimf`, you may need to reformat the climate data using `microctools::hourlyncep_convert`:
+For use of climate data with other microclimate packages, such as `microclimc` and `microclimf`, you can specify the package name with the argument `format`:
 
-```{r hourlyncep_convert_example, eval = FALSE}
-climdata <- hourlyncep_convert(climdata = clim_point, lat = y, long = x)
+```{r process_clim_microclimc, eval = FALSE}
+# list the path of the .nc file for a given year
+my_nc <- paste0(getwd(), "/era5_-4_-2_49_51_2010.nc")
+
+# for a single point (make sure it's within the bounds of your .nc file)
+x <- -3.654600
+y <- 50.640369
+
+# gather all hourly variables
+clim_point <- extract_clim(nc = my_nc, long = x, lat = y,
+                          start_time = st_time, end_time = en_time,
+                           format = "microclimc")
+
+head(clim_point)
 ```
 
 #### Extracting climate data for a spatial grid/array using extract_clima() and extract_precipa()
 
 
-`mcera5` also can extract ERA5 climate data simultaneously across a spatial grid using `extract_clima()` and `extract_precipa()`, to be provided to functions such as `microclimf::modelina()`. `extract_clima()` and `extract_precipa()` follow the same format as `extract_clim()` and `extract_precip()`, except require as input the boundaries of a spatial grid rather than a single spatial point. Both functions will return spatRaster layers corresponding to the climate variables.
+`mcera5` also can extract ERA5 climate data simultaneously across a spatial grid using `extract_clima()` and `extract_precipa()`, to be provided to functions such as `microclimf::runpointmodela()`. `extract_clima()` and `extract_precipa()` follow the same format as `extract_clim()` and `extract_precip()`, except require as input the boundaries of a spatial grid rather than a single spatial point. Both functions will return spatRaster layers corresponding to the climate variables, formatted according to what package is specified in the argument `format`.
 
-`extract_clima` also includes the argument `reformat`, which when set to TRUE (the default value) will reformat climate data to be used for modeling with `microclimf`. Similarly, `extract_precipa` has the argument `convert_daily` to sum hourly preicipitation to daily precipitation, which is accepted by `microclimf` functions.
+The function `extract_precipa` also has the argument `convert_daily` to sum hourly preicipitation to daily precipitation, which is accepted by `microclimf` functions.
 
 ```{r process_clima, eval = FALSE}
 # list the path of the .nc file for a given year
@@ -200,7 +214,7 @@ clim_grid <- extract_clima(nc, long_min, long_max, lat_min, lat_max,
                           start_time = st_time,
                           end_time = en_time,
                           dtr_cor = TRUE, dtr_cor_fac = 1.285,
-                          reformat = TRUE)
+                          format = "microclimf")
 
 str(clim_grid)
 
@@ -215,4 +229,4 @@ str(precip_grid)
 
 #### Acknowledgements
 
-Thank you to Koen Hufkens, creator of the `ecwmfr` package for making the aquisition of ECWMF data through R possible. 
+Thank you to Koen Hufkens, creator of the `ecwmfr` package for making the acquisition of ECWMF data through R possible. 

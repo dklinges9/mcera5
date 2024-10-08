@@ -441,29 +441,18 @@ request(s) as follows:</p>
 <p>Requests are stored in list format. Each request (divided by year)
 are stored as list objects within the master list:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">str</span>(req)</span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt; List of 2</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt; List of 1</span></span>
 <span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">#&gt;  $ :List of 10</span></span>
 <span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co">#&gt;   ..$ dataset_short_name: chr &quot;reanalysis-era5-single-levels&quot;</span></span>
 <span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co">#&gt;   ..$ product_type      : chr &quot;reanalysis&quot;</span></span>
 <span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co">#&gt;   ..$ variable          : chr [1:12] &quot;2m_temperature&quot; &quot;2m_dewpoint_temperature&quot; &quot;surface_pressure&quot; &quot;10m_u_component_of_wind&quot; ...</span></span>
 <span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="co">#&gt;   ..$ year              : chr &quot;2010&quot;</span></span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt;   ..$ month             : chr &quot;2&quot;</span></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt;   ..$ month             : chr [1:2] &quot;2&quot; &quot;3&quot;</span></span>
 <span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt;   ..$ day               : chr [1:31] &quot;01&quot; &quot;02&quot; &quot;03&quot; &quot;04&quot; ...</span></span>
 <span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&gt;   ..$ time              : chr [1:24] &quot;00:00&quot; &quot;01:00&quot; &quot;02:00&quot; &quot;03:00&quot; ...</span></span>
 <span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt;   ..$ area              : chr &quot;51/-4/49/-2&quot;</span></span>
 <span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt;   ..$ format            : chr &quot;netcdf&quot;</span></span>
-<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt;   ..$ target            : chr &quot;era5_-4_-2_49_51_2010_2.nc&quot;</span></span>
-<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co">#&gt;  $ :List of 10</span></span>
-<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co">#&gt;   ..$ dataset_short_name: chr &quot;reanalysis-era5-single-levels&quot;</span></span>
-<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="co">#&gt;   ..$ product_type      : chr &quot;reanalysis&quot;</span></span>
-<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="co">#&gt;   ..$ variable          : chr [1:12] &quot;2m_temperature&quot; &quot;2m_dewpoint_temperature&quot; &quot;surface_pressure&quot; &quot;10m_u_component_of_wind&quot; ...</span></span>
-<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="co">#&gt;   ..$ year              : chr &quot;2010&quot;</span></span>
-<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="co">#&gt;   ..$ month             : chr &quot;3&quot;</span></span>
-<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a><span class="co">#&gt;   ..$ day               : chr [1:31] &quot;01&quot; &quot;02&quot; &quot;03&quot; &quot;04&quot; ...</span></span>
-<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a><span class="co">#&gt;   ..$ time              : chr [1:24] &quot;00:00&quot; &quot;01:00&quot; &quot;02:00&quot; &quot;03:00&quot; ...</span></span>
-<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a><span class="co">#&gt;   ..$ area              : chr &quot;51/-4/49/-2&quot;</span></span>
-<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a><span class="co">#&gt;   ..$ format            : chr &quot;netcdf&quot;</span></span>
-<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a><span class="co">#&gt;   ..$ target            : chr &quot;era5_-4_-2_49_51_2010_3.nc&quot;</span></span></code></pre></div>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt;   ..$ target            : chr &quot;era5_-4_-2_49_51_2010.nc&quot;</span></span></code></pre></div>
 </div>
 <div id="obtaining-data-with-a-request" class="section level4">
 <h4>Obtaining data with a request</h4>
@@ -528,7 +517,11 @@ package, as well as functions from the <code>NicheMapR</code> and
 date ranges within single years, you will need to create a separate data
 frame for each yearly block. For example, if your period of interest
 spans multiple years (and you have used the previous code to download
-multiple .nc files, run this next block of code for each year):</p>
+multiple .nc files, run this next block of code for each year): The
+climate data that are extracted will have different formats according to
+the value provided to <code>format</code>. By default,
+<code>extract_clim()</code> will provide data formatted for
+<code>microclima</code>.</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># list the path of the .nc file for a given year</span></span>
 <span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>my_nc <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="fu">getwd</span>(), <span class="st">&quot;/era5_-4_-2_49_51_2010.nc&quot;</span>)</span>
 <span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a></span>
@@ -538,8 +531,10 @@ multiple .nc files, run this next block of code for each year):</p>
 <span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a></span>
 <span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="co"># gather all hourly variables</span></span>
 <span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>clim_point <span class="ot">&lt;-</span> <span class="fu">extract_clim</span>(<span class="at">nc =</span> my_nc, <span class="at">long =</span> x, <span class="at">lat =</span> y,</span>
-<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>                            <span class="at">start_time =</span> st_time, <span class="at">end_time =</span> en_time)</span>
-<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="fu">head</span>(clim_point)</span></code></pre></div>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>                          <span class="at">start_time =</span> st_time, <span class="at">end_time =</span> en_time,</span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>                           <span class="at">format =</span> <span class="st">&quot;microclima&quot;</span>)</span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="fu">head</span>(clim_point)</span></code></pre></div>
 <p>In the same fashion, use <code>extract_precip</code> to acquire
 precipitation from your downloaded netCDF file, which also applies an
 inverse distance weighting calculation. By default,
@@ -568,10 +563,21 @@ package:</p>
 <span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>                             <span class="at">dailyprecip =</span> precip_point, </span>
 <span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>                             <span class="at">plot.progress=</span> <span class="cn">FALSE</span>)</span></code></pre></div>
 <p>For use of climate data with other microclimate packages, such as
-<code>microclimc</code> and <code>microclimf</code>, you may need to
-reformat the climate data using
-<code>microctools::hourlyncep_convert</code>:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>climdata <span class="ot">&lt;-</span> <span class="fu">hourlyncep_convert</span>(<span class="at">climdata =</span> clim_point, <span class="at">lat =</span> y, <span class="at">long =</span> x)</span></code></pre></div>
+<code>microclimc</code> and <code>microclimf</code>, you can specify the
+package name with the argument <code>format</code>:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="co"># list the path of the .nc file for a given year</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>my_nc <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="fu">getwd</span>(), <span class="st">&quot;/era5_-4_-2_49_51_2010.nc&quot;</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="co"># for a single point (make sure it&#39;s within the bounds of your .nc file)</span></span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">3.654600</span></span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fl">50.640369</span></span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="co"># gather all hourly variables</span></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>clim_point <span class="ot">&lt;-</span> <span class="fu">extract_clim</span>(<span class="at">nc =</span> my_nc, <span class="at">long =</span> x, <span class="at">lat =</span> y,</span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>                          <span class="at">start_time =</span> st_time, <span class="at">end_time =</span> en_time,</span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>                           <span class="at">format =</span> <span class="st">&quot;microclimc&quot;</span>)</span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a></span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a><span class="fu">head</span>(clim_point)</span></code></pre></div>
 </div>
 <div id="extracting-climate-data-for-a-spatial-gridarray-using-extract_clima-and-extract_precipa" class="section level4">
 <h4>Extracting climate data for a spatial grid/array using
@@ -579,18 +585,16 @@ extract_clima() and extract_precipa()</h4>
 <p><code>mcera5</code> also can extract ERA5 climate data simultaneously
 across a spatial grid using <code>extract_clima()</code> and
 <code>extract_precipa()</code>, to be provided to functions such as
-<code>microclimf::modelina()</code>. <code>extract_clima()</code> and
-<code>extract_precipa()</code> follow the same format as
+<code>microclimf::runpointmodela()</code>. <code>extract_clima()</code>
+and <code>extract_precipa()</code> follow the same format as
 <code>extract_clim()</code> and <code>extract_precip()</code>, except
 require as input the boundaries of a spatial grid rather than a single
 spatial point. Both functions will return spatRaster layers
-corresponding to the climate variables.</p>
-<p><code>extract_clima</code> also includes the argument
-<code>reformat</code>, which when set to TRUE (the default value) will
-reformat climate data to be used for modeling with
-<code>microclimf</code>. Similarly, <code>extract_precipa</code> has the
-argument <code>convert_daily</code> to sum hourly preicipitation to
-daily precipitation, which is accepted by <code>microclimf</code>
+corresponding to the climate variables, formatted according to what
+package is specified in the argument <code>format</code>.</p>
+<p>The function <code>extract_precipa</code> also has the argument
+<code>convert_daily</code> to sum hourly preicipitation to daily
+precipitation, which is accepted by <code>microclimf</code>
 functions.</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co"># list the path of the .nc file for a given year</span></span>
 <span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>my_nc <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="fu">getwd</span>(), <span class="st">&quot;/era5_-4_-2_49_51_2010.nc&quot;</span>)</span>
@@ -606,7 +610,7 @@ functions.</p>
 <span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a>                          <span class="at">start_time =</span> st_time,</span>
 <span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a>                          <span class="at">end_time =</span> en_time,</span>
 <span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a>                          <span class="at">dtr_cor =</span> <span class="cn">TRUE</span>, <span class="at">dtr_cor_fac =</span> <span class="fl">1.285</span>,</span>
-<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a>                          <span class="at">reformat =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a>                          <span class="at">format =</span> <span class="st">&quot;microclimf&quot;</span>)</span>
 <span id="cb10-16"><a href="#cb10-16" tabindex="-1"></a></span>
 <span id="cb10-17"><a href="#cb10-17" tabindex="-1"></a><span class="fu">str</span>(clim_grid)</span>
 <span id="cb10-18"><a href="#cb10-18" tabindex="-1"></a></span>
@@ -619,7 +623,7 @@ functions.</p>
 <div id="acknowledgements" class="section level4">
 <h4>Acknowledgements</h4>
 <p>Thank you to Koen Hufkens, creator of the <code>ecwmfr</code> package
-for making the aquisition of ECWMF data through R possible.</p>
+for making the acquisition of ECWMF data through R possible.</p>
 </div>
 </div>
 
