@@ -152,7 +152,16 @@ focal_dist <- function(long, lat, margin = .25) {
 #' @return data frame of hourly climate variables
 #' @noRd
 nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
-                     dtr_cor_fac = 1, format = "microclima") {
+                     dtr_cor_fac = 1, format = "microclima", cds_version = "new") {
+
+  if (cds_version == "legacy") {
+    base_datetime <- lubridate::ymd_hms("1900:01:01 00:00:00")
+    nc_datetimes <- c(ncdf4::nc_open(nc)$dim$time$vals) * 3600
+  } else {
+    base_datetime <- lubridate::ymd_hms("1970:01:01 00:00:00")
+    nc_datetimes <- c(ncdf4::nc_open(nc)$dim$valid_time$vals)
+  }
+
   dat <- tidync::tidync(nc) %>%
     tidync::hyper_filter(
       longitude = longitude == long,
@@ -160,7 +169,7 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
     ) %>%
     tidync::hyper_tibble() %>%
     dplyr::mutate(.,
-      obs_time = lubridate::ymd_hms("1970:01:01 00:00:00") + c(ncdf4::nc_open(nc)$dim$valid_time$vals),
+      obs_time = base_datetime + nc_datetimes,
       timezone = lubridate::tz(obs_time)
     ) %>% # convert to readable times
     dplyr::filter(., obs_time >= start_time & obs_time < end_time + 1) %>%
@@ -261,7 +270,16 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
 #' @param end_time end time for data required
 #' @return data frame of hourly climate variables
 #' @noRd
-nc_to_df_land <- function(nc, long, lat, start_time, end_time) {
+nc_to_df_land <- function(nc, long, lat, start_time, end_time, cds_version = "new") {
+
+  if (cds_version == "legacy") {
+    base_datetime <- lubridate::ymd_hms("1900:01:01 00:00:00")
+    nc_datetimes <- c(ncdf4::nc_open(nc)$dim$time$vals) * 3600
+  } else {
+    base_datetime <- lubridate::ymd_hms("1970:01:01 00:00:00")
+    nc_datetimes <- c(ncdf4::nc_open(nc)$dim$valid_time$vals)
+  }
+
   dat <- tidync::tidync(nc) %>%
     tidync::hyper_filter(
       # ERA5-Land does not return precise coordinate values
@@ -270,7 +288,7 @@ nc_to_df_land <- function(nc, long, lat, start_time, end_time) {
     ) %>%
     tidync::hyper_tibble() %>%
     dplyr::mutate(.,
-      obs_time = lubridate::ymd_hms("1970:01:01 00:00:00") + c(ncdf4::nc_open(nc)$dim$valid_time$vals),
+      obs_time = base_datetime + nc_datetimes,
       timezone = lubridate::tz(obs_time)
     ) %>% # convert to readable times
     dplyr::filter(., obs_time >= start_time & obs_time < end_time + 1) %>%
@@ -310,7 +328,16 @@ nc_to_df_land <- function(nc, long, lat, start_time, end_time) {
 #' @param end_time end time for data required
 #' @return vector of daily precipitation values
 #' @noRd
-nc_to_df_precip <- function(nc, long, lat, start_time, end_time) {
+nc_to_df_precip <- function(nc, long, lat, start_time, end_time, cds_version = "new") {
+
+  if (cds_version == "legacy") {
+    base_datetime <- lubridate::ymd_hms("1900:01:01 00:00:00")
+    nc_datetimes <- c(ncdf4::nc_open(nc)$dim$time$vals) * 3600
+  } else {
+    base_datetime <- lubridate::ymd_hms("1970:01:01 00:00:00")
+    nc_datetimes <- c(ncdf4::nc_open(nc)$dim$valid_time$vals)
+  }
+
   dat <- tidync::tidync(nc) %>%
     tidync::hyper_filter(
       longitude = longitude == long,
@@ -318,7 +345,7 @@ nc_to_df_precip <- function(nc, long, lat, start_time, end_time) {
     ) %>%
     tidync::hyper_tibble() %>%
     dplyr::mutate(.,
-      obs_time = lubridate::ymd_hms("1970:01:01 00:00:00") + c(ncdf4::nc_open(nc)$dim$valid_time$vals),
+      obs_time = base_datetime + nc_datetimes,
       timezone = lubridate::tz(obs_time)
     ) %>% # convert to readable times
     dplyr::filter(., obs_time >= start_time & obs_time < end_time + 1) %>%
