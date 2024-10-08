@@ -12,7 +12,8 @@ extract_precip(
   start_time,
   end_time,
   d_weight = TRUE,
-  convert_daily = TRUE
+  convert_daily = TRUE,
+  cds_version = "new"
 )
 }
 \arguments{
@@ -42,6 +43,11 @@ weighting using the 4 closest neighbouring points to the location defined by
 \item{convert_daily}{a flag indicating whether the user desires to convert the
 precipitation vector from hourly to daily averages (TRUE) or remain as hourly
 values (FALSE). Only daily precipitation will be accepted by `microclima::runauto`.}
+
+\item{cds_version}{specifies what version of the CDS (Climate Data Store) the
+ERA5 data were queried from. Either "new" (queries made after Sept 2024) or
+"legacy" (queries made before Sept 2024). This argument will be deprecated in
+the future and only queries from the new CDS will be supported.}
 }
 \value{
 a numeric vector of daily or hourly precipitation (mm).

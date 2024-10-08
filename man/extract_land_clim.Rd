@@ -4,7 +4,15 @@
 \alias{extract_land_clim}
 \title{Produces hourly data of ERA5-Land for a single location}
 \usage{
-extract_land_clim(nc, long, lat, start_time, end_time, d_weight = TRUE)
+extract_land_clim(
+  nc,
+  long,
+  lat,
+  start_time,
+  end_time,
+  d_weight = TRUE,
+  cds_version = "new"
+)
 }
 \arguments{
 \item{nc}{character vector containing the path to the nc file. Use the
@@ -29,6 +37,11 @@ data are in UTC by default), but any timezone is accepted.}
 \item{d_weight}{logical value indicating whether to apply inverse distance
 weighting using the 4 closest neighbouring points to the location defined by
 `long` and `lat`. Default = `TRUE`.}
+
+\item{cds_version}{specifies what version of the CDS (Climate Data Store) the
+ERA5 data were queried from. Either "new" (queries made after Sept 2024) or
+"legacy" (queries made before Sept 2024). This argument will be deprecated in
+the future and only queries from the new CDS will be supported.}
 }
 \value{
 a data frame containing hourly values for a suite of climate variables:

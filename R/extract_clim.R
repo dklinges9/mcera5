@@ -3,10 +3,11 @@
 #'
 #' @description `extract_clim` takes an nc file containing hourly ERA5 climate
 #' data, and for a given set of coordinates, produces an (optionally) inverse
-#' distance weighted mean of each variable, ready for use with
-#' `microclima::runauto`. Also provides the option to implement a diurnal
-#' temperature range correction to air temperatures.
-#' If reformat == "micropoint" produces a dataframe ready for use with `micropoint::runpointmodel`.
+#' distance weighted mean of each variable, ready for use by default with
+#' `microclima::runauto` and `NicheMapR::micro_era5()`, but also compatible with
+#' `microclimc`, `microclimf`, and `micropoint` (see argument `format`).
+#' Also provides the option to implement a diurnal temperature range correction
+#' to air temperatures.
 #'
 #' @param nc character vector containing the path to the nc file. Use the
 #' `build_era5_request` and `request_era5` functions to acquire an nc file with
@@ -30,10 +31,18 @@
 #' @param dtr_cor_fac numeric value to be used in the diurnal temperature range
 #' correction. Default = 1.285, based on calibration against UK Met Office
 #' observations.
-#' @param reformat if set to "micropoint", the function will return a dataframe
-#' formated for input to runpointmodel from micropoint package
+#' @param format specifies what microclimate package extracted climate data will
+#" be used for. Data will be formatted accordingly. Default is "microclima".
+#" Options: "microclima", "NicheMapR", "microclimc", "microclimf", "micropoint"
+#' @param cds_version specifies what version of the CDS (Climate Data Store) the
+#' ERA5 data were queried from. Either "new" (queries made after Sept 2024) or
+#' "legacy" (queries made before Sept 2024). This argument will be deprecated in
+#' the future and only queries from the new CDS will be supported.
 #'
-#' @return a data frame containing hourly values for a suite of climate variables:
+#' @return Returns a data frame containing hourly values for a suite of climate
+#' variables. The returned climate variables depends on the value of argument `format`.
+#'
+#' If format is "microclima" or "NicheMapR":
 #' @return `obs_time` | the date-time (timezone specified in col timezone)
 #' @return `temperature` | (degrees celsius)
 #' @return `humidity` | specific humidity (kg / kg)
@@ -51,17 +60,55 @@
 #' @return `szenith` | Solar zenith angle (degrees from a horizontal plane)
 #' @return `timezone` | (unitless)
 #'
+#' If format is "microclimc":
+#' @return `obs_time` | POSIXlt object of dates and times
+#' @return `temp` | temperature (degrees C)
+#' @return `relhum` | relative humidity (percentage)
+#' @return `pres` | atmospheric press (kPa)
+#' @return `swrad` | Total incoming shortwave radiation (W / m^2)
+#' @return `difrad` | Diffuse radiation (W / m^2)
+#' @return `skyem` | Sky emissivity (0-1)
+#' @return `lwdown` | Total downward longwave radiation (W / m^2)
+#' @return `windspeed` | Wind speed (m/s)
+#' @return `winddir` | Wind direction (decimal degrees)
+#' @return `precip` | precipitation (mm)
+#'
+#' If format is "micropoint" or "microclimf":
+#' @return `obs_time` | POSIXlt object of dates and times
+#' @return `temp` | temperature (degrees C)
+#' @return `relhum` | relative humidity (percentage)
+#' @return `pres` | atmospheric press (kPa)
+#' @return `swdown` | Total incoming shortwave radiation (W / m^2)
+#' @return `difrad` | Diffuse radiation (W / m^2)
+#' @return `skyem` | Sky emissivity (0-1)
+#' @return `lwdown` | Total downward longwave radiation (W / m^2)
+#' @return `windspeed` | Wind speed (m/s)
+#' @return `winddir` | Wind direction (decimal degrees)
+#' @return `precip` | precipitation (mm)
+#'
 #' @export
 #'
 #'
 
 extract_clim <- function(nc, long, lat, start_time, end_time, d_weight = TRUE,
-                         dtr_cor = TRUE, dtr_cor_fac = 1.285, reformat = NULL) {
+                         dtr_cor = TRUE, dtr_cor_fac = 1.285, format = "microclima",
+                         cds_version = "new") {
 
   # Open nc file for error trapping
   nc_dat = ncdf4::nc_open(nc)
 
-  ## Error trapping
+  ## Error trapping --------------
+
+  if (!cds_version %in% c("legacy", "new")) {
+    stop("Argument `cds_version` must be one of the following values: `new` or`legacy`")
+  }
+
+  # Specify the base date-time, which differs between the CDS versions
+  if (cds_version == "legacy") {
+    base_datetime <- lubridate::ymd_hms("1900:01:01 00:00:00")
+  } else {
+    base_datetime <- lubridate::ymd_hms("1970:01:01 00:00:00")
+  }
 
   # Confirm that start_time and end_time are date-time objects
   if (any(!class(start_time) %in% c("Date", "POSIXct", "POSIXt", "POSIXlt")) |
@@ -74,13 +121,13 @@ extract_clim <- function(nc, long, lat, start_time, end_time, d_weight = TRUE,
   }
 
   # Check if start_time is after first time observation
-  start <- lubridate::ymd_hms("1900:01:01 00:00:00") + (nc_dat$dim$time$vals[1] * 3600)
+  start <- base_datetime + (nc_dat$dim$valid_time$vals[1])
   if (start_time < start) {
     stop("Requested start time is before the beginning of time series of the ERA5 netCDF.")
   }
 
   # Check if end_time is before last time observation
-  end <- lubridate::ymd_hms("1900:01:01 00:00:00") + (utils::tail(nc_dat$dim$time$vals, n = 1) * 3600)
+  end <- base_datetime + (utils::tail(nc_dat$dim$valid_time$vals, n = 1))
   if (end_time > end) {
     stop("Requested end time is after the end of time series of the ERA5 netCDF.")
   }
@@ -127,7 +174,12 @@ extract_clim <- function(nc, long, lat, start_time, end_time, d_weight = TRUE,
                                   " 23:00"), tz = lubridate::tz(end_time))
   }
 
-  if(dtr_cor == TRUE & !is.numeric(dtr_cor_fac)) {
+  # Check that `format` is an accepted value
+  if (!format %in% c("NicheMapR", "microclima", "microclimc", "micropoint", "microclimf")) {
+    stop("Argument `format` must be one of the following values: `NicheMapR`, `microclima`, `microclimc`, `micropoint`, `microclimf`")
+  }
+
+  if (dtr_cor == TRUE & !is.numeric(dtr_cor_fac)) {
     stop("Invalid diurnal temperature range correction value provided.")}
 
   if(sum((long %% .25) + (lat %% .25)) == 0 & d_weight == TRUE) {
@@ -140,7 +192,7 @@ extract_clim <- function(nc, long, lat, start_time, end_time, d_weight = TRUE,
     long <- plyr::round_any(long, 0.25)
     lat <- plyr::round_any(lat, 0.25)
     dat <- nc_to_df(nc, long, lat, start_time, end_time, dtr_cor = dtr_cor,
-                    dtr_cor_fac = dtr_cor_fac, reformat = reformat)
+                    dtr_cor_fac = dtr_cor_fac, format = format)
     message("No distance weighting applied, nearest point used.")
     if(dtr_cor == TRUE) {
       message("Diurnal temperature range correction applied.")
@@ -157,12 +209,12 @@ extract_clim <- function(nc, long, lat, start_time, end_time, d_weight = TRUE,
     for(j in 1:nrow(focal)) {
       # applies DTR correction if TRUE
       f_dat <- nc_to_df(nc, focal$x[j], focal$y[j], start_time, end_time,
-                        dtr_cor = dtr_cor, dtr_cor_fac = dtr_cor_fac, reformat = reformat) %>%
+                        dtr_cor = dtr_cor, dtr_cor_fac = dtr_cor_fac, format = format) %>%
         dplyr::mutate(inverse_weight = focal$inverse_weight[j])
       focal_collect[[j]] <- f_dat
     }
     # create single weighted dataframe
-    if(reformat == "micropoint") {
+    if(format == "micropoint") {
       dat <- dplyr::bind_rows(focal_collect, .id = "neighbour") %>%
         dplyr::group_by(obs_time)%>%
         dplyr::summarise_at(dplyr::vars(temp, relhum, pres, swdown, difrad,
