@@ -11,11 +11,13 @@ You can install the package from this GitHub repository via the follow line:
 
 ## News
 
-_Sept 2024_: This package is going through a lot of development to keep up with changes as ECMWF migrates to the new [beta Climate Data Store](https://cds-beta.climate.copernicus.eu/). These changes include lower API limits, different variable names/netCDF file structures, and different credentials (see below for details). If you are facing unexplainable errors, please bring them to my attention (see Questions, Concerns, Issues below).  
+_8 Oct 2024_: modularity to handle ERA5-reanalysis and ERA5-land files downloaded from BOTH the old (legacy) CDS and the new (beta) CDS has been provided in `mcera5`. In addition, users must specify if they want extracted climate data to be formatted for a specific microclimate R package: `microclima`, `NicheMapR`, `microclimc`, `microclimf`, or `micropoint` (`microclimc` is the default). The branch "new_cds_time_edits" has been merged into master and will soon be deleted.
 
 _25 Sept 2024_: ERA5-reanalysis and ERA5-land files downloaded from the beta CDS have a different structure to their time dimension. To extract climate data from these files (e.g. using `extract_clim()`), please see the developer branch "new_cds_time_edits". You can install this branch directly via:
 
 `remotes::install_github("dklinges9/mcera5", ref = "new_cds_time_edits")`
+
+_Sept 2024_: This package is going through a lot of development to keep up with changes as ECMWF migrates to the new [beta Climate Data Store](https://cds-beta.climate.copernicus.eu/). These changes include lower API limits, different variable names/netCDF file structures, and different credentials (see below for details). If you are facing unexplainable errors, please bring them to my attention (see Questions, Concerns, Issues below). 
 
 ## Tutorial
 
