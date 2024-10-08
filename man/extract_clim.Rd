@@ -14,7 +14,7 @@ extract_clim(
   d_weight = TRUE,
   dtr_cor = TRUE,
   dtr_cor_fac = 1.285,
-  reformat = NULL
+  format = "microclima"
 )
 }
 \arguments{
@@ -48,11 +48,13 @@ range correction to air temperature values. Default = `TRUE`.}
 correction. Default = 1.285, based on calibration against UK Met Office
 observations.}
 
-\item{reformat}{if set to "micropoint", the function will return a dataframe
-formated for input to runpointmodel from micropoint package}
+\item{format}{specifies what microclimate package extracted climate data will}
 }
 \value{
-a data frame containing hourly values for a suite of climate variables:
+Returns a data frame containing hourly values for a suite of climate
+variables. The returned climate variables depends on the value of argument `format`.
+
+If format is "microclima" or "NicheMapR":
 
 `obs_time` | the date-time (timezone specified in col timezone)
 
@@ -84,12 +86,61 @@ of net long-wave radiation flux and downward long wave radiation flux (unitless)
 `szenith` | Solar zenith angle (degrees from a horizontal plane)
 
 `timezone` | (unitless)
+
+If format is "microclimc":
+
+`obs_time` | POSIXlt object of dates and times
+
+`temp` | temperature (degrees C)
+
+`relhum` | relative humidity (percentage)
+
+`pres` | atmospheric press (kPa)
+
+`swrad` | Total incoming shortwave radiation (W / m^2)
+
+`difrad` | Diffuse radiation (W / m^2)
+
+`skyem` | Sky emissivity (0-1)
+
+`lwdown` | Total downward longwave radiation (W / m^2)
+
+`windspeed` | Wind speed (m/s)
+
+`winddir` | Wind direction (decimal degrees)
+
+`precip` | precipitation (mm)
+
+If format is "micropoint" or "microclimf":
+
+`obs_time` | POSIXlt object of dates and times
+
+`temp` | temperature (degrees C)
+
+`relhum` | relative humidity (percentage)
+
+`pres` | atmospheric press (kPa)
+
+`swdown` | Total incoming shortwave radiation (W / m^2)
+
+`difrad` | Diffuse radiation (W / m^2)
+
+`skyem` | Sky emissivity (0-1)
+
+`lwdown` | Total downward longwave radiation (W / m^2)
+
+`windspeed` | Wind speed (m/s)
+
+`winddir` | Wind direction (decimal degrees)
+
+`precip` | precipitation (mm)
 }
 \description{
 `extract_clim` takes an nc file containing hourly ERA5 climate
 data, and for a given set of coordinates, produces an (optionally) inverse
-distance weighted mean of each variable, ready for use with
-`microclima::runauto`. Also provides the option to implement a diurnal
-temperature range correction to air temperatures.
-If reformat == "micropoint" produces a dataframe ready for use with `micropoint::runpointmodel`.
+distance weighted mean of each variable, ready for use by default with
+`microclima::runauto` and `NicheMapR::micro_era5()`, but also compatible with
+`microclimc`, `microclimf`, and `micropoint` (see argument `format`).
+Also provides the option to implement a diurnal temperature range correction
+to air temperatures.
 }

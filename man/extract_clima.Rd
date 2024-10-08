@@ -15,7 +15,7 @@ extract_clima(
   end_time,
   dtr_cor = TRUE,
   dtr_cor_fac = 1.285,
-  reformat = "microclimf"
+  format = "microclimf"
 )
 }
 \arguments{
@@ -49,32 +49,19 @@ range correction to air temperature values. Default = `TRUE`.}
 correction. Default = 1.285, based on calibration against UK Met Office
 observations.}
 
-\item{reformat}{a logical indicating whether to reformat the climate variables
-to be suitable for modeling with microclimf. Default to reformat = `microclimf`}
+\item{format}{specifies what microclimate package extracted climate data will
+be used for. Data will be formatted accordingly. Default is "microclimf".
+Options: "microclima", "NicheMapR", "microclimc", "microclimf", "micropoint".
+Note: of these options, only "microclimf" accepts as input an array of climate
+variables. For all other models you will need to iterate through each spatial
+point to run the model}
 }
 \value{
-a list of wrapped spatRasters containing hourly values for a suite of climate variables. The returned climate variables depends on whether the parameter `reformat` is `microclimf`.
-If `reformat` == "microclimf":
+Returns a list of wrapped spatRasters containing hourly values for a
+suite of climate variables. The returned climate variables depends on the
+value of argument `format`.
 
-`temp` | (degrees celsius)
-
-`relhum` | relative humidity (ercentage)
-
-`pres` | atmospheric press (kPa)
-
-`swdown` | Flux density of total downward shortwave radiation on the horizontal (W / m^2)
-
-`difrad` | Diffuse radiation (W / m^2)
-
-`lwdown` | Flux density of total downward downward radiation (W / m^2)
-
-`windspeed` | (m / s)
-
-`winddir` | wind direction, azimuth (decimal degrees from north)
-
-`precip` | precipitation (mm)
-
-If `reformat` is NULL or some other value:
+If format is "microclima" or "NicheMapR":
 
 `obs_time` | the date-time (timezone specified in col timezone)
 
@@ -104,6 +91,56 @@ of net long-wave radiation flux and downward long wave radiation flux (unitless)
 `rad_dif` | Diffuse normal irradiance (MJ / m2 / hr)
 
 `szenith` | Solar zenith angle (degrees from a horizontal plane)
+
+`timezone` | (unitless)
+
+If format is "microclimc":
+
+`obs_time` | POSIXlt object of dates and times
+
+`temp` | temperature (degrees C)
+
+`relhum` | relative humidity (percentage)
+
+`pres` | atmospheric press (kPa)
+
+`swrad` | Total incoming shortwave radiation (W / m^2)
+
+`difrad` | Diffuse radiation (W / m^2)
+
+`skyem` | Sky emissivity (0-1)
+
+`lwdown` | Total downward longwave radiation (W / m^2)
+
+`windspeed` | Wind speed (m/s)
+
+`winddir` | Wind direction (decimal degrees)
+
+`precip` | precipitation (mm)
+
+If format is "micropoint" or "microclimf":
+
+`obs_time` | POSIXlt object of dates and times
+
+`temp` | temperature (degrees C)
+
+`relhum` | relative humidity (percentage)
+
+`pres` | atmospheric press (kPa)
+
+`swdown` | Total incoming shortwave radiation (W / m^2)
+
+`difrad` | Diffuse radiation (W / m^2)
+
+`skyem` | Sky emissivity (0-1)
+
+`lwdown` | Total downward longwave radiation (W / m^2)
+
+`windspeed` | Wind speed (m/s)
+
+`winddir` | Wind direction (decimal degrees)
+
+`precip` | precipitation (mm)
 }
 \description{
 `extract_clima` takes an nc file containing hourly ERA5 climate

@@ -28,7 +28,7 @@
 #' correction. Default = 1.285, based on calibration against UK Met Office
 #' observations.
 #' @param format specifies what microclimate package extracted climate data will
-#' be used for. Data will be formatted accordingly. Default is "microclima".
+#' be used for. Data will be formatted accordingly. Default is "microclimf".
 #' Options: "microclima", "NicheMapR", "microclimc", "microclimf", "micropoint".
 #' Note: of these options, only "microclimf" accepts as input an array of climate
 #' variables. For all other models you will need to iterate through each spatial
