@@ -152,8 +152,7 @@ focal_dist <- function(long, lat, margin = .25) {
 #' @return data frame of hourly climate variables
 #' @noRd
 nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
-                     dtr_cor_fac = 1, reformat = NULL) {
-
+                     dtr_cor_fac = 1, format = "microclima") {
   dat <- tidync::tidync(nc) %>%
     tidync::hyper_filter(
       longitude = longitude == long,
@@ -181,10 +180,10 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
       windspeed = windheight(windspeed, 10, 2),
       winddir = (atan2(u10, v10) * 180 / pi + 180) %% 360,
       cloudcover = tcc * 100,
-      netlong = abs(msnlwrf) * 0.0036,
-      downlong = msdwlwrf * 0.0036,
+      netlong = abs(msnlwrf) * 0.0036,  # converted to MJ m-2 hr-1
+      downlong = msdwlwrf * 0.0036,  # converted to MJ m-2 hr-1
       uplong = netlong + downlong,
-      emissivity = downlong / uplong, # converted to MJ m-2 hr-1
+      emissivity = downlong / uplong,
       precip = tp * 1000,
       jd = julday(
         lubridate::year(obs_time),
@@ -205,7 +204,35 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
       merid = 0
     ))
 
-  if(reformat == "micropoint") {
+  if (format %in% c("microclima", "NicheMapR")) {
+    dat = dat %>%
+      dplyr::select(
+        ., obs_time, temperature, humidity, pressure, windspeed,
+        winddir, emissivity, cloudcover, netlong, uplong, downlong,
+        rad_dni, rad_dif, szenith, timezone
+      )
+  }
+
+  if(format %in% c("microclimc")) {
+    dat = dat %>%
+      dplyr::mutate(raddr = (rad_dni * si)/3600,
+                    difrad = rad_dif/0.0036,
+                    swrad = raddr + difrad,
+                    pres = pressure/1000, # convert to kPa,
+                    difrad = rad_dif/0.0036,
+                    precip = precip,
+                    lwdown = downlong/0.0036) %>%
+      dplyr::rename(temp = temperature)
+    dat$relhum = converthumidity(dat$humidity, intype = "specific",
+                                 tc = dat$temp, pk = dat$pres)[["relative"]]
+    dat$relhum = ifelse(dat$relhum > 100, 100, dat$relhum)
+    dat = dat %>%
+      dplyr::rename(skyem = emissivity) %>%
+      dplyr::select(obs_time, temp, relhum, pres, swrad, difrad, skyem,
+                                windspeed, winddir, precip)
+  }
+
+  if (format %in% c("micropoint", "microclimf")) {
     dat = dat %>%
       dplyr::mutate(raddr = (rad_dni * si)/3600,
                     difrad = rad_dif/0.0036,
@@ -218,14 +245,8 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
     dat$relhum = converthumidity(dat$humidity, intype = "specific",
                                  tc = dat$temp, pk = dat$pres)[["relative"]]
     dat$relhum = ifelse(dat$relhum > 100, 100, dat$relhum)
-    dat = dat %>% dplyr::select(obs_time, temp, relhum, pres, swdown, difrad, lwdown, windspeed, winddir, precip)
-  } else {
     dat = dat %>%
-      dplyr::select(
-        ., obs_time, temperature, humidity, pressure, windspeed,
-        winddir, emissivity, cloudcover, netlong, uplong, downlong,
-        rad_dni, rad_dif, szenith, timezone
-    )
+      dplyr::select(obs_time, temp, relhum, pres, swdown, difrad, lwdown, windspeed, winddir, precip)
   }
 
   return(dat)
@@ -249,7 +270,7 @@ nc_to_df_land <- function(nc, long, lat, start_time, end_time) {
     ) %>%
     tidync::hyper_tibble() %>%
     dplyr::mutate(.,
-      obs_time = lubridate::ymd_hms("1970:01:01 00:00:00") + c(ncdf4::nc_open(nc)$dim$valid_time$vals),,
+      obs_time = lubridate::ymd_hms("1970:01:01 00:00:00") + c(ncdf4::nc_open(nc)$dim$valid_time$vals),
       timezone = lubridate::tz(obs_time)
     ) %>% # convert to readable times
     dplyr::filter(., obs_time >= start_time & obs_time < end_time + 1) %>%
@@ -408,8 +429,10 @@ combine_netcdf <- function(filenames, combined_name) {
   ncdf4::nc_close(file_combined)
 }
 
-# Function to find the longest shared substring among a vector of strings
-# Used to identify file_prefix for a list of requests
+#' Function to find the longest shared substring among a vector of strings, used
+#'to identify file_prefix for a list of requests
+#' @param strings a list or vector of strings to search for a common substring
+#' @noRd
 shared_substring <- function(strings) {
 
   # Helper function to get all substrings of a string
@@ -444,4 +467,3 @@ shared_substring <- function(strings) {
   longest_substring <- common_substrings[which.max(nchar(common_substrings))]
   return(longest_substring)
 }
-
