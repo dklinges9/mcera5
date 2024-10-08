@@ -59,9 +59,10 @@ uid <- "*****"
 cds_access_token <- "********-****-****-****-************"
 
 ecmwfr::wf_set_key(user = uid,
-                   key = cds_access_token,
-                   service = "cds")
+                   key = cds_access_token)
 ```
+
+Note that earlier versions of `ecmwfr` required specification of `service` = "cds", but as of August 2024 this is no longer the case (corresponding to the update to the new CDS version).
 
 ## Usage
 

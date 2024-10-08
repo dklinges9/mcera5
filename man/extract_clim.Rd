@@ -14,7 +14,8 @@ extract_clim(
   d_weight = TRUE,
   dtr_cor = TRUE,
   dtr_cor_fac = 1.285,
-  format = "microclima"
+  format = "microclima",
+  cds_version = "new"
 )
 }
 \arguments{
@@ -49,6 +50,11 @@ correction. Default = 1.285, based on calibration against UK Met Office
 observations.}
 
 \item{format}{specifies what microclimate package extracted climate data will}
+
+\item{cds_version}{specifies what version of the CDS (Climate Data Store) the
+ERA5 data were queried from. Either "new" (queries made after Sept 2024) or
+"legacy" (queries made before Sept 2024). This argument will be deprecated in
+the future and only queries from the new CDS will be supported.}
 }
 \value{
 Returns a data frame containing hourly values for a suite of climate

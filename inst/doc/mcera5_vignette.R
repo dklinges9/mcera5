@@ -33,8 +33,7 @@ sapply(files_source,source)
 #  cds_access_token <- "********-****-****-****-************"
 #  
 #  ecmwfr::wf_set_key(user = uid,
-#                     key = cds_access_token,
-#                     service = "cds")
+#                     key = cds_access_token)
 
 ## ----build request----------------------------------------------------------------------------------------------
 
