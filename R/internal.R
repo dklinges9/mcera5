@@ -154,13 +154,16 @@ focal_dist <- function(long, lat, margin = .25) {
 nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
                      dtr_cor_fac = 1, format = "microclima", cds_version = "new") {
 
-  if (cds_version == "legacy") {
-    base_datetime <- lubridate::ymd_hms("1900:01:01 00:00:00")
-    nc_datetimes <- c(ncdf4::nc_open(nc)$dim$time$vals) * 3600
-  } else {
-    base_datetime <- lubridate::ymd_hms("1970:01:01 00:00:00")
-    nc_datetimes <- c(ncdf4::nc_open(nc)$dim$valid_time$vals)
-  }
+  # Extract time dimension
+  timedim <- extract_timedim(ncdf4::nc_open(nc))
+  # Find basetime from units
+  base_datetime <- as.POSIXct(gsub(".*since ", "", timedim$units), tz = "UTC")
+  # Extract time values
+  nc_datetimes <- timedim$vals
+  # If units in hours, multiply by 3600 to convert to seconds
+  nc_datetimes <- nc_datetimes * ifelse(
+    grepl("hours", timedim$units), 3600, 1
+  )
 
   dat <- tidync::tidync(nc) %>%
     tidync::hyper_filter(
@@ -272,13 +275,16 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
 #' @noRd
 nc_to_df_land <- function(nc, long, lat, start_time, end_time, cds_version = "new") {
 
-  if (cds_version == "legacy") {
-    base_datetime <- lubridate::ymd_hms("1900:01:01 00:00:00")
-    nc_datetimes <- c(ncdf4::nc_open(nc)$dim$time$vals) * 3600
-  } else {
-    base_datetime <- lubridate::ymd_hms("1970:01:01 00:00:00")
-    nc_datetimes <- c(ncdf4::nc_open(nc)$dim$valid_time$vals)
-  }
+  # Extract time dimension
+  timedim <- extract_timedim(ncdf4::nc_open(nc))
+  # Find basetime from units
+  base_datetime <- as.POSIXct(gsub(".*since ", "", timedim$units), tz = "UTC")
+  # Extract time values
+  nc_datetimes <- timedim$vals
+  # If units in hours, multiply by 3600 to convert to seconds
+  nc_datetimes <- nc_datetimes * ifelse(
+    grepl("hours", timedim$units), 3600, 1
+  )
 
   dat <- tidync::tidync(nc) %>%
     tidync::hyper_filter(
@@ -330,13 +336,16 @@ nc_to_df_land <- function(nc, long, lat, start_time, end_time, cds_version = "ne
 #' @noRd
 nc_to_df_precip <- function(nc, long, lat, start_time, end_time, cds_version = "new") {
 
-  if (cds_version == "legacy") {
-    base_datetime <- lubridate::ymd_hms("1900:01:01 00:00:00")
-    nc_datetimes <- c(ncdf4::nc_open(nc)$dim$time$vals) * 3600
-  } else {
-    base_datetime <- lubridate::ymd_hms("1970:01:01 00:00:00")
-    nc_datetimes <- c(ncdf4::nc_open(nc)$dim$valid_time$vals)
-  }
+  # Extract time dimension
+  timedim <- extract_timedim(ncdf4::nc_open(nc))
+  # Find basetime from units
+  base_datetime <- as.POSIXct(gsub(".*since ", "", timedim$units), tz = "UTC")
+  # Extract time values
+  nc_datetimes <- timedim$vals
+  # If units in hours, multiply by 3600 to convert to seconds
+  nc_datetimes <- nc_datetimes * ifelse(
+    grepl("hours", timedim$units), 3600, 1
+  )
 
   dat <- tidync::tidync(nc) %>%
     tidync::hyper_filter(
@@ -408,7 +417,7 @@ combine_netcdf <- function(filenames, combined_name) {
     # To populate the time dimension, need to pull out the time values from each
     # netCDF
     timevals <- lapply(files, function(x) {
-      x$dim$valid_time$vals
+      extract_timedim(nc)$vals
     })
 
     # Create a netCDF variable
@@ -429,7 +438,7 @@ combine_netcdf <- function(filenames, combined_name) {
         ),
         # Time
         ncdf4::ncdim_def(
-          nc$dim$valid_time$name, nc$dim$valid_time$units,
+          extract_timedim(nc)$name, extract_timedim(nc)$units,
           # Combination of values of all files
           do.call(c, timevals)
         )
@@ -496,4 +505,14 @@ shared_substring <- function(strings) {
   # If there are common substrings, return the longest one
   longest_substring <- common_substrings[which.max(nchar(common_substrings))]
   return(longest_substring)
+}
+
+#' Function to extract the time dimension from a `ncdf4` object. Stays flexible
+#' with exact name of time dimension to support both old and new CDS
+#' @param nc a `ncdf4` object
+#' @noRd
+extract_timedim <- function(nc) {
+  # Extract time dimension
+  # Specifically: pull out the first dimension that has 'time' in its name
+  return(nc$dim[grepl("time", names(nc$dim))][[1]])
 }
