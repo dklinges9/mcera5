@@ -102,7 +102,7 @@ extract_clim <- function(nc, long, lat, start_time, end_time, d_weight = TRUE,
   # Find basetime from units
   base_datetime <- as.POSIXct(gsub(".*since ", "", timedim$units), tz = "UTC")
   # Extract time values
-  nc_datetimes <- timedim$vals
+  nc_datetimes <- c(timedim$vals)
   # If units in hours, multiply by 3600 to convert to seconds
   nc_datetimes <- nc_datetimes * ifelse(
     grepl("hours", timedim$units), 3600, 1

@@ -101,7 +101,7 @@ extract_clima <- function(
   # Find basetime from units
   base_datetime <- as.POSIXct(gsub(".*since ", "", timedim$units), tz = "UTC")
   # Extract time values
-  nc_datetimes <- timedim$vals
+  nc_datetimes <- c(timedim$vals)
   # If units in hours, multiply by 3600 to convert to seconds
   nc_datetimes <- nc_datetimes * ifelse(
     grepl("hours", timedim$units), 3600, 1
@@ -208,18 +208,19 @@ extract_clima <- function(
                     "msdwlwrf", "fdir", "ssrd", "lsm")
 
   var_list <- lapply(varname_list, function(v) {
-
     if (v == "lsm") {
       # only need one timestep for land-sea mask
       r <- terra::rast(nc, subds = v)[[1]]
     } else {
       # For all others, subset down to desired time period
+      # terra::time() not identifying time data of ERA5 data from new CDS, so
+      # use nc_datetimes
       r <- terra::rast(nc, subds = v)
-      r <- r[[terra::time(r) %in% tme]]
+      r <- r[[as.POSIXct(nc_datetimes, tz = "UTC") %in% tme]]
+      # Name layers as timesteps
+      names(r) <- tme
     }
 
-    # Name layers as timesteps
-    names(r) <- paste(terra::time(r), lubridate::tz(terra::time(r)))
     # Subset down to desired spatial extent
     r <- terra::crop(r, terra::ext(long_min, long_max, lat_min, lat_max))
     return(r)
@@ -317,7 +318,7 @@ extract_clima <- function(
   ## Add timesteps back to names ---------------
   # Only necessary for temperature at the moment, all other variables retain info
   names(temperature) <- names(t2m)
-  terra::time(temperature) <- terra::time(t2m)
+  terra::time(temperature) <- tme
 
   ## Format of output use ----------
   ## Equivalent of hourlyncep_convert

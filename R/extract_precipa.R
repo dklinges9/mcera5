@@ -45,7 +45,7 @@ extract_precipa <- function(nc, long_min, long_max, lat_min, lat_max,
   # Find basetime from units
   base_datetime <- as.POSIXct(gsub(".*since ", "", timedim$units), tz = "UTC")
   # Extract time values
-  nc_datetimes <- timedim$vals
+  nc_datetimes <- c(timedim$vals)
   # If units in hours, multiply by 3600 to convert to seconds
   nc_datetimes <- nc_datetimes * ifelse(
     grepl("hours", timedim$units), 3600, 1
@@ -141,7 +141,7 @@ extract_precipa <- function(nc, long_min, long_max, lat_min, lat_max,
   # Load in netCDF variable
   tp <- terra::rast(nc, subds = "tp")
   # Subset down to desired time period
-  tp <- tp[[terra::time(tp) %in% tme]]
+  tp <- tp[[as.POSIXct(nc_datetimes, tz = "UTC") %in% tme]]
   # Subset down to desired spatial extent
   tp <- terra::crop(tp, terra::ext(long_min, long_max, lat_min, lat_max))
 
@@ -153,10 +153,11 @@ extract_precipa <- function(nc, long_min, long_max, lat_min, lat_max,
   precip <- tp * 1000
 
   # Add timesteps back to names
+
   if (convert_daily) {
-    names(precip) <- terra::time(precip)
+    names(precip) <- unique(as_date(tme))
   } else {
-    names(precip) <- paste(terra::time(precip), lubridate::tz(terra::time(precip)))
+    names(precip) <- tme
   }
 
   return(precip)
