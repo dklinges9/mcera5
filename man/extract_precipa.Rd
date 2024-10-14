@@ -13,8 +13,7 @@ extract_precipa(
   lat_max,
   start_time,
   end_time,
-  convert_daily = TRUE,
-  cds_version = "new"
+  convert_daily = TRUE
 )
 }
 \arguments{
@@ -44,11 +43,6 @@ data are in UTC by default), but any timezone is accepted.}
 \item{convert_daily}{a flag indicating whether the user desires to convert the
  precipitation spatRaster from hourly to daily averages (TRUE) or remain as hourly
 values (FALSE). Only daily precipitation will be accepted by `microclimf::modelina`.}
-
-\item{cds_version}{specifies what version of the CDS (Climate Data Store) the
-ERA5 data were queried from. Either "new" (queries made after Sept 2024) or
-"legacy" (queries made before Sept 2024). This argument will be deprecated in
-the future and only queries from the new CDS will be supported.}
 }
 \value{
 a spatRaster of daily or hourly precipitation (mm).

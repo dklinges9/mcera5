@@ -15,8 +15,7 @@ extract_clima(
   end_time,
   dtr_cor = TRUE,
   dtr_cor_fac = 1.285,
-  format = "microclimf",
-  cds_version = "new"
+  format = "microclimf"
 )
 }
 \arguments{
@@ -56,11 +55,6 @@ Options: "microclima", "NicheMapR", "microclimc", "microclimf", "micropoint".
 Note: of these options, only "microclimf" accepts as input an array of climate
 variables. For all other models you will need to iterate through each spatial
 point to run the model}
-
-\item{cds_version}{specifies what version of the CDS (Climate Data Store) the
-ERA5 data were queried from. Either "new" (queries made after Sept 2024) or
-"legacy" (queries made before Sept 2024). This argument will be deprecated in
-the future and only queries from the new CDS will be supported.}
 }
 \value{
 Returns a list of wrapped spatRasters containing hourly values for a

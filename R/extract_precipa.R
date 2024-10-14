@@ -24,18 +24,13 @@
 #' @param convert_daily a flag indicating whether the user desires to convert the
 #'  precipitation spatRaster from hourly to daily averages (TRUE) or remain as hourly
 #' values (FALSE). Only daily precipitation will be accepted by `microclimf::modelina`.
-#' @param cds_version specifies what version of the CDS (Climate Data Store) the
-#' ERA5 data were queried from. Either "new" (queries made after Sept 2024) or
-#' "legacy" (queries made before Sept 2024). This argument will be deprecated in
-#' the future and only queries from the new CDS will be supported.
 #'
 #' @return a spatRaster of daily or hourly precipitation (mm).
 #' @export
 #'
 #'
 extract_precipa <- function(nc, long_min, long_max, lat_min, lat_max,
-                            start_time, end_time, convert_daily = TRUE,
-                            cds_version = "new") {
+                            start_time, end_time, convert_daily = TRUE) {
 
   # Open nc file for error trapping
   nc_dat = ncdf4::nc_open(nc)

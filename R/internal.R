@@ -152,7 +152,7 @@ focal_dist <- function(long, lat, margin = .25) {
 #' @return data frame of hourly climate variables
 #' @noRd
 nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
-                     dtr_cor_fac = 1, format = "microclima", cds_version = "new") {
+                     dtr_cor_fac = 1, format = "microclima") {
 
   # Extract time dimension
   timedim <- extract_timedim(ncdf4::nc_open(nc))
@@ -273,7 +273,7 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
 #' @param end_time end time for data required
 #' @return data frame of hourly climate variables
 #' @noRd
-nc_to_df_land <- function(nc, long, lat, start_time, end_time, cds_version = "new") {
+nc_to_df_land <- function(nc, long, lat, start_time, end_time) {
 
   # Extract time dimension
   timedim <- extract_timedim(ncdf4::nc_open(nc))
@@ -334,7 +334,7 @@ nc_to_df_land <- function(nc, long, lat, start_time, end_time, cds_version = "ne
 #' @param end_time end time for data required
 #' @return vector of daily precipitation values
 #' @noRd
-nc_to_df_precip <- function(nc, long, lat, start_time, end_time, cds_version = "new") {
+nc_to_df_precip <- function(nc, long, lat, start_time, end_time) {
 
   # Extract time dimension
   timedim <- extract_timedim(ncdf4::nc_open(nc))

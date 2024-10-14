@@ -26,18 +26,13 @@
 #' @param convert_daily a flag indicating whether the user desires to convert the
 #' precipitation vector from hourly to daily averages (TRUE) or remain as hourly
 #' values (FALSE). Only daily precipitation will be accepted by `microclima::runauto`.
-#' @param cds_version specifies what version of the CDS (Climate Data Store) the
-#' ERA5 data were queried from. Either "new" (queries made after Sept 2024) or
-#' "legacy" (queries made before Sept 2024). This argument will be deprecated in
-#' the future and only queries from the new CDS will be supported.
 #'
 #' @return a numeric vector of daily or hourly precipitation (mm).
 #' @export
 #'
 #'
 extract_precip <- function(nc, long, lat, start_time, end_time,
-                                  d_weight = TRUE, convert_daily = TRUE,
-                           cds_version = "new") {
+                                  d_weight = TRUE, convert_daily = TRUE) {
 
   # Open nc file for error trapping
   nc_dat = ncdf4::nc_open(nc)

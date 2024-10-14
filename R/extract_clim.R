@@ -34,10 +34,6 @@
 #' @param format specifies what microclimate package extracted climate data will
 #" be used for. Data will be formatted accordingly. Default is "microclima".
 #" Options: "microclima", "NicheMapR", "microclimc", "microclimf", "micropoint"
-#' @param cds_version specifies what version of the CDS (Climate Data Store) the
-#' ERA5 data were queried from. Either "new" (queries made after Sept 2024) or
-#' "legacy" (queries made before Sept 2024). This argument will be deprecated in
-#' the future and only queries from the new CDS will be supported.
 #'
 #' @return Returns a data frame containing hourly values for a suite of climate
 #' variables. The returned climate variables depends on the value of argument `format`.
@@ -91,8 +87,7 @@
 #'
 
 extract_clim <- function(nc, long, lat, start_time, end_time, d_weight = TRUE,
-                         dtr_cor = TRUE, dtr_cor_fac = 1.285, format = "microclima",
-                         cds_version = "new") {
+                         dtr_cor = TRUE, dtr_cor_fac = 1.285, format = "microclima") {
 
   # Open nc file for error trapping
   nc_dat = ncdf4::nc_open(nc)
