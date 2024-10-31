@@ -166,9 +166,11 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
   )
 
   dat <- tidync::tidync(nc) %>%
+    # hyper_filter flexibly, querying the nearest long and lat coords, rather
+    # than explicitly filtering to coordinates -- avoids errors in hyper_filter()
     tidync::hyper_filter(
-      longitude = longitude == long,
-      latitude = latitude == lat
+      longitude = longitude == longitude[which.min(abs(longitude - long))],
+      latitude = latitude == latitude[which.min(abs(latitude - lat))]
     ) %>%
     tidync::hyper_tibble() %>%
     dplyr::mutate(.,
