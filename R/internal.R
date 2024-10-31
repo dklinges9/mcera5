@@ -174,7 +174,7 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
     ) %>%
     tidync::hyper_tibble() %>%
     dplyr::mutate(.,
-      obs_time = base_datetime + nc_datetimes,
+      obs_time = c(base_datetime + nc_datetimes),
       timezone = lubridate::tz(obs_time)
     ) %>% # convert to readable times
     dplyr::filter(., obs_time >= start_time & obs_time < end_time + 1) %>%
