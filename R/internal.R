@@ -289,10 +289,11 @@ nc_to_df_land <- function(nc, long, lat, start_time, end_time) {
   )
 
   dat <- tidync::tidync(nc) %>%
+    # hyper_filter flexibly, querying the nearest long and lat coords, rather
+    # than explicitly filtering to coordinates -- avoids errors in hyper_filter()
     tidync::hyper_filter(
-      # ERA5-Land does not return precise coordinate values
-      longitude = longitude <= long + 1e-6 & longitude >= long - 1e-6,
-      latitude = latitude <= lat + 1e-6 & latitude >= lat - 1e-6
+      longitude = longitude == longitude[which.min(abs(longitude - long))],
+      latitude = latitude == latitude[which.min(abs(latitude - lat))]
     ) %>%
     tidync::hyper_tibble() %>%
     dplyr::mutate(.,
@@ -350,9 +351,11 @@ nc_to_df_precip <- function(nc, long, lat, start_time, end_time) {
   )
 
   dat <- tidync::tidync(nc) %>%
+    # hyper_filter flexibly, querying the nearest long and lat coords, rather
+    # than explicitly filtering to coordinates -- avoids errors in hyper_filter()
     tidync::hyper_filter(
-      longitude = longitude == long,
-      latitude = latitude == lat
+      longitude = longitude == longitude[which.min(abs(longitude - long))],
+      latitude = latitude == latitude[which.min(abs(latitude - lat))]
     ) %>%
     tidync::hyper_tibble() %>%
     dplyr::mutate(.,
