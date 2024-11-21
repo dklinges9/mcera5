@@ -387,12 +387,17 @@ uni_dates <- function(start_time, end_time) {
   return(df)
 }
 
-#' Combines a series of netCDFs that all have the same spatial extent and
-#' set of variables
+#' Combines a series of netCDFs that all have the same spatial extent,
+#' set of variables, and units of time
 #' @param filenames a list of filenames for netCDFs you wish to combine
-#' @param combined_name the name of the combined netCDF
+#' @param combined_name the name of the combined netCDF, ending with ".nc"
 #' @noRd
 combine_netcdf <- function(filenames, combined_name) {
+  # Check that combined_name includes ".nc"
+  if (substr(combined_name, nchar(combined_name)-3+1, nchar(combined_name)) != ".nc") {
+    stop("Value provided to argument `combined_name` must end with .nc")
+  }
+
   files <- lapply(filenames, function(x) {
     ncdf4::nc_open(x)
   })
@@ -422,7 +427,7 @@ combine_netcdf <- function(filenames, combined_name) {
     # To populate the time dimension, need to pull out the time values from each
     # netCDF
     timevals <- lapply(files, function(x) {
-      extract_timedim(nc)$vals
+      extract_timedim(x)$vals
     })
 
     # Create a netCDF variable
