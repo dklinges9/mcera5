@@ -229,7 +229,7 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
 
   if(format %in% c("microclimc")) {
     dat = dat %>%
-      dplyr::mutate(raddr = (rad_dni * si)/3600,
+      dplyr::mutate(raddr = (rad_dni * si)/0.0036,
                     difrad = rad_dif/0.0036,
                     swrad = raddr + difrad,
                     pres = pressure/1000, # convert to kPa,
@@ -248,7 +248,7 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
 
   if (format %in% c("micropoint", "microclimf")) {
     dat = dat %>%
-      dplyr::mutate(raddr = (rad_dni * si)/3600,
+      dplyr::mutate(raddr = (rad_dni * si)/0.0036,
                     difrad = rad_dif/0.0036,
                     swdown = raddr + difrad,
                     pres = pressure/1000, # convert to kPa,
