@@ -89,7 +89,7 @@ build_era5_request <- function(xmin, xmax, ymin, ymax, start_time, end_time,
       ),
       "area" = ar,
       "format" = "netcdf",
-      "target" = paste0(outfile_name, "_", time[2], "_", time[1], ".nc")
+      "target" = paste0(outfile_name, "_", time[2], "_", time[1], ".zip")
     )
   })
 

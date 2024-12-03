@@ -435,3 +435,84 @@ extract_timedim <- function(nc) {
   # Specifically: pull out the first dimension that has 'time' in its name
   return(nc$dim[grepl("time", names(nc$dim))][[1]])
 }
+
+#' Function to bind a series of netCDFs, stored inside a .zip file, which all
+#' have the same spatial extent and time dimension, but different sets of variables
+#' @param nc_zip a zip file containg the netCDF files downloaded from the CDS
+#' @param combined_name name of combined netCDF
+#' @noRd
+bind_zipped_netcdf <- function(nc_zip, combined_name) {
+  # Check that nc_zip includes ".zip"
+  if (substr(nc_zip, nchar(nc_zip)-4+1, nchar(nc_zip)) != ".zip") {
+    stop("Value provided to argument `nc_zip` must end with .zip")
+  }
+
+  # Check that combined_name includes ".nc"
+  if (substr(combined_name, nchar(combined_name)-3+1, nchar(combined_name)) != ".nc") {
+    stop("Value provided to argument `combined_name` must end with .nc")
+  }
+  unzip(nc_zip, exdir = gsub(".zip", "", nc_zip))
+  filenames <- list.files(gsub(".zip", "", nc_zip), full.names = TRUE)
+  files <- lapply(filenames, function(x) {
+    ncdf4::nc_open(x)
+  })
+  # Pull out first file for reference specs
+  nc_example <- ncdf4::nc_open(filenames[1])
+  lat <- ncdf4::ncvar_get(nc_example, "latitude")
+  lon <- ncdf4::ncvar_get(nc_example, "longitude")
+  time_dim <- extract_timedim(nc_example)
+  ncdf4::nc_close(nc_example)
+
+  # Define the dimensions
+  lat_dim <- ncdf4::ncdim_def("latitude", "degrees_north", lat)
+  lon_dim <- ncdf4::ncdim_def("longitude", "degrees_east", lon)
+  time_dim <- ncdf4::ncdim_def(time_dim$name,
+                               time_dim$units,
+                               time_dim$vals)
+
+  # Create an empty list to populate
+  vars_list <- list()
+  data_list <- list()
+
+  # Loop through input files to extract variables and their metadata
+  for (file in filenames) {
+    nc <- ncdf4::nc_open(file)
+    varnames <- names(nc$var)
+
+    # Remove unnecessary vars
+    varnames <- varnames[!grepl("number|expver", varnames)]
+
+    for (var_name in varnames) {
+      # Extract variable data and attributes
+      data_list[[var_name]] <- ncdf4::ncvar_get(nc, var_name)
+      var_unit <- nc$var[var_name][[var_name]]$units
+      var_longname <- nc$var[[var_name]]$longname
+
+      # Define the variable
+      vars_list[[var_name]] <- ncdf4::ncvar_def(
+        name = var_name,
+        units = var_unit,
+        dim = list(lon_dim, lat_dim, time_dim),
+        longname = var_longname,
+        missval = nc$var[[var_name]]$missval
+      )
+    }
+
+    ncdf4::nc_close(nc)
+  }
+
+  # Create the new netCDF file and write the variables
+  file_combined <- ncdf4::nc_create(combined_name, vars = vars_list)
+
+  # Write the data into the new file
+  for (var_name in names(data_list)) {
+    ncdf4::ncvar_put(
+      nc = file_combined,
+      varid = var_name,
+      vals = data_list[[var_name]])
+  }
+
+  # Close the output file
+  ncdf4::nc_close(file_combined)
+
+}
