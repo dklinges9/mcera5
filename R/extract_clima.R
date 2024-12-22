@@ -47,13 +47,13 @@
 #' @return `winddir` | wind direction, azimuth (degrees from north)
 #' @return `emissivity` | downward long wave radiation flux divided by the sum
 #' of net long-wave radiation flux and downward long wave radiation flux (unitless)
-#' @return `cloudcover` | (percent)
 #' @return `netlong` | Net longwave radiation (MJ / m2 / hr)
 #' @return `uplong` | Upward longwave radiation (MJ / m2 / hr)
 #' @return `downlong` | Downward longwave radiation (MJ / m2 / hr)
 #' @return `rad_dni` | Direct normal irradiance (MJ / m2 / hr)
 #' @return `rad_dif` | Diffuse normal irradiance (MJ / m2 / hr)
 #' @return `szenith` | Solar zenith angle (degrees from a horizontal plane)
+#' @return `cloudcover` | (percent)
 #' @return `timezone` | (unitless)
 #'
 #' If format is "microclimc":
@@ -64,7 +64,6 @@
 #' @return `swrad` | Total incoming shortwave radiation (W / m^2)
 #' @return `difrad` | Diffuse radiation (W / m^2)
 #' @return `skyem` | Sky emissivity (0-1)
-#' @return `lwdown` | Total downward longwave radiation (W / m^2)
 #' @return `windspeed` | Wind speed (m/s)
 #' @return `winddir` | Wind direction (decimal degrees)
 #' @return `precip` | precipitation (mm)
@@ -337,30 +336,50 @@ extract_clima <- function(
     downlong <- downlong / 0.0036 # convert from MJ/hr to W/m^2
   }
   # Return list - SpatRasters now wrapped as won't store as list if saved otherwise'
-  if (format %in% c("microclimc", "micropoint", "microclimf")) {
-    return(list(temp = terra::wrap(temperature),
-                relhum = terra::wrap(relhum),
-                pres = terra::wrap(pres),
-                swdown = terra::wrap(swrad),
-                difrad = terra::wrap(difrad),
-                lwdown = terra::wrap(downlong),
-                windspeed = terra::wrap(windspeed),
-                winddir = terra::wrap(winddir),
-                precip = terra::wrap(prec)))
-  } else {
-    return(list(obs_time = tme,
-                temperature = terra::wrap(temperature),
-                humidity = terra::wrap(humidity),
-                pressure = terra::wrap(sp),
-                windspeed = terra::wrap(windspeed),
-                winddir = terra::wrap(winddir),
-                emissivity = terra::wrap(emissivity),
-                cloudcover = terra::wrap(tcc),
-                netlong = terra::wrap(netlong),
-                uplong = terra::wrap(uplong),
-                downlong = terra::wrap(downlong),
-                rad_dni = terra::wrap(rad_dni),
-                rad_dif = terra::wrap(rad_dif),
-                szenith = terra::wrap(szenith)))
+  if (format %in% c("micropoint", "microclimf")) {
+    return(list(
+      obs_time = tme,
+      temp = terra::wrap(temperature),
+      relhum = terra::wrap(relhum),
+      pres = terra::wrap(pres),
+      swdown = terra::wrap(swrad),
+      difrad = terra::wrap(difrad),
+      lwdown = terra::wrap(downlong),
+      windspeed = terra::wrap(windspeed),
+      winddir = terra::wrap(winddir),
+      precip = terra::wrap(prec)
+      ))
+  }
+  if (format == "microclimc") {
+    return(list(
+      obs_time = tme,
+      temp = terra::wrap(temperature),
+      relhum = terra::wrap(relhum),
+      pres = terra::wrap(pres),
+      swrad = terra::wrap(swrad),
+      difrad = terra::wrap(difrad),
+      skyem = terra::wrap(emissivity),
+      windspeed = terra::wrap(windspeed),
+      winddir = terra::wrap(winddir),
+      precip = terra::wrap(prec)
+      ))
+  }
+  if (format %in% c("microclima", "NicheMapR")) {
+    return(list(
+      obs_time = tme,
+      temperature = terra::wrap(temperature),
+      humidity = terra::wrap(humidity),
+      pressure = terra::wrap(sp),
+      windspeed = terra::wrap(windspeed),
+      winddir = terra::wrap(winddir),
+      emissivity = terra::wrap(emissivity),
+      netlong = terra::wrap(netlong),
+      uplong = terra::wrap(uplong),
+      downlong = terra::wrap(downlong),
+      rad_dni = terra::wrap(rad_dni),
+      rad_dif = terra::wrap(rad_dif),
+      szenith = terra::wrap(szenith),
+      cloudcover = terra::wrap(tcc)
+      ))
   }
 }

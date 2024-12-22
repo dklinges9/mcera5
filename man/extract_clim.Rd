@@ -71,8 +71,6 @@ If format is "microclima" or "NicheMapR":
 `emissivity` | downward long wave radiation flux divided by the sum
 of net long-wave radiation flux and downward long wave radiation flux (unitless)
 
-`cloudcover` | (percent)
-
 `netlong` | Net longwave radiation (MJ / m2 / hr)
 
 `uplong` | Upward longwave radiation (MJ / m2 / hr)
@@ -84,6 +82,8 @@ of net long-wave radiation flux and downward long wave radiation flux (unitless)
 `rad_dif` | Diffuse normal irradiance (MJ / m2 / hr)
 
 `szenith` | Solar zenith angle (degrees from a horizontal plane)
+
+`cloudcover` | (percent)
 
 `timezone` | (unitless)
 
@@ -102,8 +102,6 @@ If format is "microclimc":
 `difrad` | Diffuse radiation (W / m^2)
 
 `skyem` | Sky emissivity (0-1)
-
-`lwdown` | Total downward longwave radiation (W / m^2)
 
 `windspeed` | Wind speed (m/s)
 

@@ -47,13 +47,13 @@
 #' @return `winddir` | wind direction, azimuth (degrees from north)
 #' @return `emissivity` | downward long wave radiation flux divided by the sum
 #' of net long-wave radiation flux and downward long wave radiation flux (unitless)
-#' @return `cloudcover` | (percent)
 #' @return `netlong` | Net longwave radiation (MJ / m2 / hr)
 #' @return `uplong` | Upward longwave radiation (MJ / m2 / hr)
 #' @return `downlong` | Downward longwave radiation (MJ / m2 / hr)
 #' @return `rad_dni` | Direct normal irradiance (MJ / m2 / hr)
 #' @return `rad_dif` | Diffuse normal irradiance (MJ / m2 / hr)
 #' @return `szenith` | Solar zenith angle (degrees from a horizontal plane)
+#' @return `cloudcover` | (percent)
 #' @return `timezone` | (unitless)
 #'
 #' If format is "microclimc":
@@ -64,7 +64,6 @@
 #' @return `swrad` | Total incoming shortwave radiation (W / m^2)
 #' @return `difrad` | Diffuse radiation (W / m^2)
 #' @return `skyem` | Sky emissivity (0-1)
-#' @return `lwdown` | Total downward longwave radiation (W / m^2)
 #' @return `windspeed` | Wind speed (m/s)
 #' @return `winddir` | Wind direction (decimal degrees)
 #' @return `precip` | precipitation (mm)
@@ -216,19 +215,28 @@ extract_clim <- function(nc, long, lat, start_time, end_time, d_weight = TRUE,
       focal_collect[[j]] <- f_dat
     }
     # create single weighted dataframe
-    if(format == "micropoint") {
+    if (format %in% c("micropoint", "microclimf")) {
       dat <- dplyr::bind_rows(focal_collect, .id = "neighbour") %>%
-        dplyr::group_by(obs_time)%>%
+        dplyr::group_by(obs_time) %>%
         dplyr::summarise_at(dplyr::vars(temp, relhum, pres, swdown, difrad,
                                         lwdown, windspeed, winddir, precip),
                             weighted.mean, w = dplyr::quo(inverse_weight)) %>%
         dplyr::mutate(timezone = lubridate::tz(obs_time))
-    } else {
+    }
+    if (format == "microclimc") {
       dat <- dplyr::bind_rows(focal_collect, .id = "neighbour") %>%
-        dplyr::group_by(obs_time)%>%
+        dplyr::group_by(obs_time) %>%
+        dplyr::summarise_at(dplyr::vars(temp, relhum, pres, swrad, difrad,
+                                        skyem, windspeed, winddir, precip),
+                            weighted.mean, w = dplyr::quo(inverse_weight)) %>%
+        dplyr::mutate(timezone = lubridate::tz(obs_time))
+    }
+    if (format %in% c("microclima", "NicheMapR")) {
+      dat <- dplyr::bind_rows(focal_collect, .id = "neighbour") %>%
+        dplyr::group_by(obs_time) %>%
         dplyr::summarise_at(dplyr::vars(temperature, humidity, pressure, windspeed,
-                                        winddir, emissivity, cloudcover, netlong,
-                                        uplong, downlong, rad_dni, rad_dif, szenith),
+                                        winddir, emissivity, netlong, uplong, downlong,
+                                        rad_dni, rad_dif, szenith, cloudcover),
                             weighted.mean, w = dplyr::quo(inverse_weight)) %>%
         dplyr::mutate(timezone = lubridate::tz(obs_time))
     }

@@ -222,8 +222,8 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
     dat = dat %>%
       dplyr::select(
         ., obs_time, temperature, humidity, pressure, windspeed,
-        winddir, emissivity, cloudcover, netlong, uplong, downlong,
-        rad_dni, rad_dif, szenith, timezone
+        winddir, emissivity, netlong, uplong, downlong,
+        rad_dni, rad_dif, szenith, cloudcover, timezone
       )
   }
 
