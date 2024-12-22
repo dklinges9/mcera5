@@ -59,35 +59,36 @@ build_era5_land_request <- function(xmin, xmax, ymin, ymax, start_time, end_time
   # month/year combos
   ut <- uni_dates(start_time, end_time)
 
-  # iterate over all focal months
+  # iterate over all focal months. ERA5-land must be queried on a monthly basis
   request <- apply(ut, 1, function(time) {
-    list(
-      "dataset_short_name" = "reanalysis-era5-land",
-      "product_type" = "reanalysis",
-      "variable" = c(
-        "2m_temperature", "2m_dewpoint_temperature", "surface_pressure",
-        "10m_u_component_of_wind", "10m_v_component_of_wind", "total_precipitation",
-        "surface_solar_radiation_downwards", "surface_net_thermal_radiation",
-        "surface_thermal_radiation_downwards"
-      ),
-      "year" = as.character(time[2]),
-      "month" = as.character(time[1]),
-      "day" = c(
-        "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11",
-        "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22",
-        "23", "24", "25", "26", "27", "28", "29", "30", "31"
-      ),
-      "time" = c(
-        "00:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00",
-        "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00",
-        "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00",
-        "21:00", "22:00", "23:00"
-      ),
-      "area" = ar,
-      "format" = "netcdf",
-      "target" = paste0(outfile_name, "_", time[2], "_", time[1], ".zip")
-    )
-  })
+      list(
+        "dataset_short_name" = "reanalysis-era5-land",
+        "product_type" = "reanalysis",
+        "variable" = c(
+          "2m_temperature", "2m_dewpoint_temperature", "surface_pressure",
+          "10m_u_component_of_wind", "10m_v_component_of_wind", "total_precipitation",
+          "surface_solar_radiation_downwards", "surface_net_thermal_radiation",
+          "surface_thermal_radiation_downwards"
+        ),
+        "year" = as.character(time[2]),
+        "month" = as.character(time[1]),
+        "day" = c(
+          "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11",
+          "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22",
+          "23", "24", "25", "26", "27", "28", "29", "30", "31"
+        ),
+        "time" = c(
+          "00:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00",
+          "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00",
+          "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00",
+          "21:00", "22:00", "23:00"
+        ),
+        "area" = ar,
+        "format" = "netcdf",
+        "download_format" = "zip",
+        "target" = paste0(outfile_name, "_", time[2], "_", time[1], ".zip")
+      )
+    })
 
   return(request)
 }
