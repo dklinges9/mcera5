@@ -407,9 +407,8 @@ submitted. Generally, querying temporal durations greater than one year
 causes a delay, while query of wide spatial extents can occur rapidly.
 It is therefore most efficient to download time series data in temporal
 chunks (e.g. monthly basis) each specifying a region encompassing
-multiple points of interest. We recommend users <a href="https://cds.climate.copernicus.eu/live/queue">track current usage
-of the CDS</a> (note that this only reports usage of the legacy CDS, not
-the beta CDS) and follow <a href="https://confluence.ecmwf.int/#all-updates">ECMWF news</a>.</p>
+multiple points of interest. We recommend users <a href="https://cds.climate.copernicus.eu/live">track current usage of the
+CDS</a> and follow <a href="https://confluence.ecmwf.int/#all-updates">ECMWF news</a>.</p>
 <p>Requests are submitted as whole months, and they will also be split
 by year, so that they are not too big to handle and to expedite wait
 times. The splitting of requests which overlap year boundaries is dealt
@@ -444,18 +443,29 @@ request(s) as follows:</p>
 <p>Requests are stored in list format. Each request (divided by year)
 are stored as list objects within the master list:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">str</span>(req)</span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt; List of 1</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt; List of 2</span></span>
 <span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">#&gt;  $ :List of 10</span></span>
 <span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co">#&gt;   ..$ dataset_short_name: chr &quot;reanalysis-era5-single-levels&quot;</span></span>
 <span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co">#&gt;   ..$ product_type      : chr &quot;reanalysis&quot;</span></span>
 <span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co">#&gt;   ..$ variable          : chr [1:12] &quot;2m_temperature&quot; &quot;2m_dewpoint_temperature&quot; &quot;surface_pressure&quot; &quot;10m_u_component_of_wind&quot; ...</span></span>
 <span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="co">#&gt;   ..$ year              : chr &quot;2010&quot;</span></span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt;   ..$ month             : chr [1:2] &quot;2&quot; &quot;3&quot;</span></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt;   ..$ month             : chr &quot;2&quot;</span></span>
 <span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt;   ..$ day               : chr [1:31] &quot;01&quot; &quot;02&quot; &quot;03&quot; &quot;04&quot; ...</span></span>
 <span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&gt;   ..$ time              : chr [1:24] &quot;00:00&quot; &quot;01:00&quot; &quot;02:00&quot; &quot;03:00&quot; ...</span></span>
 <span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt;   ..$ area              : chr &quot;51/-4/49/-2&quot;</span></span>
 <span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt;   ..$ format            : chr &quot;netcdf&quot;</span></span>
-<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt;   ..$ target            : chr &quot;era5_-4_-2_49_51_2010.nc&quot;</span></span></code></pre></div>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt;   ..$ target            : chr &quot;era5_-4_-2_49_51_2010_2.zip&quot;</span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co">#&gt;  $ :List of 10</span></span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co">#&gt;   ..$ dataset_short_name: chr &quot;reanalysis-era5-single-levels&quot;</span></span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="co">#&gt;   ..$ product_type      : chr &quot;reanalysis&quot;</span></span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="co">#&gt;   ..$ variable          : chr [1:12] &quot;2m_temperature&quot; &quot;2m_dewpoint_temperature&quot; &quot;surface_pressure&quot; &quot;10m_u_component_of_wind&quot; ...</span></span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="co">#&gt;   ..$ year              : chr &quot;2010&quot;</span></span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="co">#&gt;   ..$ month             : chr &quot;3&quot;</span></span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a><span class="co">#&gt;   ..$ day               : chr [1:31] &quot;01&quot; &quot;02&quot; &quot;03&quot; &quot;04&quot; ...</span></span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a><span class="co">#&gt;   ..$ time              : chr [1:24] &quot;00:00&quot; &quot;01:00&quot; &quot;02:00&quot; &quot;03:00&quot; ...</span></span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a><span class="co">#&gt;   ..$ area              : chr &quot;51/-4/49/-2&quot;</span></span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a><span class="co">#&gt;   ..$ format            : chr &quot;netcdf&quot;</span></span>
+<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a><span class="co">#&gt;   ..$ target            : chr &quot;era5_-4_-2_49_51_2010_3.zip&quot;</span></span></code></pre></div>
 </div>
 <div id="obtaining-data-with-a-request" class="section level4">
 <h4>Obtaining data with a request</h4>
