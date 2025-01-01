@@ -17,7 +17,7 @@ _25 Sept 2024_: ERA5-reanalysis and ERA5-land files downloaded from the beta CDS
 
 `remotes::install_github("dklinges9/mcera5", ref = "new_cds_time_edits")`
 
-_Sept 2024_: This package is going through a lot of development to keep up with changes as ECMWF migrates to the new [beta Climate Data Store](https://cds-beta.climate.copernicus.eu/). These changes include lower API limits, different variable names/netCDF file structures, and different credentials (see below for details). If you are facing unexplainable errors, please bring them to my attention (see Questions, Concerns, Issues below). 
+_Sept 2024_: This package is going through a lot of development to keep up with changes as ECMWF migrates to the new [beta Climate Data Store](https://cds-beta.climate.copernicus.eu/). These changes include lower API limits, different variable names/netCDF file structures, and different credentials (see below for details). If you are facing unexplainable errors, please bring them to my attention (see Questions, Concerns, Issues below). You can see live usage of the new CDS [at this interface](https://cds.climate.copernicus.eu/live).  
 
 ## Tutorial
 
