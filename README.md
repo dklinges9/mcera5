@@ -11,6 +11,8 @@ You can install the package from this GitHub repository via the follow line:
 
 ## News
 
+_7 Jan 2025_: CDS has now changed the URL for the API from their temporary URL to their permanent URL, which may require an update to your .cdsapirc file in your home directory. See [here](https://cds.climate.copernicus.eu/how-to-api) for the updated URL. As of today, https://cds.climate.copernicus.eu/api is the new URL.  
+
 _8 Oct 2024_: modularity to handle ERA5-reanalysis and ERA5-land files downloaded from BOTH the old (legacy) CDS and the new (beta) CDS has been provided in `mcera5`. In addition, users must specify if they want extracted climate data to be formatted for a specific microclimate R package: `microclima`, `NicheMapR`, `microclimc`, `microclimf`, or `micropoint` (`microclimc` is the default). The branch "new_cds_time_edits" has been merged into master and will soon be deleted.
 
 _25 Sept 2024_: ERA5-reanalysis and ERA5-land files downloaded from the beta CDS have a different structure to their time dimension. To extract climate data from these files (e.g. using `extract_clim()`), please see the developer branch "new_cds_time_edits". You can install this branch directly via:
