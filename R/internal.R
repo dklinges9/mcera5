@@ -441,7 +441,7 @@ extract_timedim <- function(nc) {
 #' @param nc_zip a zip file containg the netCDF files downloaded from the CDS
 #' @param combined_name name of combined netCDF
 #' @noRd
-bind_zipped_netcdf <- function(nc_zip, combined_name) {
+bind_zipped_netcdf <- function(nc_zip, combined_name, out_path) {
   # Check that nc_zip includes ".zip"
   if (substr(nc_zip, nchar(nc_zip)-4+1, nchar(nc_zip)) != ".zip") {
     stop("Value provided to argument `nc_zip` must end with .zip")
@@ -451,6 +451,7 @@ bind_zipped_netcdf <- function(nc_zip, combined_name) {
   if (substr(combined_name, nchar(combined_name)-3+1, nchar(combined_name)) != ".nc") {
     stop("Value provided to argument `combined_name` must end with .nc")
   }
+  nc_zip = paste0(out_path, nc_zip)
   unzip(nc_zip, exdir = gsub(".zip", "", nc_zip))
   filenames <- list.files(gsub(".zip", "", nc_zip), full.names = TRUE)
   files <- lapply(filenames, function(x) {

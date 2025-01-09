@@ -50,7 +50,8 @@ request_era5 <- function(request, uid, out_path, overwrite = FALSE,
       if (grepl(".zip", request[[req]]$target)) {
         cat("Downloaded file is a .zip, so unzipping and binding together contents...\n")
         bind_zipped_netcdf(request[[req]]$target,
-                           gsub(".zip", ".nc", request[[req]]$target))
+                           gsub(".zip", ".nc", request[[req]]$target),
+                           out_path)
       }
     }
   }
