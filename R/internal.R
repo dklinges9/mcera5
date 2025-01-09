@@ -438,15 +438,18 @@ extract_timedim <- function(nc) {
 
 #' Function to bind a series of netCDFs, stored inside a .zip file, which all
 #' have the same spatial extent and time dimension, but different sets of variables
-#' @param nc_zip a zip file containg the netCDF files downloaded from the CDS
-#' @param combined_name name of combined netCDF
+#' @param nc_zip character vector of the file path and name of zip file containing the netCDF files downloaded from the CDS. Must end with ".zip"
+#' @param combined_name character vector of the file path and desired name of combined netCDF file. Must end with ".nc"
 #' @noRd
 bind_zipped_netcdf <- function(nc_zip, combined_name) {
+  # Confirm that nc_zip exists
+  if (!file.exists(nc_zip)) {
+    stop("File does not exist at the path provided to `nc_zip`")
+  }
   # Check that nc_zip includes ".zip"
   if (substr(nc_zip, nchar(nc_zip)-4+1, nchar(nc_zip)) != ".zip") {
     stop("Value provided to argument `nc_zip` must end with .zip")
   }
-
   # Check that combined_name includes ".nc"
   if (substr(combined_name, nchar(combined_name)-3+1, nchar(combined_name)) != ".nc") {
     stop("Value provided to argument `combined_name` must end with .nc")
