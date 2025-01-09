@@ -20,12 +20,12 @@ Alternatively you can navigate to the vignette manually [here](https://github.co
 
 ERA5 climate data can be downloaded from the ECMWF climate data store (CDS). Note that in July 2024 the CDS migrated to a new platform, and the old platform was deprecated in Sept 2024. The following describes how to access the data using R:
 
-1) Register for an ECMWF account [here](https://accounts.ecmwf.int/auth/realms/ecmwf/login-actions/registration?client_id=cds&tab_id=IA1LKqgLVc0). Upon registering you will need to accept all of the Terms and Conditions listed at the bottom of the form.
+1) Register for an ECMWF account [here](https://accounts.ecmwf.int/auth/realms/ecmwf/login-actions/registration?client_id=cms-www&tab_id=yu4FgUR5-ds). Upon registering you will need to accept all of the Terms and Conditions listed at the bottom of the form.
 
-2) Then, navigate to the CDS site [here](https://cds-beta.climate.copernicus.eu/) and login using the button in the top right. Once logged in, hover your mouse over your name in the top right, and click on the option "Your profile" that appears (this should bring you to [this page](https://cds-beta.climate.copernicus.eu/profile). Here you will 
+2) Then, navigate to the CDS site [here](https://cds.climate.copernicus.eu/) and login using the button in the top right. Once logged in, hover your mouse over your name in the top right, and click on the option "Your profile" that appears (this should bring you to [this page](https://cds.climate.copernicus.eu/profile). Here you will 
 find your User ID (UID) and Personal Access Token, both which are required for you to remotely download data from the CDS. Make a note of these.  
 
-3) Each CDS dataset has its own unique Terms of Use. You will need to accept these Terms for ERA5-reanalysis at [this page](https://cds-beta.climate.copernicus.eu/datasets/reanalysis-era5-single-levels?tab=download) (scroll down to "Terms of use" and accept). This same set of terms also applies for other Copernicus products, including ERA5-land.
+3) Each CDS dataset has its own unique Terms of Use. You will need to accept these Terms for ERA5-reanalysis at [this page](https://cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels?tab=download) (scroll down to "Terms of use" and accept). This same set of terms also applies for other Copernicus products, including ERA5-land.
 
 ## News
 
@@ -37,7 +37,7 @@ _25 Sept 2024_: ERA5-reanalysis and ERA5-land files downloaded from the beta CDS
 
 `remotes::install_github("dklinges9/mcera5", ref = "new_cds_time_edits")`
 
-_Sept 2024_: This package is going through a lot of development to keep up with changes as ECMWF migrates to the new [beta Climate Data Store](https://cds-beta.climate.copernicus.eu/). These changes include lower API limits, different variable names/netCDF file structures, and different credentials (see below for details). If you are facing unexplainable errors, please bring them to my attention (see Questions, Concerns, Issues below). You can see live usage of the new CDS [at this interface](https://cds.climate.copernicus.eu/live).  
+_Sept 2024_: This package is going through a lot of development to keep up with changes as ECMWF migrates to the new [Climate Data Store](https://cds.climate.copernicus.eu/). These changes include lower API limits, different variable names/netCDF file structures, and different credentials (see below for details). If you are facing unexplainable errors, please bring them to my attention (see Questions, Concerns, Issues below). You can see live usage of the new CDS [at this interface](https://cds.climate.copernicus.eu/live).  
 
 ## Questions, Concerns, Issues
 
