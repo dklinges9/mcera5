@@ -37,7 +37,25 @@ extract_precip <- function(nc, long, lat, start_time, end_time,
   # Open nc file for error trapping
   nc_dat = ncdf4::nc_open(nc)
 
-  ## Error trapping
+  ## Error trapping --------------
+
+  # Specify the base date-time, which differs between the CDS versions, and the
+  # first and last timesteps from timeseries, which has different names across
+  # versions
+  # Extract time dimension from data queried from either old or new CDS
+  timedim <- extract_timedim(nc_dat)
+  # Find basetime from units
+  base_datetime <- as.POSIXct(gsub(".*since ", "", timedim$units), tz = "UTC")
+  # Extract time values
+  nc_datetimes <- c(timedim$vals)
+  # If units in hours, multiply by 3600 to convert to seconds
+  nc_datetimes <- nc_datetimes * ifelse(
+    grepl("hours", timedim$units), 3600, 1
+  )
+  # Find first timestep
+  first_timestep <- nc_datetimes[1]
+  # Find last timestep
+  last_timestep <- utils::tail(nc_datetimes, n = 1)
 
   # Confirm that start_time and end_time are date-time objects
   if (any(!class(start_time) %in% c("Date", "POSIXct", "POSIXt", "POSIXlt")) |
@@ -50,13 +68,13 @@ extract_precip <- function(nc, long, lat, start_time, end_time,
   }
 
   # Check if start_time is after first time observation
-  start <- lubridate::ymd_hms("1900:01:01 00:00:00") + (nc_dat$dim$time$vals[1] * 3600)
+  start <- base_datetime + first_timestep
   if (start_time < start) {
     stop("Requested start time is before the beginning of time series of the ERA5 netCDF.")
   }
 
   # Check if end_time is before last time observation
-  end <- lubridate::ymd_hms("1900:01:01 00:00:00") + (utils::tail(nc_dat$dim$time$vals, n = 1) * 3600)
+  end <- base_datetime + last_timestep
   if (end_time > end) {
     stop("Requested end time is after the end of time series of the ERA5 netCDF.")
   }

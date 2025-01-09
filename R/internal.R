@@ -152,15 +152,29 @@ focal_dist <- function(long, lat, margin = .25) {
 #' @return data frame of hourly climate variables
 #' @noRd
 nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
-                     dtr_cor_fac = 1, reformat = NULL) {
+                     dtr_cor_fac = 1, format = "microclima") {
+
+  # Extract time dimension
+  timedim <- extract_timedim(ncdf4::nc_open(nc))
+  # Find basetime from units
+  base_datetime <- as.POSIXct(gsub(".*since ", "", timedim$units), tz = "UTC")
+  # Extract time values
+  nc_datetimes <- timedim$vals
+  # If units in hours, multiply by 3600 to convert to seconds
+  nc_datetimes <- nc_datetimes * ifelse(
+    grepl("hours", timedim$units), 3600, 1
+  )
+
   dat <- tidync::tidync(nc) %>%
+    # hyper_filter flexibly, querying the nearest long and lat coords, rather
+    # than explicitly filtering to coordinates -- avoids errors in hyper_filter()
     tidync::hyper_filter(
-      longitude = longitude == long,
-      latitude = latitude == lat
+      longitude = longitude == longitude[which.min(abs(longitude - long))],
+      latitude = latitude == latitude[which.min(abs(latitude - lat))]
     ) %>%
     tidync::hyper_tibble() %>%
     dplyr::mutate(.,
-      obs_time = lubridate::ymd_hms("1900:01:01 00:00:00") + (time * 3600),
+      obs_time = c(base_datetime + nc_datetimes),
       timezone = lubridate::tz(obs_time)
     ) %>% # convert to readable times
     dplyr::filter(., obs_time >= start_time & obs_time < end_time + 1) %>%
@@ -180,10 +194,10 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
       windspeed = windheight(windspeed, 10, 2),
       winddir = (atan2(u10, v10) * 180 / pi + 180) %% 360,
       cloudcover = tcc * 100,
-      netlong = abs(msnlwrf) * 0.0036,
-      downlong = msdwlwrf * 0.0036,
+      netlong = abs(msnlwrf) * 0.0036,  # converted to MJ m-2 hr-1
+      downlong = msdwlwrf * 0.0036,  # converted to MJ m-2 hr-1
       uplong = netlong + downlong,
-      emissivity = downlong / uplong, # converted to MJ m-2 hr-1
+      emissivity = downlong / uplong,
       precip = tp * 1000,
       jd = julday(
         lubridate::year(obs_time),
@@ -204,9 +218,37 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
       merid = 0
     ))
 
-  if(reformat == "micropoint") {
+  if (format %in% c("microclima", "NicheMapR")) {
     dat = dat %>%
-      dplyr::mutate(raddr = (rad_dni * si)/3600,
+      dplyr::select(
+        ., obs_time, temperature, humidity, pressure, windspeed,
+        winddir, emissivity, netlong, uplong, downlong,
+        rad_dni, rad_dif, szenith, cloudcover, timezone
+      )
+  }
+
+  if(format %in% c("microclimc")) {
+    dat = dat %>%
+      dplyr::mutate(raddr = (rad_dni * si)/0.0036,
+                    difrad = rad_dif/0.0036,
+                    swrad = raddr + difrad,
+                    pres = pressure/1000, # convert to kPa,
+                    difrad = rad_dif/0.0036,
+                    precip = precip,
+                    lwdown = downlong/0.0036) %>%
+      dplyr::rename(temp = temperature)
+    dat$relhum = converthumidity(dat$humidity, intype = "specific",
+                                 tc = dat$temp, pk = dat$pres)[["relative"]]
+    dat$relhum = ifelse(dat$relhum > 100, 100, dat$relhum)
+    dat = dat %>%
+      dplyr::rename(skyem = emissivity) %>%
+      dplyr::select(obs_time, temp, relhum, pres, swrad, difrad, skyem,
+                                windspeed, winddir, precip)
+  }
+
+  if (format %in% c("micropoint", "microclimf")) {
+    dat = dat %>%
+      dplyr::mutate(raddr = (rad_dni * si)/0.0036,
                     difrad = rad_dif/0.0036,
                     swdown = raddr + difrad,
                     pres = pressure/1000, # convert to kPa,
@@ -217,14 +259,8 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
     dat$relhum = converthumidity(dat$humidity, intype = "specific",
                                  tc = dat$temp, pk = dat$pres)[["relative"]]
     dat$relhum = ifelse(dat$relhum > 100, 100, dat$relhum)
-    dat = dat %>% dplyr::select(obs_time, temp, relhum, pres, swdown, difrad, lwdown, windspeed, winddir, precip)
-  } else {
     dat = dat %>%
-      dplyr::select(
-        ., obs_time, temperature, humidity, pressure, windspeed,
-        winddir, emissivity, cloudcover, netlong, uplong, downlong,
-        rad_dni, rad_dif, szenith, timezone
-    )
+      dplyr::select(obs_time, temp, relhum, pres, swdown, difrad, lwdown, windspeed, winddir, precip)
   }
 
   return(dat)
@@ -240,15 +276,28 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
 #' @return data frame of hourly climate variables
 #' @noRd
 nc_to_df_land <- function(nc, long, lat, start_time, end_time) {
+
+  # Extract time dimension
+  timedim <- extract_timedim(ncdf4::nc_open(nc))
+  # Find basetime from units
+  base_datetime <- as.POSIXct(gsub(".*since ", "", timedim$units), tz = "UTC")
+  # Extract time values
+  nc_datetimes <- timedim$vals
+  # If units in hours, multiply by 3600 to convert to seconds
+  nc_datetimes <- nc_datetimes * ifelse(
+    grepl("hours", timedim$units), 3600, 1
+  )
+
   dat <- tidync::tidync(nc) %>%
+    # hyper_filter flexibly, querying the nearest long and lat coords, rather
+    # than explicitly filtering to coordinates -- avoids errors in hyper_filter()
     tidync::hyper_filter(
-      # ERA5-Land does not return precise coordinate values
-      longitude = longitude <= long + 1e-6 & longitude >= long - 1e-6,
-      latitude = latitude <= lat + 1e-6 & latitude >= lat - 1e-6
+      longitude = longitude == longitude[which.min(abs(longitude - long))],
+      latitude = latitude == latitude[which.min(abs(latitude - lat))]
     ) %>%
     tidync::hyper_tibble() %>%
     dplyr::mutate(.,
-      obs_time = lubridate::ymd_hms("1900:01:01 00:00:00") + (time * 3600),
+      obs_time = base_datetime + nc_datetimes,
       timezone = lubridate::tz(obs_time)
     ) %>% # convert to readable times
     dplyr::filter(., obs_time >= start_time & obs_time < end_time + 1) %>%
@@ -289,14 +338,28 @@ nc_to_df_land <- function(nc, long, lat, start_time, end_time) {
 #' @return vector of daily precipitation values
 #' @noRd
 nc_to_df_precip <- function(nc, long, lat, start_time, end_time) {
+
+  # Extract time dimension
+  timedim <- extract_timedim(ncdf4::nc_open(nc))
+  # Find basetime from units
+  base_datetime <- as.POSIXct(gsub(".*since ", "", timedim$units), tz = "UTC")
+  # Extract time values
+  nc_datetimes <- timedim$vals
+  # If units in hours, multiply by 3600 to convert to seconds
+  nc_datetimes <- nc_datetimes * ifelse(
+    grepl("hours", timedim$units), 3600, 1
+  )
+
   dat <- tidync::tidync(nc) %>%
+    # hyper_filter flexibly, querying the nearest long and lat coords, rather
+    # than explicitly filtering to coordinates -- avoids errors in hyper_filter()
     tidync::hyper_filter(
-      longitude = longitude == long,
-      latitude = latitude == lat
+      longitude = longitude == longitude[which.min(abs(longitude - long))],
+      latitude = latitude == latitude[which.min(abs(latitude - lat))]
     ) %>%
     tidync::hyper_tibble() %>%
     dplyr::mutate(.,
-      obs_time = lubridate::ymd_hms("1900:01:01 00:00:00") + (time * 3600),
+      obs_time = base_datetime + nc_datetimes,
       timezone = lubridate::tz(obs_time)
     ) %>% # convert to readable times
     dplyr::filter(., obs_time >= start_time & obs_time < end_time + 1) %>%
@@ -322,92 +385,6 @@ uni_dates <- function(start_time, end_time) {
     yea = lubridate::year(date_seq)
   )
   return(df)
-}
-
-#' Combines a series of netCDFs that all have the same spatial extent and
-#' set of variables
-#' @param filenames a list of filenames for netCDFs you wish to combine
-#' @param combined_name the name of the combined netCDF
-#' @noRd
-combine_netcdf <- function(filenames, combined_name) {
-  files <- lapply(filenames, function(x) {
-    ncdf4::nc_open(x)
-  })
-
-  # Pull out first file for reference specs
-  nc <- files[[1]]
-  # Remove file metadata from vars
-  varnames <- names(nc$var)
-  varnames <- varnames[!grepl("number|expver", varnames)]
-  # Create an empty list to populate
-  vars_list <- vector(mode = "list", length = length(varnames))
-  data_list <- vector(mode = "list", length = length(varnames))
-  # One variable at a time
-  for (i in 1:length(varnames)) {
-    varname <- varnames[i]
-    # Get the variable from each of the netCDFs
-    vars_dat <- lapply(files, function(x) {
-      ncdf4::ncvar_get(x, varname)
-    })
-
-    # Then bind all of the arrays together using abind, flexibly called via do.call
-    data_list[[i]] <- do.call(abind::abind, list(
-      ... = vars_dat,
-      along = 3
-    ))
-
-    # To populate the time dimension, need to pull out the time values from each
-    # netCDF
-    timevals <- lapply(files, function(x) {
-      x$dim$valid_time$vals
-    })
-
-    # Create a netCDF variable
-    vars_list[[i]] <- ncdf4::ncvar_def(
-      name = varname,
-      units = nc$var[varname][[varname]]$units,
-      # Pull dimension names, units, and values from file1
-      dim = list(
-        # Longitude
-        ncdf4::ncdim_def(
-          nc$dim$longitude$name, nc$dim$longitude$units,
-          nc$dim$longitude$vals
-        ),
-        # Latitude
-        ncdf4::ncdim_def(
-          nc$dim$latitude$name, nc$dim$latitude$units,
-          nc$dim$latitude$vals
-        ),
-        # Time
-        ncdf4::ncdim_def(
-          nc$dim$valid_time$name, nc$dim$valid_time$units,
-          # Combination of values of all files
-          do.call(c, timevals)
-        )
-      )
-    )
-  }
-
-  # Create a new file
-  file_combined <- ncdf4::nc_create(
-    # Filename from param combined_name
-    filename = combined_name,
-    # We need to define the variables here
-    vars = vars_list
-  )
-
-
-  # And write to it (must write one variable at a time with ncdf4)
-  for (i in 1:length(varnames)) {
-    ncdf4::ncvar_put(
-      nc = file_combined,
-      varid = varnames[i],
-      vals = data_list[[i]]
-    )
-  }
-
-  # Finally, close the file
-  ncdf4::nc_close(file_combined)
 }
 
 #' Function to find the longest shared substring among a vector of strings, used
@@ -449,3 +426,93 @@ shared_substring <- function(strings) {
   return(longest_substring)
 }
 
+#' Function to extract the time dimension from a `ncdf4` object. Stays flexible
+#' with exact name of time dimension to support both old and new CDS
+#' @param nc a `ncdf4` object
+#' @noRd
+extract_timedim <- function(nc) {
+  # Extract time dimension
+  # Specifically: pull out the first dimension that has 'time' in its name
+  return(nc$dim[grepl("time", names(nc$dim))][[1]])
+}
+
+#' Function to bind a series of netCDFs, stored inside a .zip file, which all
+#' have the same spatial extent and time dimension, but different sets of variables
+#' @param nc_zip a zip file containg the netCDF files downloaded from the CDS
+#' @param combined_name name of combined netCDF
+#' @noRd
+bind_zipped_netcdf <- function(nc_zip, combined_name) {
+  # Check that nc_zip includes ".zip"
+  if (substr(nc_zip, nchar(nc_zip)-4+1, nchar(nc_zip)) != ".zip") {
+    stop("Value provided to argument `nc_zip` must end with .zip")
+  }
+
+  # Check that combined_name includes ".nc"
+  if (substr(combined_name, nchar(combined_name)-3+1, nchar(combined_name)) != ".nc") {
+    stop("Value provided to argument `combined_name` must end with .nc")
+  }
+  unzip(nc_zip, exdir = gsub(".zip", "", nc_zip))
+  filenames <- list.files(gsub(".zip", "", nc_zip), full.names = TRUE)
+  files <- lapply(filenames, function(x) {
+    ncdf4::nc_open(x)
+  })
+  # Pull out first file for reference specs
+  nc_example <- ncdf4::nc_open(filenames[1])
+  lat <- ncdf4::ncvar_get(nc_example, "latitude")
+  lon <- ncdf4::ncvar_get(nc_example, "longitude")
+  time_dim <- extract_timedim(nc_example)
+  ncdf4::nc_close(nc_example)
+
+  # Define the dimensions
+  lat_dim <- ncdf4::ncdim_def("latitude", "degrees_north", lat)
+  lon_dim <- ncdf4::ncdim_def("longitude", "degrees_east", lon)
+  time_dim <- ncdf4::ncdim_def(time_dim$name,
+                               time_dim$units,
+                               time_dim$vals)
+
+  # Create an empty list to populate
+  vars_list <- list()
+  data_list <- list()
+
+  # Loop through input files to extract variables and their metadata
+  for (file in filenames) {
+    nc <- ncdf4::nc_open(file)
+    varnames <- names(nc$var)
+
+    # Remove unnecessary vars
+    varnames <- varnames[!grepl("number|expver", varnames)]
+
+    for (var_name in varnames) {
+      # Extract variable data and attributes
+      data_list[[var_name]] <- ncdf4::ncvar_get(nc, var_name)
+      var_unit <- nc$var[var_name][[var_name]]$units
+      var_longname <- nc$var[[var_name]]$longname
+
+      # Define the variable
+      vars_list[[var_name]] <- ncdf4::ncvar_def(
+        name = var_name,
+        units = var_unit,
+        dim = list(lon_dim, lat_dim, time_dim),
+        longname = var_longname,
+        missval = nc$var[[var_name]]$missval
+      )
+    }
+
+    ncdf4::nc_close(nc)
+  }
+
+  # Create the new netCDF file and write the variables
+  file_combined <- ncdf4::nc_create(combined_name, vars = vars_list)
+
+  # Write the data into the new file
+  for (var_name in names(data_list)) {
+    ncdf4::ncvar_put(
+      nc = file_combined,
+      varid = var_name,
+      vals = data_list[[var_name]])
+  }
+
+  # Close the output file
+  ncdf4::nc_close(file_combined)
+
+}

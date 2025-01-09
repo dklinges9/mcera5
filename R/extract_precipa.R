@@ -35,7 +35,25 @@ extract_precipa <- function(nc, long_min, long_max, lat_min, lat_max,
   # Open nc file for error trapping
   nc_dat = ncdf4::nc_open(nc)
 
-  ## Error trapping
+  ## Error trapping ------------------
+
+  # Specify the base date-time, which differs between the CDS versions, and the
+  # first and last timesteps from timeseries, which has different names across
+  # versions
+  # Extract time dimension from data queried from either old or new CDS
+  timedim <- extract_timedim(nc_dat)
+  # Find basetime from units
+  base_datetime <- as.POSIXct(gsub(".*since ", "", timedim$units), tz = "UTC")
+  # Extract time values
+  nc_datetimes <- c(timedim$vals)
+  # If units in hours, multiply by 3600 to convert to seconds
+  nc_datetimes <- nc_datetimes * ifelse(
+    grepl("hours", timedim$units), 3600, 1
+  )
+  # Find first timestep
+  first_timestep <- nc_datetimes[1]
+  # Find last timestep
+  last_timestep <- utils::tail(nc_datetimes, n = 1)
 
   # Confirm that start_time and end_time are date-time objects
   if (any(!class(start_time) %in% c("Date", "POSIXct", "POSIXt", "POSIXlt")) |
@@ -48,13 +66,13 @@ extract_precipa <- function(nc, long_min, long_max, lat_min, lat_max,
   }
 
   # Check if start_time is after first time observation
-  start <- lubridate::ymd_hms("1900:01:01 00:00:00") + (nc_dat$dim$time$vals[1] * 3600)
+  start <- base_datetime + first_timestep
   if (start_time < start) {
     stop("Requested start time is before the beginning of time series of the ERA5 netCDF.")
   }
 
   # Check if end_time is before last time observation
-  end <- lubridate::ymd_hms("1900:01:01 00:00:00") + (utils::tail(nc_dat$dim$time$vals, n = 1) * 3600)
+  end <- base_datetime + last_timestep
   if (end_time > end) {
     stop("Requested end time is after the end of time series of the ERA5 netCDF.")
   }
@@ -123,7 +141,7 @@ extract_precipa <- function(nc, long_min, long_max, lat_min, lat_max,
   # Load in netCDF variable
   tp <- terra::rast(nc, subds = "tp")
   # Subset down to desired time period
-  tp <- tp[[terra::time(tp) %in% tme]]
+  tp <- tp[[as.POSIXct(nc_datetimes, tz = "UTC") %in% tme]]
   # Subset down to desired spatial extent
   tp <- terra::crop(tp, terra::ext(long_min, long_max, lat_min, lat_max))
 
@@ -135,10 +153,11 @@ extract_precipa <- function(nc, long_min, long_max, lat_min, lat_max,
   precip <- tp * 1000
 
   # Add timesteps back to names
+
   if (convert_daily) {
-    names(precip) <- terra::time(precip)
+    names(precip) <- unique(as_date(tme))
   } else {
-    names(precip) <- paste(terra::time(precip), lubridate::tz(terra::time(precip)))
+    names(precip) <- tme
   }
 
   return(precip)

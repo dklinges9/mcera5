@@ -45,12 +45,23 @@ request_era5 <- function(request, uid, out_path, overwrite = FALSE,
       } else {
         cat("ERA5 netCDF file successfully downloaded.\n")
       }
+
+      # If target file is a .zip, then unzip and bind together netCDF files
+      if (grepl(".zip", request[[req]]$target)) {
+        cat("Downloaded file is a .zip, so unzipping and binding together contents...\n")
+        bind_zipped_netcdf(request[[req]]$target,
+                           gsub(".zip", ".nc", request[[req]]$target))
+      }
     }
   }
   if (length(request) > 1 & combine) {
     cat("Now combining netCDF files...\n")
     # Get list of filenames
-    fnames <- lapply(request, function(x) {x$target})
+    fnames <- lapply(request, function(x) {
+      # Replace .zip with .nc, in case targets were .zip files
+      x$target <- gsub(".zip", ".nc", x$target)
+      return(x$target)
+    })
     # Recover file prefix from filenames
     file_prefix <- shared_substring(fnames)
     # If last character is "_", remove
