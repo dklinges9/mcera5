@@ -126,7 +126,12 @@ extract_land_clim <- function(nc, long, lat, start_time, end_time, d_weight = TR
     ), tz = lubridate::tz(end_time))
   }
 
-  if (sum((long %% .1) + (lat %% .1)) == 0 & d_weight == TRUE) {
+  # While this check works fine for ERA5 with 0.25 resolution, it doesn't work
+  # for ERA5-land resolution of 0.1 due to floating-point precision issues in R.
+  # I.e. while 1 %% 0.1 == 0 is mathematically true, R might return 1 %% 0.1 == 1.
+  # To overcome this, we'll multiply the long and lat coordinates by 10, and
+  # also multiply 0.1 by 10:
+  if (sum(((long * 10) %% (.1 * 10)) + ((lat * 10) %% (.1 * 10))) == 0 & d_weight == TRUE) {
     message("Input coordinates match ERA5 grid, no distance weighting required.")
     d_weight <- FALSE
   }
