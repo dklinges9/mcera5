@@ -274,3 +274,151 @@ converthumidity <- function(h, intype = "relative", tc = 11, pk = 101.3) {
   return(list(relative = hr, absolute = ha, specific = hs,
               vapour_pressure = ea))
 }
+
+#' Calculates the diffuse fraction from incoming shortwave radiation
+#'
+#' @description `difprop` calculates proportion of incoming shortwave radiation that is diffuse radiation using the method of Skartveit et al. (1998) Solar Energy, 63: 173-183.
+#'
+#' @param rad a vector of incoming shortwave radiation values (either \ifelse{html}{\out{MJ m<sup>-2</sup> hr<sup>-1</sup>}}{\eqn{MJ m^{-2} hr^{-1}}} or \ifelse{html}{\out{W m<sup>-2</sup>}}{\eqn{W m^{-2}}})
+#' @param julian the Julian day as returned by [julday()]
+#' @param localtime a single numeric value representing local time (decimal hour, 24 hour clock)
+#' @param lat a single numeric value representing the latitude of the location for which partitioned radiation is required (decimal degrees, -ve south of equator).
+#' @param long a single numeric value representing the longitude of the location for which partitioned radiation is required (decimal degrees, -ve west of Greenwich meridian).
+#' @param hourly specifies whether values of `rad` are hourly (see details).
+#' @param watts a logical value indicating  whether the units of `rad` are \ifelse{html}{\out{W m<sup>-2</sup>}}{\eqn{W m^{-2}}} (TRUE) or \ifelse{html}{\out{MJ m<sup>-2</sup> hr<sup>-1</sup>}}{\eqn{MJ m^{-2} hr^{-1}}} (FALSE).
+#' @param merid an optional numeric value representing the longitude (decimal degrees) of the local time zone meridian (0 for GMT). Default is `round(long / 15, 0) * 15`
+#' @param dst an optional numeric value representing the time difference from the timezone meridian (hours, e.g. +1 for BST if `merid` = 0).
+#' @param corr an optional numeric value representing a correction to account for over- or under-estimated diffuse proportions. Values > 1 will apportion a greater ammount of total radiation as diffuse than originally calculated by the formula.
+#'
+#' @return a vector of diffuse fractions (either \ifelse{html}{\out{MJ m<sup>-2</sup> hr<sup>-1</sup>}}{\eqn{MJ m^{-2} hr^{-1}}} or \ifelse{html}{\out{W m<sup>-2</sup>}}{\eqn{W m^{-2}}}).
+#' @export
+#'
+#' @details
+#' The method assumes the environment is snow free. Both overall cloud cover and heterogeneity in
+#' cloud cover affect the diffuse fraction. Breaks in an extensive cloud deck may primarily
+#' enhance the beam irradiance, whereas scattered clouds may enhance the diffuse irradiance and
+#' leave the beam irradiance unaffected.  In consequence, if hourly data are available, an index
+#' is applied to detect the presence of such variable/inhomogeneous clouds, based on variability
+#' in radiation for each hour in question and values in the preceding and deciding hour.  If
+#' hourly data are unavailable, an average variability is determined from radiation intensity.
+#'
+#' @examples
+#' rad <- c(5:42) / 0.036 # typical values of radiation in W/m^2
+#' jd <- julday(2017, 6, 21) # julian day
+#' dfr <- difprop(rad, jd, 12, 50, -5)
+#' plot(dfr ~ rad, type = "l", lwd = 2, xlab = "Incoming shortwave radiation",
+#'      ylab = "Diffuse fraction")
+difprop <- function(rad, julian, localtime, lat, long, hourly = TRUE,
+                    watts = TRUE, merid = round(long / 15, 0) * 15, dst = 0,
+                    corr = 1) {
+  if (watts) rad <- rad * 0.0036
+  sa <- solalt(localtime, lat, long, julian, merid, dst)
+  alt <- sa * (pi / 180)
+  k1 <- 0.83 - 0.56 * exp(- 0.06 * sa)
+  si <- cos(pi / 2 - alt)
+  si[si < 0] <- 0
+  k <- rad / (4.87 * si)
+  k[is.na(k)] <- 0
+  k <- ifelse(k > k1, k1, k)
+  k[k < 0] <- 0
+  rho <- k / k1
+  if (hourly) {
+    rho <- c(rho[1], rho, rho[length(rho)])
+    sigma3  <- 0
+    for (i in 1:length(rad)) {
+      sigma3[i] <- (((rho[i + 1] - rho[i]) ^ 2 + (rho[i + 1] - rho[i + 2]) ^ 2)
+                    / 2) ^ 0.5
+    }
+  } else {
+    sigma3a <- 0.021 + 0.397 * rho - 0.231 * rho ^ 2 - 0.13 *
+      exp(-1 * (((rho - 0.931) / 0.134) ^ 2) ^ 0.834)
+    sigma3b <- 0.12 + 0.65 * (rho - 1.04)
+    sigma3 <- ifelse(rho <= 1.04, sigma3a, sigma3b)
+  }
+  k2 <- 0.95 * k1
+  d1 <- ifelse(sa > 1.4, 0.07 + 0.046 * (90 - sa) / (sa + 3), 1)
+  K <- 0.5 * (1 + sin(pi * (k - 0.22) / (k1 - 0.22) - pi / 2))
+  d2 <- 1 - ((1 - d1) * (0.11 * sqrt(K) + 0.15 * K + 0.74 * K ^ 2))
+  d3 <- (d2 * k2) * (1 - k) / (k * (1 - k2))
+  alpha <- (1 / sin(alt)) ^ 0.6
+  kbmax <- 0.81 ^ alpha
+  kmax <- (kbmax + d2 * k2 / (1 - k2)) / (1 + d2 * k2 / (1 - k2))
+  dmax <- (d2 * k2) * (1 - kmax) / (kmax * (1 - k2))
+  d4 <- 1 - kmax * (1 - dmax) / k
+  d <- ifelse(k <= kmax, d3, d4)
+  d <- ifelse(k <= k2, d2, d)
+  d <- ifelse(k <= 0.22, 1, d)
+  kX <- 0.56 - 0.32 * exp(-0.06 * sa)
+  kL <- (k - 0.14) / (kX - 0.14)
+  kR <- (k - kX) / 0.71
+  delta <- ifelse(k >= 0.14 & k < kX, -3 * kL ^ 2 *(1 - kL) * sigma3 ^ 1.3, 0)
+  delta <- ifelse(k >= kX & k < (kX + 0.71), 3 * kR * (1 - kR) ^ 2 * sigma3 ^
+                    0.6, delta)
+  d[sigma3 > 0.01] <- d[sigma3 > 0.01] + delta[sigma3 > 0.01]
+  d[rad == 0] <- 0.5
+  d[sa < 0] <- 1
+  # apply correction
+  dif_val <- rad * d
+  dif_val_adj <- dif_val * corr
+  d <- dif_val_adj /rad
+  d[d > 1] <- 1
+  d[d < 0] <- 1
+  d[is.na(d)] <- 0.5
+  d
+}
+
+#' calculates cloud cover form shortwave radiation
+#'
+#' @description
+#' `cloudfromrad` is used to derive a cloud cover index as 1 - the ratio of measured to clearksy radiation
+#' missing values (e.g. at night) are interpolated
+#' @param rad a single numeric value or vector of global solar irradiance(s). Units must be the same
+#' as those for `Ie`. Default is Watts /m^2.
+#' @param tme a single value or vector of POSIXlt objects indicating the time(s)
+#' for which clearksy radiation is required.
+#' @param lat latitude in decimal degrees
+#' @param long longitude in decimal degrees
+#' @param h a single value or vector of specific humidities (\ifelse{html}{\out{kg kg<sup>{-1}</sup> }}{\eqn{kg kg^{-1}}}).
+#' @param tc a single value or vector of temperatures (ºC).
+#' @param p an optional single value or vector of pressures (Pa).
+#' @param G an optional single value or vector describing he moisture profile
+#' in the atmosphere (per Smith 1966).
+#' @param Ie an optional single value for extra-terrestrial radiation to permit adjustment for
+#' sun-earth distances (see details).
+#' @param merid an optional numeric value representing the longitude (decimal degrees) of the local time zone meridian (0 for GMT). Default is `round(long / 15, 0) * 15`
+#' @param dst an optional numeric value representing the time difference from the timezone meridian (hours, e.g. +1 for BST if `merid` = 0).
+#' @import zoo
+#' @export
+#'
+#' @seealso The function [clearskyrad()] is uses to derive clear-sky irradiance. Can be used
+#' to derive cloud covers for computing longwave radiation when using [longwavetopo()] or [longwaveveg()]
+#'
+#' @details
+#' If no values for `p` are provided, a default value of 101300 Pa, typical of
+#' sea-level pressure, is assumed. The method used is that detailed in
+#' Crawford & Duchon (1999) Quarterly Journal of the Royal Meteorological
+#' Society 122: 1127-1151. The method is not greatly sensitive to humidity,
+#' temperature and pressure so approximate values can be provided, or the defcloudfromradaults
+#' chosen, if these data are unavailable.
+#'
+#' @return a single value or vector of clearksy radiation.
+#'
+#' @examples
+#' tme <- as.POSIXlt(c(0:23) * 3600, origin = "2010-05-23 00:00", tz = "GMT")
+#' rad <- clearskyrad(tme, 50, -5, 0.007953766 , 11) * 0.75
+#' cfc <- cloudfromrad(rad, tme, 50, -5, 0.007953766 , 11)
+#' plot(cfc ~ as.POSIXct(tme), type = "l") # should be 0.25
+cloudfromrad <- function(rad, tme, lat, long, h = 0.00697, tc = 15, p = 101300, G = 2.78,
+                         Ie = 1352.778, merid = round(long/15, 0) * 15, dst = 0) {
+  Ic <- clearskyrad(tme, lat, long, h, tc, p, G, Ie, merid, dst)
+  s <- rad / Ic
+  s[s > 1] <- 1
+  s[s < 0] <- 0
+  if (is.na(s[1])) s[1] <- mean(s, na.rm = T)
+  if (is.na(s[length(s)])) s[length(s)] <- mean(s, na.rm = T)
+  # Replaced method `s <- na.approx(s)` used in microclima to avoid a dependency on
+  # package `zoo`
+  s <- approx(seq_along(s), s, xout = seq_along(s), method = "linear")$y
+  cfc <- 1 - s
+  cfc
+}

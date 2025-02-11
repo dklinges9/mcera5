@@ -58,10 +58,10 @@ coastal_correct <- function(tc, tme, landprop, cor_fac = 1.285) {
 #' @param lat latitude
 #' @return vector of radiation
 #' @noRd
-rad_calc <- function(rad, tme, long, lat) {
-  bound <- function(x, mn = 0, mx = 1) {
-    x[x > mx] <- mx
-    x[x < mn] <- mn
+rad_calc <- function(rad, tme, long, lat, mn = 0, mx = 1) {
+  bound <- function(x, mn2 = mn, mx2 = mx) {
+    x[x > mx2] <- mx2
+    x[x < mn2] <- mn2
     x
   }
   tme1h <- as.POSIXlt(tme, tz = "UTC", origin = "1970-01-01 00:00")
@@ -145,14 +145,9 @@ focal_dist <- function(long, lat, margin = .25) {
 #' @param lat latitude
 #' @param start_time start time for data required
 #' @param end_time end time for data required
-#' @param dtr_cor logical value indicating whether to apply a diurnal temperature
-#' range correction to air temperature values. Default = `TRUE`.
-#' @param dtr_cor_fac numeric value to be used in the diurnal temperature range
-#' correction. Default = 1.
 #' @return data frame of hourly climate variables
 #' @noRd
-nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
-                     dtr_cor_fac = 1, format = "microclima") {
+nc_to_df_era5 <- function(nc, long, lat, start_time, end_time) {
 
   # Extract time dimension
   timedim <- extract_timedim(ncdf4::nc_open(nc))
@@ -177,93 +172,7 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
       obs_time = c(base_datetime + nc_datetimes),
       timezone = lubridate::tz(obs_time)
     ) %>% # convert to readable times
-    dplyr::filter(., obs_time >= start_time & obs_time < end_time + 1) %>%
-    dplyr::rename(., pressure = sp) %>%
-    dplyr::mutate(.,
-      temperature = t2m - 273.15, # kelvin to celsius
-      lsm = dplyr::case_when(
-        lsm < 0 ~ 0,
-        lsm >= 0 ~ lsm
-      ),
-      temperature = dplyr::case_when(
-        dtr_cor == TRUE ~ coastal_correct(temperature, obs_time, lsm, dtr_cor_fac),
-        dtr_cor == FALSE ~ temperature
-      ),
-      humidity = humfromdew(d2m - 273.15, temperature, pressure),
-      windspeed = sqrt(u10^2 + v10^2),
-      windspeed = windheight(windspeed, 10, 2),
-      winddir = (atan2(u10, v10) * 180 / pi + 180) %% 360,
-      cloudcover = tcc * 100,
-      # Convert from W/m2 to MJ/hr/m2 - the unit desired for microclima and NMR
-      # Confusingly, converting from J/m2 to W/m2 (performed elsewhere) also entails multiplying by .0036
-      netlong = abs(avg_snlwrf) * 0.0036,
-      downlong = avg_sdlwrf * 0.0036,
-      uplong = netlong + downlong,
-      emissivity = downlong / uplong,
-      precip = tp * 1000,
-      jd = julday(
-        lubridate::year(obs_time),
-        lubridate::month(obs_time),
-        lubridate::day(obs_time)
-      ),
-      si = siflat(lubridate::hour(obs_time), lat, long, jd, merid = 0)
-    ) %>%
-    dplyr::mutate(.,
-      rad_dni = fdir * 0.000001,
-      rad_glbl = ssrd * 0.000001,
-      rad_glbl = rad_calc(rad_glbl, obs_time, long, lat), # fix hourly rad
-      rad_dni = rad_calc(rad_dni, obs_time, long, lat), # fix hourly rad
-      rad_dif = rad_glbl - rad_dni * si
-    ) %>% # converted from W / m2 to MJ/hr/m2 - the unit desired for microclima and NMR
-    dplyr::mutate(., szenith = 90 - solalt(lubridate::hour(obs_time),
-      lat, long, jd,
-      merid = 0
-    ))
-
-  if (format %in% c("microclima", "NicheMapR")) {
-    dat = dat %>%
-      dplyr::select(
-        ., obs_time, temperature, humidity, pressure, windspeed,
-        winddir, emissivity, netlong, uplong, downlong,
-        rad_dni, rad_dif, szenith, cloudcover, timezone
-      )
-  }
-
-  if(format %in% c("microclimc")) {
-    dat = dat %>%
-      dplyr::mutate(raddr = (rad_dni * si)/0.0036,
-                    difrad = rad_dif/0.0036,
-                    swrad = raddr + difrad,
-                    pres = pressure/1000, # convert to kPa,
-                    difrad = rad_dif/0.0036,
-                    precip = precip) %>%
-      dplyr::rename(temp = temperature)
-    dat$relhum = converthumidity(dat$humidity, intype = "specific",
-                                 tc = dat$temp, pk = dat$pres)[["relative"]]
-    dat$relhum = ifelse(dat$relhum > 100, 100, dat$relhum)
-    dat = dat %>%
-      dplyr::rename(skyem = emissivity) %>%
-      dplyr::select(obs_time, temp, relhum, pres, swrad, difrad, skyem,
-                                windspeed, winddir, precip)
-  }
-
-  if (format %in% c("micropoint", "microclimf")) {
-    dat = dat %>%
-      dplyr::mutate(raddr = (rad_dni * si)/0.0036,
-                    difrad = rad_dif/0.0036,
-                    swdown = raddr + difrad,
-                    pres = pressure/1000, # convert to kPa,
-                    difrad = rad_dif/0.0036,
-                    precip = precip,
-                    lwdown = downlong/0.0036) %>%
-      dplyr::rename(temp = temperature)
-    dat$relhum = converthumidity(dat$humidity, intype = "specific",
-                                 tc = dat$temp, pk = dat$pres)[["relative"]]
-    dat$relhum = ifelse(dat$relhum > 100, 100, dat$relhum)
-    dat = dat %>%
-      dplyr::select(obs_time, temp, relhum, pres, swdown, difrad, lwdown, windspeed, winddir, precip)
-  }
-
+    dplyr::filter(., obs_time >= start_time & obs_time < end_time + 1)
   return(dat)
 }
 
@@ -298,32 +207,174 @@ nc_to_df_land <- function(nc, long, lat, start_time, end_time) {
     ) %>%
     tidync::hyper_tibble() %>%
     dplyr::mutate(.,
-      obs_time = base_datetime + nc_datetimes,
-      timezone = lubridate::tz(obs_time)
+                  obs_time = c(base_datetime + nc_datetimes),
+                  timezone = lubridate::tz(obs_time)
     ) %>% # convert to readable times
     dplyr::filter(., obs_time >= start_time & obs_time < end_time + 1) %>%
+
+    # Calculate variables that are included in ERA5, but not ERA5-land
+    dplyr::mutate(.,
+                  jd = julday(
+                    lubridate::year(obs_time),
+                    lubridate::month(obs_time),
+                    lubridate::day(obs_time)
+                  ),
+
+                  # First, convert ssrd from J / m2 to W / m2 by multiplying by .0036
+                  ssrd_watts = ssrd * .0036,
+
+                  # Calculate total_sky_direct_solar_radiation_at_surface (fdir)
+                  # difprop requires radiation input as either W/m2 or kJ/m2,
+                  # so using the ssrd converted to watts above
+                  # difprop calculates FRACTION of diffuse radiation:
+                  # fdir (direct) = total (ssrd) * (1 - diffuse (from difprop))
+                  fdir_watts = ssrd_watts *
+                    (1 - difprop(ssrd_watts, jd, lubridate::hour(obs_time),
+                                 lat, long, hourly = TRUE, watts = TRUE)),
+                  # but, fdir is in J/m2, so convert back to J/m2
+                  fdir = fdir_watts / .0036,
+
+                  # Convert from J to kJ
+                  strd_kj = strd * 0.000001,
+                  str_kj = str * 0.000001,
+
+                  strd_watts = strd * .0036,
+                  str_watts = str * .0036,
+
+                  # Calculate mean_surface_downward_long_wave_radiation_flux (avg_sdlwrf)
+                  # Convert from Surface long-wave (thermal) radiation downwards (strd)
+                  # Use rad_calc() to convert from accumulation across the hour to a mean for the hour
+                  # Bounds of rad_calc assumes kJ, not J
+                  avg_sdlwrf = rad_calc(strd_watts, obs_time, long, lat),
+                  # Convert from kJ/m2 to J/m2 to Watts/m2
+                  # avg_sdlwrf = avg_sdlwrf / 0.000001  * .0036,
+
+                  # Calculate mean_surface_net_long_wave_radiation_flux (avg_snlwrf)
+                  # Convert from Surface net long-wave (thermal) radiation (str)
+                  # Use rad_calc() to convert from accumulation across the hour to a mean for the hour
+                  # Because str is negative (ECMWF convention for vertical fluxes is positive downwards),
+                  # We need to change the bounds from their defaults (0, 1) to (-1, 0)
+                  avg_snlwrf = rad_calc(str_watts, obs_time, long, lat, mn = -1, mx = 0),
+                  # Convert from kJ/m2 to J/m2 to Watts/m2
+                  # avg_snlwrf = avg_snlwrf / 0.000001  * .0036,
+
+                  # Calculate total cloud cover (tcc), using cloudfromrad()
+                  tcc = cloudfromrad(rad = ssrd_watts,
+                    tme = as.POSIXlt(obs_time), lat = lat, long = long, h = 0.00697, tc = t2m - 273.15,
+                    p = sp, merid = round(long/15, 0) * 15)
+    )
+  # Add land-sea mask if does not exist
+  if (!"lsm" %in% colnames(dat)) {
+    message("Land-sea mask does not exist, assuming all pixels are on land")
+    dat$lsm <- 1
+  }
+
+  return(dat)
+}
+
+#' Continued conversion of hourly climate data, applicable to both ERA5 and ERA5-land
+#' @param dat data frame of ERA5 or ERA5-land data as returned by `nc_to_df_era5` or `nc_to_df_land`
+#' @param long longitude
+#' @param lat latitude
+#' @param start_time start time for data required
+#' @param end_time end time for data required
+#' @param dtr_cor logical value indicating whether to apply a diurnal temperature
+#' range correction to air temperature values. Default = `TRUE`.
+#' @param dtr_cor_fac numeric value to be used in the diurnal temperature range
+#' correction. Default = 1.
+#' @param format specifies what microclimate package extracted climate data will
+#" be used for. Data will be formatted accordingly. Default is "microclima".
+#' @return data frame of hourly climate variables
+#' @noRd
+era5_process <- function(dat, long, lat, start_time, end_time, dtr_cor = TRUE,
+                     dtr_cor_fac = 1, format = "microclima") {
+
+  dat <- dat %>%
     dplyr::rename(., pressure = sp) %>%
     dplyr::mutate(.,
-      temperature = t2m - 273.15, # kelvin to celcius
-      humidity = humfromdew(d2m - 273.15, temperature, pressure),
-      windspeed = sqrt(u10^2 + v10^2),
-      windspeed = windheight(windspeed, 10, 2),
-      winddir = (atan2(u10, v10) * 180 / pi + 180) %% 360,
-      jd = julday(
-        lubridate::year(obs_time),
-        lubridate::month(obs_time),
-        lubridate::day(obs_time)
-      ),
-      si = siflat(lubridate::hour(obs_time), lat, long, jd, merid = 0)
+                  temperature = t2m - 273.15, # kelvin to celsius
+                  lsm = dplyr::case_when(
+                    lsm < 0 ~ 0,
+                    lsm >= 0 ~ lsm
+                  ),
+                  temperature = dplyr::case_when(
+                    dtr_cor == TRUE ~ coastal_correct(temperature, obs_time, lsm, dtr_cor_fac),
+                    dtr_cor == FALSE ~ temperature
+                  ),
+                  humidity = humfromdew(d2m - 273.15, temperature, pressure),
+                  windspeed = sqrt(u10^2 + v10^2),
+                  windspeed = windheight(windspeed, 10, 2),
+                  winddir = (atan2(u10, v10) * 180 / pi + 180) %% 360,
+                  cloudcover = tcc * 100,
+                  # Convert from W/m2 to MJ/hr/m2 - the unit desired for microclima and NMR
+                  # Confusingly, converting from J/m2 to W/m2 (performed elsewhere) also entails multiplying by .0036
+                  netlong = abs(avg_snlwrf) * 0.0036,
+                  downlong = avg_sdlwrf * 0.0036,
+                  uplong = netlong + downlong,
+                  emissivity = downlong / uplong,
+                  precip = tp * 1000,
+                  jd = julday(
+                    lubridate::year(obs_time),
+                    lubridate::month(obs_time),
+                    lubridate::day(obs_time)
+                  ),
+                  si = siflat(lubridate::hour(obs_time), lat, long, jd, merid = 0)
     ) %>%
+    dplyr::mutate(.,
+                  rad_dni = fdir * 0.000001,
+                  rad_glbl = ssrd * 0.000001,
+                  rad_glbl = rad_calc(rad_glbl, obs_time, long, lat), # fix hourly rad
+                  rad_dni = rad_calc(rad_dni, obs_time, long, lat), # fix hourly rad
+                  rad_dif = rad_glbl - rad_dni * si
+    ) %>% # converted from W / m2 to MJ/hr/m2 - the unit desired for microclima and NMR
     dplyr::mutate(., szenith = 90 - solalt(lubridate::hour(obs_time),
-      lat, long, jd,
-      merid = 0
-    )) %>%
-    dplyr::select(
-      ., obs_time, temperature, humidity, pressure, windspeed,
-      winddir, szenith, timezone
-    )
+                                           lat, long, jd,
+                                           merid = 0
+    ))
+
+  if (format %in% c("microclima", "NicheMapR")) {
+    dat = dat %>%
+      dplyr::select(
+        ., obs_time, temperature, humidity, pressure, windspeed,
+        winddir, emissivity, netlong, uplong, downlong,
+        rad_dni, rad_dif, szenith, cloudcover, timezone
+      )
+  }
+
+  if(format %in% c("microclimc")) {
+    dat = dat %>%
+      dplyr::mutate(raddr = (rad_dni * si)/0.0036,
+                    difrad = rad_dif/0.0036,
+                    swrad = raddr + difrad,
+                    pres = pressure/1000, # convert to kPa,
+                    difrad = rad_dif/0.0036,
+                    precip = precip) %>%
+      dplyr::rename(temp = temperature)
+    dat$relhum = converthumidity(dat$humidity, intype = "specific",
+                                 tc = dat$temp, pk = dat$pres)[["relative"]]
+    dat$relhum = ifelse(dat$relhum > 100, 100, dat$relhum)
+    dat = dat %>%
+      dplyr::rename(skyem = emissivity) %>%
+      dplyr::select(obs_time, temp, relhum, pres, swrad, difrad, skyem,
+                    windspeed, winddir, precip)
+  }
+
+  if (format %in% c("micropoint", "microclimf")) {
+    dat = dat %>%
+      dplyr::mutate(raddr = (rad_dni * si)/0.0036,
+                    difrad = rad_dif/0.0036,
+                    swdown = raddr + difrad,
+                    pres = pressure/1000, # convert to kPa,
+                    difrad = rad_dif/0.0036,
+                    precip = precip,
+                    lwdown = downlong/0.0036) %>%
+      dplyr::rename(temp = temperature)
+    dat$relhum = converthumidity(dat$humidity, intype = "specific",
+                                 tc = dat$temp, pk = dat$pres)[["relative"]]
+    dat$relhum = ifelse(dat$relhum > 100, 100, dat$relhum)
+    dat = dat %>%
+      dplyr::select(obs_time, temp, relhum, pres, swdown, difrad, lwdown, windspeed, winddir, precip)
+  }
 
   return(dat)
 }

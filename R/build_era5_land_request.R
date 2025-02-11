@@ -68,7 +68,7 @@ build_era5_land_request <- function(xmin, xmax, ymin, ymax, start_time, end_time
           "2m_temperature", "2m_dewpoint_temperature", "surface_pressure",
           "10m_u_component_of_wind", "10m_v_component_of_wind", "total_precipitation",
           "surface_solar_radiation_downwards", "surface_net_thermal_radiation",
-          "surface_thermal_radiation_downwards"
+          "surface_thermal_radiation_downwards", "land_sea_mask"
         ),
         "year" = as.character(time[2]),
         "month" = as.character(time[1]),
@@ -84,9 +84,9 @@ build_era5_land_request <- function(xmin, xmax, ymin, ymax, start_time, end_time
           "21:00", "22:00", "23:00"
         ),
         "area" = ar,
-        "format" = "netcdf",
-        "download_format" = "unarchived",
-        "target" = paste0(outfile_name, "_", time[2], "_", time[1], ".nc")
+        "data_format" = "netcdf",
+        "download_format" = "zip",
+        "target" = paste0(outfile_name, "_", time[2], "_", time[1], ".zip")
       )
     })
 
