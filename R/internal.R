@@ -51,7 +51,7 @@ coastal_correct <- function(tc, tme, landprop, cor_fac = 1.285) {
 
 
 #' function to correct radiation for being an average over the hour rather than
-#' on the hour
+#' accumulation across the hour
 #' @param rad vector of radiation
 #' @param tme vector of times
 #' @param long longitude
@@ -180,7 +180,7 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
     dplyr::filter(., obs_time >= start_time & obs_time < end_time + 1) %>%
     dplyr::rename(., pressure = sp) %>%
     dplyr::mutate(.,
-      temperature = t2m - 273.15, # kelvin to celcius
+      temperature = t2m - 273.15, # kelvin to celsius
       lsm = dplyr::case_when(
         lsm < 0 ~ 0,
         lsm >= 0 ~ lsm
@@ -194,8 +194,10 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
       windspeed = windheight(windspeed, 10, 2),
       winddir = (atan2(u10, v10) * 180 / pi + 180) %% 360,
       cloudcover = tcc * 100,
-      netlong = abs(avg_snlwrf) * 0.0036,  # converted to MJ m-2 hr-1
-      downlong = avg_sdlwrf * 0.0036,  # converted to MJ m-2 hr-1
+      # Convert from W/m2 to MJ/hr/m2 - the unit desired for microclima and NMR
+      # Confusingly, converting from J/m2 to W/m2 (performed elsewhere) also entails multiplying by .0036
+      netlong = abs(avg_snlwrf) * 0.0036,
+      downlong = avg_sdlwrf * 0.0036,
       uplong = netlong + downlong,
       emissivity = downlong / uplong,
       precip = tp * 1000,
@@ -212,7 +214,7 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
       rad_glbl = rad_calc(rad_glbl, obs_time, long, lat), # fix hourly rad
       rad_dni = rad_calc(rad_dni, obs_time, long, lat), # fix hourly rad
       rad_dif = rad_glbl - rad_dni * si
-    ) %>% # converted to MJ m-2 hr-1 from J m-2 hr-1
+    ) %>% # converted from W / m2 to MJ/hr/m2 - the unit desired for microclima and NMR
     dplyr::mutate(., szenith = 90 - solalt(lubridate::hour(obs_time),
       lat, long, jd,
       merid = 0
@@ -234,8 +236,7 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
                     swrad = raddr + difrad,
                     pres = pressure/1000, # convert to kPa,
                     difrad = rad_dif/0.0036,
-                    precip = precip,
-                    lwdown = downlong/0.0036) %>%
+                    precip = precip) %>%
       dplyr::rename(temp = temperature)
     dat$relhum = converthumidity(dat$humidity, intype = "specific",
                                  tc = dat$temp, pk = dat$pres)[["relative"]]
