@@ -203,8 +203,20 @@ extract_clima <- function(
 
   ## Load in and subset netCDF variables --------------
 
-  varname_list <- c("t2m", "d2m", "sp", "u10" , "v10",  "tp", "tcc", "msnlwrf",
-                    "msdwlwrf", "fdir", "ssrd", "lsm")
+
+
+
+  # Rename mean surface rad variables, which changed names on the CDS in late Jan 2025
+  nc_dat <- ncdf4::nc_open(nc)
+  varnames <- names(nc_dat$var)
+
+  if ("msnlwrf" %in% varnames) {
+    varname_list <- c("t2m", "d2m", "sp", "u10" , "v10",  "tp", "tcc", "msnlwrf",
+                      "msdwlwrf", "fdir", "ssrd", "lsm")
+  } else {
+    varname_list <- c("t2m", "d2m", "sp", "u10" , "v10",  "tp", "tcc", "avg_snlwrf",
+                      "avg_sdlwrf", "fdir", "ssrd", "lsm")
+  }
 
   var_list <- lapply(varname_list, function(v) {
     if (v == "lsm") {
@@ -227,14 +239,19 @@ extract_clima <- function(
 
   names(var_list) <- varname_list
 
+  if ("msnlwrf" %in% names(var_list)) {
+    var_list$avg_snlwrf <- var_list$msnlwrf
+    var_list$avg_sdlwrf <- var_list$msdwlwrf
+  }
+
   t2m <- var_list$t2m
   d2m <- var_list$d2m
   sp <- var_list$sp
   u10 <- var_list$u10
   v10 <- var_list$v10
   tcc <- var_list$tcc
-  msnlwrf <- var_list$msnlwrf
-  msdwlwrf <- var_list$msdwlwrf
+  avg_snlwrf <- var_list$avg_snlwrf
+  avg_sdlwrf <- var_list$avg_sdlwrf
   fdir <- var_list$fdir
   ssrd <- var_list$ssrd
   prec <- var_list$tp * 1000 # convert from mm to metres
@@ -270,8 +287,8 @@ extract_clima <- function(
   windspeed = windheight(windspeed, 10, 2)
   winddir = (terra::atan2(u10, v10) * 180/pi + 180)%%360
   cloudcover = tcc * 100
-  netlong = abs(msnlwrf) * 0.0036 # Convert to MJ/m^2/hr
-  downlong = msdwlwrf * 0.0036 # Convert to MJ/m^2/hr
+  netlong = abs(avg_snlwrf) * 0.0036 # Convert to MJ/m^2/hr
+  downlong = avg_sdlwrf * 0.0036 # Convert to MJ/m^2/hr
   uplong = netlong + downlong
   emissivity = downlong/uplong
   jd = julday(lubridate::year(tme),
