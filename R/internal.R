@@ -246,6 +246,10 @@ nc_to_df_land <- function(nc, long, lat, start_time, end_time) {
                   # Use rad_calc() to convert from accumulation across the hour to a mean for the hour
                   # Bounds of rad_calc assumes kJ, not J
                   avg_sdlwrf = rad_calc(strd_watts, obs_time, long, lat),
+
+                  # For now, generating dummy values
+                  avg_sdlwrf = NA,
+
                   # Convert from kJ/m2 to J/m2 to Watts/m2
                   # avg_sdlwrf = avg_sdlwrf / 0.000001  * .0036,
 
@@ -255,6 +259,10 @@ nc_to_df_land <- function(nc, long, lat, start_time, end_time) {
                   # Because str is negative (ECMWF convention for vertical fluxes is positive downwards),
                   # We need to change the bounds from their defaults (0, 1) to (-1, 0)
                   avg_snlwrf = rad_calc(str_watts, obs_time, long, lat, mn = -1, mx = 0),
+
+                  # For now, generating dummy values
+                  avg_snlwrf = NA,
+
                   # Convert from kJ/m2 to J/m2 to Watts/m2
                   # avg_snlwrf = avg_snlwrf / 0.000001  * .0036,
 
@@ -269,6 +277,7 @@ nc_to_df_land <- function(nc, long, lat, start_time, end_time) {
     dat$lsm <- 1
   }
 
+  message("Currently, ERA5-land does not provide sufficient variables of longwave (thermal) radiation to calculate corresponding downwards and net longwave values here. Thus, derivative variables will be NA: netlong, uplong, downlong, lwdown, emissivity, skyem")
   return(dat)
 }
 
