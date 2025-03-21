@@ -29,6 +29,8 @@ find your User ID (UID) and Personal Access Token, both which are required for y
 
 ## News
 
+_21 March 2025_: this week, ECMWF announced a new [time series ERA5 archive](https://forum.ecmwf.int/t/new-dataset-published-in-cds-era5-hourly-time-series-data-on-single-levels-from-1940-to-present/11919), and the [ERA-Explorer](https://era-explorer.climate.copernicus.eu/) for visualizing ERA5 data. This new time series ERA5 archive is "for retrieving long time-series for a single point in a efficient way", which may be useful for more efficient `mcera5` queries. Accessing this new archive is on my radar and I hope for it to be a feature soon!
+
 _7 Jan 2025_: CDS has now changed the URL for the API from their temporary URL to their permanent URL, which may require an update to your .cdsapirc file in your home directory. See [here](https://cds.climate.copernicus.eu/how-to-api) for the updated URL. As of today, https://cds.climate.copernicus.eu/api is the new URL.  
 
 _8 Oct 2024_: modularity to handle ERA5-reanalysis and ERA5-land files downloaded from BOTH the old (legacy) CDS and the new (beta) CDS has been provided in `mcera5`. In addition, users must specify if they want extracted climate data to be formatted for a specific microclimate R package: `microclima`, `NicheMapR`, `microclimc`, `microclimf`, or `micropoint` (`microclimc` is the default). The branch "new_cds_time_edits" has been merged into master and will soon be deleted.
