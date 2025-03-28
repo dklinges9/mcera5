@@ -178,7 +178,13 @@ nc_to_df <- function(nc, long, lat, start_time, end_time, dtr_cor = TRUE,
       timezone = lubridate::tz(obs_time)
     ) %>% # convert to readable times
     dplyr::filter(., obs_time >= start_time & obs_time < end_time + 1) %>%
-    dplyr::rename(., pressure = sp) %>%
+    dplyr::rename(.,
+                  pressure = sp,
+                  # If netCDF has old variable names, rename. Use dplyr::any_of()
+                  # to offer flexibility, in case msnlwrf and msdwlwrf columns
+                  # don't exist (in which case netCDF already has new names)
+                  dplyr::any_of(
+                    c(avg_snlwrf = "msnlwrf", avg_sdlwrf = "msdwlwrf"))) %>%
     dplyr::mutate(.,
       temperature = t2m - 273.15, # kelvin to celsius
       lsm = dplyr::case_when(
