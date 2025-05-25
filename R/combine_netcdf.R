@@ -35,7 +35,12 @@ combine_netcdf <- function(filenames, combined_name) {
     # Then bind all of the arrays together using abind, flexibly called via do.call
     data_list[[i]] <- do.call(abind::abind, list(
       ... = vars_dat,
-      along = 3
+      # If the ERA5 netCDF is a slice that has just 1 value of latitude, or 1 value
+      # of longitude, then vars_dat will return a 2-dimensional array rather
+      # than an expected 3-dimensional array. But the time dimension should always
+      # best last, and it is the time dimension we specify for argument 'along'
+      # So set 'along' as the length of dimensions, to pull the last dimension
+      along = length(dim(vars_dat[[1]]))
     ))
 
     # To populate the time dimension, need to pull out the time values from each
