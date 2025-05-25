@@ -72,7 +72,7 @@ request_era5 <- function(request, uid, out_path, overwrite = FALSE,
                           substr(file_prefix, 1, nchar(file_prefix) - 1),
                           file_prefix)
     # Combine netCDF files
-    combine_netcdf(filenames = fnames,
+    combine_netcdf(filenames = paste0(out_path, "/", fnames),
                    combined_name = paste0(out_path, "/", file_prefix, ".nc"))
     cat("Finished.\n")
   }
