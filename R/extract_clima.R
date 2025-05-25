@@ -347,6 +347,12 @@ extract_clima <- function(
                                              tc  = terra::as.array(temperature),
                                              pk = terra::as.array(pres))$relative
     relhum[relhum > 100] <- 100
+
+    ## NOTE: extract_clima()  DOES NOT CURRENTLY CONVERT ACCUMULATED MEASUREMENTS
+    # ACROSS THE HOUR TO A MEAN ON THE HOUR, AS IS PERFORMED IN rad_calc(). THIS
+    # YIELDS SMALL BUT NON-MARGINABLE DIFFERENCES IN VALUES
+    message("note: extract_clima() does not currently convert accumulated measurements across the hour to a mean on the hour, as is performed in extract_clim(). This yields small but non-marginable differences in values.")
+
     raddr <- (rad_dni * si)/0.0036 # convert back to W/m^2
     difrad <- rad_dif/0.0036 # convert from MJ/hr to W/m^2
     swrad <- raddr + difrad
