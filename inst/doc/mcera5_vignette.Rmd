@@ -18,9 +18,9 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 
 ## Setup
 
-ERA5 climate data can be downloaded from the ECMWF climate data store (CDS). Note that in July 2024 the CDS migrated to a new platform, and the old platform was deprecated in Sept 2024. The following describes how to access the data using R:
+ERA5 climate data can be downloaded from the ECMWF Climate Data Store (CDS). Note that in July 2024 the CDS migrated to a new platform, and the old platform was deprecated in Sept 2024. The following describes how to access the data using R:
 
-1) Register for an ECMWF account [here](https://accounts.ecmwf.int/auth/realms/ecmwf/login-actions/registration?client_id=cms-www&tab_id=yu4FgUR5-ds). Upon registering you will need to accept all of the Terms and Conditions listed at the bottom of the form.
+1) Register for an ECMWF account at [https://www.ecmwf.int/](https://www.ecmwf.int/). Click "Log in" in the top right, and then click "Register new user". Upon registering you will need to accept all of the Terms and Conditions listed at the bottom of the form.
 
 2) Then, navigate to the CDS site [here](https://cds.climate.copernicus.eu/) and login using the button in the top right. Once logged in, hover your mouse over your name in the top right, and click on the option "Your profile" that appears (this should bring you to [this page](https://cds.climate.copernicus.eu/profile). Here you will 
 find your User ID (UID) and Personal Access Token, both which are required for you to remotely download data from the CDS. Make a note of these.  
@@ -55,6 +55,7 @@ sapply(files_source,source)
 
 ```{r creds, eval = FALSE}
 # assign your credentials from the CDS User ID and Personal Access Token
+# There are found here: https://cds.climate.copernicus.eu/profile
 uid <- "*****"
 cds_access_token <- "********-****-****-****-************"
 
@@ -116,6 +117,7 @@ The next step is to execute the requests, by sending them to the CDS. Executing 
 request_era5(request = req, uid = uid, out_path = file_path)
 ```
 
+To confirm that your request has been sent to the API, you can visit [this page](https://cds.climate.copernicus.eu/requests?tab=all), which will list your current and recent API requests. If you recently ran `request_era5` you should see a request with status "Queued" or "In progress". If the query via `request_era5` failed in R (e.g. perhaps because you accidentally specified downloading to a directory that does not exist), you still may be able to download the requested data from this page.
 
 Common errors when for CDS requests can be found on the corresponding [ECMWF Confluence page](https://confluence.ecmwf.int/display/CKB/Common+Error+Messages+for+CDS+Requests).  
 

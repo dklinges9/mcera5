@@ -344,14 +344,15 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <div id="setup" class="section level2">
 <h2>Setup</h2>
-<p>ERA5 climate data can be downloaded from the ECMWF climate data store
+<p>ERA5 climate data can be downloaded from the ECMWF Climate Data Store
 (CDS). Note that in July 2024 the CDS migrated to a new platform, and
 the old platform was deprecated in Sept 2024. The following describes
 how to access the data using R:</p>
 <ol style="list-style-type: decimal">
-<li><p>Register for an ECMWF account <a href="https://accounts.ecmwf.int/auth/realms/ecmwf/login-actions/registration?client_id=cms-www&amp;tab_id=yu4FgUR5-ds">here</a>.
-Upon registering you will need to accept all of the Terms and Conditions
-listed at the bottom of the form.</p></li>
+<li><p>Register for an ECMWF account at <a href="https://www.ecmwf.int/">https://www.ecmwf.int/</a>. Click “Log in”
+in the top right, and then click “Register new user”. Upon registering
+you will need to accept all of the Terms and Conditions listed at the
+bottom of the form.</p></li>
 <li><p>Then, navigate to the CDS site <a href="https://cds.climate.copernicus.eu/">here</a> and login using the
 button in the top right. Once logged in, hover your mouse over your name
 in the top right, and click on the option “Your profile” that appears
@@ -380,11 +381,12 @@ ERA5-land.</p></li>
 <div id="set-user-credentials-for-api-access" class="section level4">
 <h4>Set user credentials for API access</h4>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># assign your credentials from the CDS User ID and Personal Access Token</span></span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>uid <span class="ot">&lt;-</span> <span class="st">&quot;*****&quot;</span></span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>cds_access_token <span class="ot">&lt;-</span> <span class="st">&quot;********-****-****-****-************&quot;</span></span>
-<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a></span>
-<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>ecmwfr<span class="sc">::</span><span class="fu">wf_set_key</span>(<span class="at">user =</span> uid,</span>
-<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>                   <span class="at">key =</span> cds_access_token)</span></code></pre></div>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="co"># There are found here: https://cds.climate.copernicus.eu/profile</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>uid <span class="ot">&lt;-</span> <span class="st">&quot;*****&quot;</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>cds_access_token <span class="ot">&lt;-</span> <span class="st">&quot;********-****-****-****-************&quot;</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>ecmwfr<span class="sc">::</span><span class="fu">wf_set_key</span>(<span class="at">user =</span> uid,</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>                   <span class="at">key =</span> cds_access_token)</span></code></pre></div>
 <p>Note that earlier versions of <code>ecmwfr</code> required
 specification of <code>service</code> = “cds”, but as of August 2024
 this is no longer the case (corresponding to the update to the new CDS
@@ -484,6 +486,14 @@ netCDF to be downloaded to their machine, and will receive a
 confirmation message (“ERA5 netCDF file successfully downloaded”) from
 the R console upon completion:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">request_era5</span>(<span class="at">request =</span> req, <span class="at">uid =</span> uid, <span class="at">out_path =</span> file_path)</span></code></pre></div>
+<p>To confirm that your request has been sent to the API, you can visit
+<a href="https://cds.climate.copernicus.eu/requests?tab=all">this
+page</a>, which will list your current and recent API requests. If you
+recently ran <code>request_era5</code> you should see a request with
+status “Queued” or “In progress”. If the query via
+<code>request_era5</code> failed in R (e.g. perhaps because you
+accidentally specified downloading to a directory that does not exist),
+you still may be able to download the requested data from this page.</p>
 <p>Common errors when for CDS requests can be found on the corresponding
 <a href="https://confluence.ecmwf.int/display/CKB/Common+Error+Messages+for+CDS+Requests">ECMWF
 Confluence page</a>.</p>
