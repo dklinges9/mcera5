@@ -3,6 +3,7 @@
 export("%>%")
 export(build_era5_land_request)
 export(build_era5_request)
+export(build_era5_timeseries_request)
 export(clearskyrad)
 export(combine_netcdf)
 export(converthumidity)
