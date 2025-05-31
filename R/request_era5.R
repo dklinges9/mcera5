@@ -46,8 +46,8 @@ request_era5 <- function(request, uid, out_path, overwrite = FALSE,
         cat("ERA5 netCDF file successfully downloaded.\n")
       }
 
-      # If target file is a .zip, then unzip and bind together netCDF files
-      if (grepl(".zip", request[[req]]$target)) {
+      # If target file is a .zip, but request isn't timeseries, then unzip and bind together netCDF files
+      if (grepl(".zip", request[[req]]$target) & !grepl("timeseries", request[[req]]$dataset_short_name)) {
         cat("Downloaded file is a .zip, so unzipping and binding together contents...\n")
         # Designate input path (nc_zip) and output path (combined_name) that are
         # handed to bind_zippped_netcdf()
@@ -55,6 +55,11 @@ request_era5 <- function(request, uid, out_path, overwrite = FALSE,
         combined_name <- paste0(out_path, "/", gsub(".zip", ".nc", request[[req]]$target))
         bind_zipped_netcdf(nc_zip, combined_name)
       }
+
+      # if (grepl(".zip", request[[req]]$target) & grepl("timeseries", request[[req]]$dataset_short_name)) {
+      #   cat("Downloaded file is a .zip, so unzipping contents...\n")
+      #   unzip(nc_zip, exdir = out_path)
+      # }
     }
   }
   if (length(request) > 1 & combine) {
