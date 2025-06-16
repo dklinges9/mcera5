@@ -75,13 +75,27 @@ combine_netcdf <- function(filenames, combined_name) {
     )
   }
 
-  # Create a new file
-  file_combined <- ncdf4::nc_create(
+  # Create a new file-- first try flexible netCDF-3 or netCDF-4, but if fails
+  # (likely because of a large file) then force v4, which may solve the issue
+  file_combined <- try(ncdf4::nc_create(
     # Filename from param combined_name
     filename = combined_name,
     # We need to define the variables here
     vars = vars_list
-  )
+  ), silent = TRUE)
+
+  if (any(class(file_combined) == "try-error")) {
+    # If the file creation failed, then force v4
+    message("Failed to create netCDF-3, trying netCDF-4...")
+
+    file_combined <- ncdf4::nc_create(
+      # Filename from param combined_name
+      filename = combined_name,
+      # We need to define the variables here
+      vars = vars_list,
+      force_v4 = TRUE
+    )
+  }
 
 
   # And write to it (must write one variable at a time with ncdf4)
