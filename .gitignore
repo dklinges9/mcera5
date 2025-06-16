@@ -4,3 +4,9 @@
 .Ruserdata
 /doc/
 /Meta/
+
+# Developer files
+rebuild_mcera5.R
+test_request.R
+out/*
+user_files/*
