@@ -29,6 +29,9 @@ find your User ID (UID) and Personal Access Token, both which are required for y
 
 ## News
 
+_31 May 2025_: the aforementioend ERA5 time-series can now be queried via a new (and not fully tested) function, `build_era5_timeseries_request.R`. NOTE: ERA5 time-series currently does not include all variables necessary
+#' for microclimate modeling, only the following variables can be queried: 2m_temperature, 2m_dewpoint_temperature, surface_pressure, 10m_u_component_of_wind, 10m_v_component_of_wind, total_precipitation.
+
 _21 March 2025_: this week, ECMWF announced a new [time series ERA5 archive](https://forum.ecmwf.int/t/new-dataset-published-in-cds-era5-hourly-time-series-data-on-single-levels-from-1940-to-present/11919), and the [ERA-Explorer](https://era-explorer.climate.copernicus.eu/) for visualizing ERA5 data. This new time series ERA5 archive is "for retrieving long time-series for a single point in a efficient way", which may be useful for more efficient `mcera5` queries. Accessing this new archive is on my radar and I hope for it to be a feature soon!
 
 _7 Jan 2025_: CDS has now changed the URL for the API from their temporary URL to their permanent URL, which may require an update to your .cdsapirc file in your home directory. See [here](https://cds.climate.copernicus.eu/how-to-api) for the updated URL. As of today, https://cds.climate.copernicus.eu/api is the new URL.  
