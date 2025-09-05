@@ -1,4 +1,4 @@
-## ----setup, include=FALSE------------------------------------------------------------------------------------------------------------
+## ----setup, include=FALSE------------------------------------------------------------------------------------------------------
 knitr::opts_chunk$set(echo = TRUE,
                       collapse = TRUE,
                       comment = "#>")
@@ -6,7 +6,7 @@ knitr::opts_chunk$set(echo = TRUE,
 # be different from the \VignetteIndexEntry{} title:
 options(rmarkdown.html_vignette.check_title = FALSE)
 
-## ----packages, warning = FALSE, message = FALSE--------------------------------------------------------------------------------------
+## ----packages, warning = FALSE, message = FALSE--------------------------------------------------------------------------------
 library(mcera5)
 library(dplyr)
 library(ecmwfr)
@@ -19,7 +19,7 @@ library(tidync)
 library(NicheMapR) # remotes::install_github("mrke/NicheMapR")
 library(microctools) # remotes::install_github("ilyamaclean/microctools")
 
-## ----funs, include = FALSE-----------------------------------------------------------------------------------------------------------
+## ----funs, include = FALSE-----------------------------------------------------------------------------------------------------
 #############
 ##FUNCTIONS##
 #############
@@ -27,7 +27,7 @@ library(microctools) # remotes::install_github("ilyamaclean/microctools")
 files_source <- list.files(here::here("R/"), full.names = T)
 sapply(files_source,source)
 
-## ----creds, eval = FALSE-------------------------------------------------------------------------------------------------------------
+## ----creds, eval = FALSE-------------------------------------------------------------------------------------------------------
 #  # assign your credentials from the CDS User ID and Personal Access Token
 #  # There are found here: https://cds.climate.copernicus.eu/profile
 #  uid <- "*****"
@@ -36,7 +36,7 @@ sapply(files_source,source)
 #  ecmwfr::wf_set_key(user = uid,
 #                     key = cds_access_token)
 
-## ----build request-------------------------------------------------------------------------------------------------------------------
+## ----build request-------------------------------------------------------------------------------------------------------------
 
 # bounding coordinates (in WGS84 / EPSG:4326)
 xmn <- -4
@@ -62,13 +62,13 @@ req <- build_era5_request(xmin = xmn, xmax = xmx,
                           end_time = en_time,
                           outfile_name = file_prefix)
 
-## ----list_view-----------------------------------------------------------------------------------------------------------------------
+## ----list_view-----------------------------------------------------------------------------------------------------------------
 str(req)
 
-## ----send_request, eval = FALSE------------------------------------------------------------------------------------------------------
+## ----send_request, eval = FALSE------------------------------------------------------------------------------------------------
 #  request_era5(request = req, uid = uid, out_path = file_path)
 
-## ----process_clim, eval = FALSE------------------------------------------------------------------------------------------------------
+## ----process_clim, eval = FALSE------------------------------------------------------------------------------------------------
 #  # list the path of the .nc file for a given year
 #  my_nc <- paste0(getwd(), "/era5_-4_-2_49_51_2010.nc")
 #  
@@ -78,12 +78,11 @@ str(req)
 #  
 #  # gather all hourly variables
 #  clim_point <- extract_clim(nc = my_nc, long = x, lat = y,
-#                            start_time = st_time, end_time = en_time,
-#                             format = "microclima")
+#                            start_time = st_time, end_time = en_time)
 #  
 #  head(clim_point)
 
-## ----process_precip, eval = FALSE----------------------------------------------------------------------------------------------------
+## ----process_precip, eval = FALSE----------------------------------------------------------------------------------------------
 #  # gather daily precipitation (we specify to convert precipitation from hourly
 #  # to daily, which is already the default behavior)
 #  precip_point <- extract_precip(nc = my_nc, long = x, lat = y,
@@ -91,19 +90,7 @@ str(req)
 #                                     end_time = en_time,
 #                                     convert_daily = TRUE)
 
-## ----runauto_example, eval = FALSE---------------------------------------------------------------------------------------------------
-#  # create a 200 x 200 30 m spatial resoltuion DEM for location
-#  r <- microclima::get_dem(lat = y, long = x, resolution = 30)
-#  
-#  # change date format to fit runauto requirements
-#  temps <- microclima::runauto(r = r, dstart = "26/02/2010",dfinish = "01/03/2010",
-#                               hgt = 0.1, l = NA, x = NA,
-#                               habitat = "Barren or sparsely vegetated",
-#                               hourlydata = clim_point,
-#                               dailyprecip = precip_point,
-#                               plot.progress= FALSE)
-
-## ----process_clim_microclimc, eval = FALSE-------------------------------------------------------------------------------------------
+## ----process_clim_microclimc, eval = FALSE-------------------------------------------------------------------------------------
 #  # list the path of the .nc file for a given year
 #  my_nc <- paste0(getwd(), "/era5_-4_-2_49_51_2010.nc")
 #  
@@ -111,14 +98,23 @@ str(req)
 #  x <- -3.654600
 #  y <- 50.640369
 #  
-#  # gather all hourly variables
+#  # Also temporal (st_time, en_time) inputs that fall within your queried ERA5 file
 #  clim_point <- extract_clim(nc = my_nc, long = x, lat = y,
 #                            start_time = st_time, end_time = en_time,
 #                             format = "microclimc")
 #  
 #  head(clim_point)
 
-## ----process_clima, eval = FALSE-----------------------------------------------------------------------------------------------------
+## ----nichemapr_example, eval = FALSE-------------------------------------------------------------------------------------------
+#  # Note that NicheMapR functions require dates in a different format than mcera5
+#  dstart <- "27/02/2010"
+#  dfinish <- "01/03/2010"
+#  loc <- c(x, y) # Same coordinates as before, within the bounding box of the ERA5 file
+#  
+#  micro <- micro_era5(loc = loc, dstart = dstart, dfinish = dfinish, spatial = file_path)
+#  
+
+## ----process_clima, eval = FALSE-----------------------------------------------------------------------------------------------
 #  # list the path of the .nc file for a given year
 #  my_nc <- paste0(getwd(), "/era5_-4_-2_49_51_2010.nc")
 #  

@@ -5,7 +5,7 @@ vignette: >
   %\VignetteIndexEntry{mcera5_vignette}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
----
+--
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,
@@ -131,8 +131,8 @@ By default, `extract_clim` applies an inverse distance weighting calculation (co
 
 Furthermore, `extract_clim` by default applies a diurnal temperature range correction to the data (when `dtr_cor = TRUE` and weighted according to `dtr_cor_fac`). The diurnal temperature ranges of ERA5 are artificially lower in grid cells classed as sea as opposed to land. It may thus be useful to apply a correction if estimates are required for a terrestrial location in predominantly marine grid cells. If applied, an internal function is evoked that uses the land/sea value in the downloaded NetCDF file to adjust temperature values by the factor provided using the formula $DTR_C=DTR[(1-p_l ) C_f+1]$ where $DTR_C$ is the corrected diurnal temperature range, $DTR$ is the diurnal temperature range in the ERA5 dataset, $p_l$ is the proportion of the grid cell that is land and $C_f$ is the correction factor. The default function input value is a correction based on calibration against the UK Met Office 1-km2 gridded dataset of daily maximum and minimum temperatures, itself calibrated and validated against a network of (on average) 1,203 weather stations distributed across the UK. 
 
-Given that `runauto` in the `microclima` package, as well as functions from the `NicheMapR` and `microclimc` microclimate modelling packages, all only accept date ranges within single years, you will need to create a separate data frame for each yearly block. For example, if your period of interest spans multiple years (and you have used the previous code to download multiple .nc files, run this next block of code for each year):
-The climate data that are extracted will have different formats according to the value provided to `format`. By default, `extract_clim()` will provide data formatted for `microclima`.
+Given that functions from the `NicheMapR` and `microclimc` microclimate modelling packages all only accept date ranges within single years, you will need to create a separate data frame for each yearly block. For example, if your period of interest spans multiple years (and you have used the previous code to download multiple .nc files, run this next block of code for each year):
+The climate data that are extracted will have different formats according to the value provided to `format`.
 
 ```{r process_clim, eval = FALSE}
 # list the path of the .nc file for a given year
@@ -144,12 +144,10 @@ y <- 50.640369
 
 # gather all hourly variables
 clim_point <- extract_clim(nc = my_nc, long = x, lat = y,
-                          start_time = st_time, end_time = en_time,
-                           format = "microclima")
+                          start_time = st_time, end_time = en_time)
 
 head(clim_point)
 ```
-
 
 In the same fashion, use `extract_precip` to acquire precipitation from your downloaded netCDF file, which also applies an inverse distance weighting calculation. By default, `extract_precip` sums up hourly ERA5 precipitation to the daily level, which is required for the aforementioned microclimate models. However users can instead receive hourly values by setting `convert_daily = FALSE`. 
 
@@ -162,22 +160,7 @@ precip_point <- extract_precip(nc = my_nc, long = x, lat = y,
                                    convert_daily = TRUE)
 ```
 
-The dataframe created by `extract_clim` and vector created by `extract_precip` are ready to be used as inputs to the `runauto` function from the `microclima` package:
-
-```{r runauto_example, eval = FALSE}
-# create a 200 x 200 30 m spatial resoltuion DEM for location
-r <- microclima::get_dem(lat = y, long = x, resolution = 30)
-
-# change date format to fit runauto requirements
-temps <- microclima::runauto(r = r, dstart = "26/02/2010",dfinish = "01/03/2010", 
-                             hgt = 0.1, l = NA, x = NA, 
-                             habitat = "Barren or sparsely vegetated",
-                             hourlydata = clim_point, 
-                             dailyprecip = precip_point, 
-                             plot.progress= FALSE)
-```
-
-For use of climate data with other microclimate packages, such as `microclimc` and `microclimf`, you can specify the package name with the argument `format`:
+For use of climate data with other microclimate packages, such as `microclimc` and `microclimf`, you can ensure your climate data will be returned in the right format with the argument `format`:
 
 ```{r process_clim_microclimc, eval = FALSE}
 # list the path of the .nc file for a given year
@@ -187,7 +170,7 @@ my_nc <- paste0(getwd(), "/era5_-4_-2_49_51_2010.nc")
 x <- -3.654600
 y <- 50.640369
 
-# gather all hourly variables
+# Also temporal (st_time, en_time) inputs that fall within your queried ERA5 file
 clim_point <- extract_clim(nc = my_nc, long = x, lat = y,
                           start_time = st_time, end_time = en_time,
                            format = "microclimc")
@@ -195,8 +178,19 @@ clim_point <- extract_clim(nc = my_nc, long = x, lat = y,
 head(clim_point)
 ```
 
-#### Extracting climate data for a spatial grid/array using extract_clima() and extract_precipa()
+The queried ERA5 netcdf file can also be accessed via the `micro_era5()` function from the `NicheMapR` package:
 
+```{r nichemapr_example, eval = FALSE}
+# Note that NicheMapR functions require dates in a different format than mcera5
+dstart <- "27/02/2010"
+dfinish <- "01/03/2010"
+loc <- c(x, y) # Same coordinates as before, within the bounding box of the ERA5 file
+
+micro <- micro_era5(loc = loc, dstart = dstart, dfinish = dfinish, spatial = file_path)
+
+```
+
+#### Extracting climate data for a spatial grid/array using extract_clima() and extract_precipa()
 
 `mcera5` also can extract ERA5 climate data simultaneously across a spatial grid using `extract_clima()` and `extract_precipa()`, to be provided to functions such as `microclimf::runpointmodela()`. `extract_clima()` and `extract_precipa()` follow the same format as `extract_clim()` and `extract_precip()`, except require as input the boundaries of a spatial grid rather than a single spatial point. Both functions will return spatRaster layers corresponding to the climate variables, formatted according to what package is specified in the argument `format`.
 
