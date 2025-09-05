@@ -12,7 +12,7 @@
 #' 10m_u_component_of_wind, 10m_v_component_of_wind, total_precipitation.
 #'
 #' @param x The longitude to request data for.
-#' @param ymin The latitude to request data for.
+#' @param y The latitude to request data for.
 #' @param start_time a POSIXlt object indicating the first hour for which data
 #' are required.
 #' @param end_time a POSIXlt object indicating the last hour for which data
