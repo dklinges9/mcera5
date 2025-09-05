@@ -14,7 +14,7 @@ extract_clim(
   d_weight = TRUE,
   dtr_cor = TRUE,
   dtr_cor_fac = 1.285,
-  format = "microclima"
+  format = "NicheMapR"
 )
 }
 \arguments{
@@ -137,7 +137,7 @@ If format is "micropoint" or "microclimf":
 `extract_clim` takes an nc file containing hourly ERA5 climate
 data, and for a given set of coordinates, produces an (optionally) inverse
 distance weighted mean of each variable, ready for use by default with
-`microclima::runauto` and `NicheMapR::micro_era5()`, but also compatible with
+`NicheMapR::micro_era5()`, but also compatible with
 `microclimc`, `microclimf`, and `micropoint` (see argument `format`).
 Also provides the option to implement a diurnal temperature range correction
 to air temperatures.
