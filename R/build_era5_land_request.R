@@ -61,7 +61,32 @@ build_era5_land_request <- function(xmin, xmax, ymin, ymax, start_time, end_time
 
   # iterate over all focal months. ERA5-land must be queried on a monthly basis
   request <- apply(ut, 1, function(time) {
-      list(
+
+
+    mon <- time[1]
+    yea <- time[2]
+    # If first month....
+    if (all(time == ut[1,])) {
+      # Extract days from start_time to days_in_month()
+      days <- format(start_time, "%d") : lubridate::days_in_month(paste0(yea, "-", mon, "-01"))
+    }
+    # If last month....(importantly, must happen after first month, to overwrite)
+    if (all(time == ut[nrow(ut),])) {
+      # Extract days from 1 to end_time
+      days <- 1 : format(end_time, "%d")
+    }
+
+    if (any(time != ut[1,]) & any(time != ut[nrow(ut),])) {
+      # Otherwise, get all days in month
+      days <- 1 : lubridate::days_in_month(paste0(yea, "-", mon, "-01"))
+    }
+
+    # Coerce to character
+    days <- as.character(days)
+    # add "0" if only one character
+    days <- ifelse(nchar(days) < 2, paste0("0", days), days)
+
+      return(list(
         "dataset_short_name" = "reanalysis-era5-land",
         "product_type" = "reanalysis",
         "variable" = c(
@@ -72,11 +97,7 @@ build_era5_land_request <- function(xmin, xmax, ymin, ymax, start_time, end_time
         ),
         "year" = as.character(time[2]),
         "month" = as.character(time[1]),
-        "day" = c(
-          "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11",
-          "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22",
-          "23", "24", "25", "26", "27", "28", "29", "30", "31"
-        ),
+        "day" = days,
         "time" = c(
           "00:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00",
           "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00",
@@ -87,7 +108,7 @@ build_era5_land_request <- function(xmin, xmax, ymin, ymax, start_time, end_time
         "format" = "netcdf",
         "download_format" = "unarchived",
         "target" = paste0(outfile_name, "_", time[2], "_", time[1], ".nc")
-      )
+      ))
     })
 
   return(request)
