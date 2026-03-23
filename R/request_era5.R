@@ -32,8 +32,7 @@ request_era5 <- function(request, uid, out_path, overwrite = FALSE,
       }
     }
 
-    ecmwfr::wf_request(user = as.character(uid),
-                       request = request[[req]],
+    ecmwfr::wf_request(request = request[[req]],
                        transfer = TRUE,
                        path = out_path,
                        verbose = TRUE,
