@@ -36,6 +36,7 @@ request_era5 <- function(request, uid, out_path, overwrite = FALSE,
                        transfer = TRUE,
                        path = out_path,
                        verbose = TRUE,
+                       retry = 50,
                        time_out = 18000)
 
     if (file.exists(paste0(out_path, "/", request[[req]]$target))) {
