@@ -15,7 +15,7 @@
 #'
 #'
 request_era5 <- function(request, uid, out_path, overwrite = FALSE,
-                         combine = TRUE) {
+                         combine = TRUE, max_retries = 5, base_wait = 30) {
 
     # Helper function to handle rate limiting and retries
   safe_wf_request <- function(req_item, path, max_attempts = max_retries, initial_wait = base_wait) {
