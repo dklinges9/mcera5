@@ -15,8 +15,63 @@
 #'
 #'
 request_era5 <- function(request, uid, out_path, overwrite = FALSE,
-                         combine = TRUE) {
+                         combine = TRUE, max_retries = 5, base_wait = 30) {
 
+    # Helper function to handle rate limiting and retries
+  safe_wf_request <- function(req_item, path, max_attempts = max_retries, initial_wait = base_wait) {
+    attempt <- 1
+    
+    while (attempt <= max_attempts) {
+      tryCatch({
+        # Attempt the request
+        ecmwfr::wf_request(request = req_item,
+                           transfer = TRUE,
+                           path = path,
+                           verbose = TRUE,
+                           time_out = 18000)
+        
+        # If successful, break out of the retry loop
+        return(TRUE)
+        
+      }, error = function(e) {
+        error_msg <- as.character(e)
+        
+        # Check if it's a rate limit error
+        if (grepl("rate limit exceeded|429|Rate limit exceeded", error_msg, ignore.case = TRUE)) {
+          
+          # Extract wait time from error message if available
+          wait_time <- initial_wait
+          if (grepl("wait (\\d+) seconds", error_msg, ignore.case = TRUE)) {
+            extracted_time <- as.numeric(gsub(".*wait (\\d+) seconds.*", "\\1", error_msg))
+            if (!is.na(extracted_time)) {
+              wait_time <- extracted_time
+            }
+          }
+          
+          # Add some buffer time and exponential backoff
+          wait_time <- wait_time + (attempt - 1) * 10
+          
+          cat("Rate limit exceeded on attempt", attempt, "of", max_attempts, "\n")
+          cat("Waiting", wait_time, "seconds before retry...\n")
+          
+          Sys.sleep(wait_time)
+          attempt <- attempt + 1
+          
+          # If this was the last attempt, re-throw the error
+          if (attempt > max_attempts) {
+            stop("Max retries exceeded. Last error: ", error_msg)
+          }
+          
+        } else {
+          # If it's not a rate limit error, re-throw immediately
+          stop(e)
+        }
+      })
+    }
+    
+    return(FALSE)
+  }
+  
   if (length(request) == 1 & combine) {
     cat("Your request will all be queried at once and does not need to be combined.\n")
   }
@@ -32,12 +87,15 @@ request_era5 <- function(request, uid, out_path, overwrite = FALSE,
       }
     }
 
-    ecmwfr::wf_request(request = request[[req]],
-                       transfer = TRUE,
-                       path = out_path,
-                       verbose = TRUE,
-                       retry = 50,
-                       time_out = 18000)
+    # Add a small delay between requests to be respectful to the API
+    if (req > 1) {
+      cat("Waiting 5 seconds between requests...\n")
+      Sys.sleep(5)
+    }
+
+    # Use the safe request function with retry logic
+    cat("Submitting request", req, "of", length(request), "...\n")
+    safe_wf_request(request[[req]], out_path)
 
     if (file.exists(paste0(out_path, "/", request[[req]]$target))) {
       if (length(request) > 1) {
