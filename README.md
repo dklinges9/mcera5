@@ -23,11 +23,13 @@ ERA5 climate data can be downloaded from the ECMWF climate data store (CDS). Not
 1) Register for an ECMWF account [here](https://accounts.ecmwf.int/auth/realms/ecmwf/login-actions/registration?client_id=cms-www&tab_id=yu4FgUR5-ds). Upon registering you will need to accept all of the Terms and Conditions listed at the bottom of the form.
 
 2) Then, navigate to the CDS site [here](https://cds.climate.copernicus.eu/) and login using the button in the top right. Once logged in, hover your mouse over your name in the top right, and click on the option "Your profile" that appears (this should bring you to [this page](https://cds.climate.copernicus.eu/profile). Here you will 
-find your User ID (UID) and Personal Access Token, both which are required for you to remotely download data from the CDS. Make a note of these.  
+find your User ID (UID) and Personal Access Token (PAT). The PAT is required for you to remotely download data from the CDS, while the User ID can optionally be supplied (it may be more strategic to keep the default `ecmwfr` user.)
 
 3) Each CDS dataset has its own unique Terms of Use. You will need to accept these Terms for ERA5-reanalysis at [this page](https://cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels?tab=download) (scroll down to "Terms of use" and accept). This same set of terms also applies for other Copernicus products, including ERA5-land.
 
 ## News
+
+_23 March 2026_: following changes to the ECMWF CDS API, for the ecmwfr function 1wf_set_key(key = cds_api_key)
 
 _31 May 2025_: the aforementioend ERA5 time-series can now be queried via a new (and not fully tested) function, `build_era5_timeseries_request.R`. NOTE: ERA5 time-series currently does not include all variables necessary
 #' for microclimate modeling, only the following variables can be queried: 2m_temperature, 2m_dewpoint_temperature, surface_pressure, 10m_u_component_of_wind, 10m_v_component_of_wind, total_precipitation.
