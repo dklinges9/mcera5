@@ -1,4 +1,4 @@
-## ----setup, include=FALSE------------------------------------------------------------------------------------------------------
+## ----setup, include=FALSE-------------------------------------------------------------------------------------------------
 knitr::opts_chunk$set(echo = TRUE,
                       collapse = TRUE,
                       comment = "#>")
@@ -6,7 +6,7 @@ knitr::opts_chunk$set(echo = TRUE,
 # be different from the \VignetteIndexEntry{} title:
 options(rmarkdown.html_vignette.check_title = FALSE)
 
-## ----packages, warning = FALSE, message = FALSE--------------------------------------------------------------------------------
+## ----packages, warning = FALSE, message = FALSE---------------------------------------------------------------------------
 library(mcera5)
 library(dplyr)
 library(ecmwfr)
@@ -19,7 +19,7 @@ library(tidync)
 library(NicheMapR) # remotes::install_github("mrke/NicheMapR")
 library(microctools) # remotes::install_github("ilyamaclean/microctools")
 
-## ----funs, include = FALSE-----------------------------------------------------------------------------------------------------
+## ----funs, include = FALSE------------------------------------------------------------------------------------------------
 #############
 ##FUNCTIONS##
 #############
@@ -27,16 +27,15 @@ library(microctools) # remotes::install_github("ilyamaclean/microctools")
 files_source <- list.files(here::here("R/"), full.names = T)
 sapply(files_source,source)
 
-## ----creds, eval = FALSE-------------------------------------------------------------------------------------------------------
+## ----creds, eval = FALSE--------------------------------------------------------------------------------------------------
 #  # assign your credentials from the CDS User ID and Personal Access Token
 #  # There are found here: https://cds.climate.copernicus.eu/profile
-#  uid <- "*****"
 #  cds_access_token <- "********-****-****-****-************"
 #  
-#  ecmwfr::wf_set_key(user = uid,
-#                     key = cds_access_token)
+#  ecmwfr::wf_set_key(key = cds_access_token)
+#  # In earlier versions of ecmwfr, you also needed to specify the user ID, but this is no longer required as of 2025.
 
-## ----build request-------------------------------------------------------------------------------------------------------------
+## ----build request--------------------------------------------------------------------------------------------------------
 
 # bounding coordinates (in WGS84 / EPSG:4326)
 xmn <- -4
@@ -62,13 +61,13 @@ req <- build_era5_request(xmin = xmn, xmax = xmx,
                           end_time = en_time,
                           outfile_name = file_prefix)
 
-## ----list_view-----------------------------------------------------------------------------------------------------------------
+## ----list_view------------------------------------------------------------------------------------------------------------
 str(req)
 
-## ----send_request, eval = FALSE------------------------------------------------------------------------------------------------
+## ----send_request, eval = FALSE-------------------------------------------------------------------------------------------
 #  request_era5(request = req, uid = uid, out_path = file_path)
 
-## ----process_clim, eval = FALSE------------------------------------------------------------------------------------------------
+## ----process_clim, eval = FALSE-------------------------------------------------------------------------------------------
 #  # list the path of the .nc file for a given year
 #  my_nc <- paste0(getwd(), "/era5_-4_-2_49_51_2010.nc")
 #  
@@ -82,7 +81,7 @@ str(req)
 #  
 #  head(clim_point)
 
-## ----process_precip, eval = FALSE----------------------------------------------------------------------------------------------
+## ----process_precip, eval = FALSE-----------------------------------------------------------------------------------------
 #  # gather daily precipitation (we specify to convert precipitation from hourly
 #  # to daily, which is already the default behavior)
 #  precip_point <- extract_precip(nc = my_nc, long = x, lat = y,
@@ -90,7 +89,7 @@ str(req)
 #                                     end_time = en_time,
 #                                     convert_daily = TRUE)
 
-## ----process_clim_microclimc, eval = FALSE-------------------------------------------------------------------------------------
+## ----process_clim_microclimc, eval = FALSE--------------------------------------------------------------------------------
 #  # list the path of the .nc file for a given year
 #  my_nc <- paste0(getwd(), "/era5_-4_-2_49_51_2010.nc")
 #  
@@ -105,7 +104,7 @@ str(req)
 #  
 #  head(clim_point)
 
-## ----nichemapr_example, eval = FALSE-------------------------------------------------------------------------------------------
+## ----nichemapr_example, eval = FALSE--------------------------------------------------------------------------------------
 #  # Note that NicheMapR functions require dates in a different format than mcera5
 #  dstart <- "27/02/2010"
 #  dfinish <- "01/03/2010"
@@ -114,7 +113,7 @@ str(req)
 #  micro <- micro_era5(loc = loc, dstart = dstart, dfinish = dfinish, spatial = file_path)
 #  
 
-## ----process_clima, eval = FALSE-----------------------------------------------------------------------------------------------
+## ----process_clima, eval = FALSE------------------------------------------------------------------------------------------
 #  # list the path of the .nc file for a given year
 #  my_nc <- paste0(getwd(), "/era5_-4_-2_49_51_2010.nc")
 #  

@@ -391,9 +391,10 @@ bottom of the form.</p></li>
 button in the top right. Once logged in, hover your mouse over your name
 in the top right, and click on the option “Your profile” that appears
 (this should bring you to <a href="https://cds.climate.copernicus.eu/profile">this page</a>. Here you
-will find your User ID (UID) and Personal Access Token, both which are
-required for you to remotely download data from the CDS. Make a note of
-these.</p></li>
+will find your User ID (UID) and Personal Access Token (PAT). The PAT is
+required for you to remotely download data from the CDS, while the User
+ID can optionally be supplied (it may be more strategic to keep the
+default <code>ecmwfr</code> user.)</p></li>
 <li><p>Each CDS dataset has its own unique Terms of Use. You will need
 to accept these Terms for ERA5-reanalysis at <a href="https://cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels?tab=download">this
 page</a> (scroll down to “Terms of use” and accept). This same set of
@@ -416,11 +417,10 @@ library(microctools) # remotes::install_github(&quot;ilyamaclean/microctools&quo
 <h4>Set user credentials for API access</h4>
 <pre class="r"><code># assign your credentials from the CDS User ID and Personal Access Token
 # There are found here: https://cds.climate.copernicus.eu/profile
-uid &lt;- &quot;*****&quot;
 cds_access_token &lt;- &quot;********-****-****-****-************&quot;
 
-ecmwfr::wf_set_key(user = uid,
-                   key = cds_access_token)</code></pre>
+ecmwfr::wf_set_key(key = cds_access_token)
+# In earlier versions of ecmwfr, you also needed to specify the user ID, but this is no longer required as of 2025.</code></pre>
 <p>Note that earlier versions of <code>ecmwfr</code> required
 specification of <code>service</code> = “cds”, but as of August 2024
 this is no longer the case (corresponding to the update to the new CDS

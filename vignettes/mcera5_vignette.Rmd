@@ -23,7 +23,7 @@ ERA5 climate data can be downloaded from the ECMWF Climate Data Store (CDS). Not
 1) Register for an ECMWF account at [https://www.ecmwf.int/](https://www.ecmwf.int/). Click "Log in" in the top right, and then click "Register new user". Upon registering you will need to accept all of the Terms and Conditions listed at the bottom of the form.
 
 2) Then, navigate to the CDS site [here](https://cds.climate.copernicus.eu/) and login using the button in the top right. Once logged in, hover your mouse over your name in the top right, and click on the option "Your profile" that appears (this should bring you to [this page](https://cds.climate.copernicus.eu/profile). Here you will 
-find your User ID (UID) and Personal Access Token, both which are required for you to remotely download data from the CDS. Make a note of these.  
+find your User ID (UID) and Personal Access Token (PAT). The PAT is required for you to remotely download data from the CDS, while the User ID can optionally be supplied (it may be more strategic to keep the default `ecmwfr` user.)
 
 3) Each CDS dataset has its own unique Terms of Use. You will need to accept these Terms for ERA5-reanalysis at [this page](https://cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels?tab=download) (scroll down to "Terms of use" and accept). This same set of terms also applies for other Copernicus products, including ERA5-land.
 
@@ -56,11 +56,10 @@ sapply(files_source,source)
 ```{r creds, eval = FALSE}
 # assign your credentials from the CDS User ID and Personal Access Token
 # There are found here: https://cds.climate.copernicus.eu/profile
-uid <- "*****"
 cds_access_token <- "********-****-****-****-************"
 
-ecmwfr::wf_set_key(user = uid,
-                   key = cds_access_token)
+ecmwfr::wf_set_key(key = cds_access_token)
+# In earlier versions of ecmwfr, you also needed to specify the user ID, but this is no longer required as of 2025.
 ```
 
 Note that earlier versions of `ecmwfr` required specification of `service` = "cds", but as of August 2024 this is no longer the case (corresponding to the update to the new CDS version).

@@ -4,7 +4,15 @@
 \alias{request_era5}
 \title{Submit request(s) to CDS for ERA5 data download}
 \usage{
-request_era5(request, uid, out_path, overwrite = FALSE, combine = TRUE)
+request_era5(
+  request,
+  uid,
+  out_path,
+  overwrite = FALSE,
+  combine = TRUE,
+  max_retries = 5,
+  base_wait = 30
+)
 }
 \arguments{
 \item{request}{a list of request(s) created with `build_era5_request`.}
