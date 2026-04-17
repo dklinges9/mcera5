@@ -391,10 +391,8 @@ bottom of the form.</p></li>
 button in the top right. Once logged in, hover your mouse over your name
 in the top right, and click on the option “Your profile” that appears
 (this should bring you to <a href="https://cds.climate.copernicus.eu/profile">this page</a>. Here you
-will find your User ID (UID) and Personal Access Token (PAT). The PAT is
-required for you to remotely download data from the CDS, while the User
-ID can optionally be supplied (it may be more strategic to keep the
-default <code>ecmwfr</code> user.)</p></li>
+will find your Personal Access Token (PAT). The PAT is required for you
+to remotely download data from the CDS.</p></li>
 <li><p>Each CDS dataset has its own unique Terms of Use. You will need
 to accept these Terms for ERA5-reanalysis at <a href="https://cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels?tab=download">this
 page</a> (scroll down to “Terms of use” and accept). This same set of
@@ -415,7 +413,7 @@ library(NicheMapR) # remotes::install_github(&quot;mrke/NicheMapR&quot;)
 library(microctools) # remotes::install_github(&quot;ilyamaclean/microctools&quot;)</code></pre>
 <div id="set-user-credentials-for-api-access" class="section level4">
 <h4>Set user credentials for API access</h4>
-<pre class="r"><code># assign your credentials from the CDS User ID and Personal Access Token
+<pre class="r"><code># assign your credentials from the CDS Personal Access Token
 # There are found here: https://cds.climate.copernicus.eu/profile
 cds_access_token &lt;- &quot;********-****-****-****-************&quot;
 
@@ -519,7 +517,7 @@ in <code>request_era5</code>. At this stage, the user then waits for the
 netCDF to be downloaded to their machine, and will receive a
 confirmation message (“ERA5 netCDF file successfully downloaded”) from
 the R console upon completion:</p>
-<pre class="r"><code>request_era5(request = req, uid = uid, out_path = file_path)</code></pre>
+<pre class="r"><code>request_era5(request = req, out_path = file_path)</code></pre>
 <p>To confirm that your request has been sent to the API, you can visit
 <a href="https://cds.climate.copernicus.eu/requests?tab=all">this
 page</a>, which will list your current and recent API requests. If you

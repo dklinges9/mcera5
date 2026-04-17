@@ -22,8 +22,7 @@ ERA5 climate data can be downloaded from the ECMWF Climate Data Store (CDS). Not
 
 1) Register for an ECMWF account at [https://www.ecmwf.int/](https://www.ecmwf.int/). Click "Log in" in the top right, and then click "Register new user". Upon registering you will need to accept all of the Terms and Conditions listed at the bottom of the form.
 
-2) Then, navigate to the CDS site [here](https://cds.climate.copernicus.eu/) and login using the button in the top right. Once logged in, hover your mouse over your name in the top right, and click on the option "Your profile" that appears (this should bring you to [this page](https://cds.climate.copernicus.eu/profile). Here you will 
-find your User ID (UID) and Personal Access Token (PAT). The PAT is required for you to remotely download data from the CDS, while the User ID can optionally be supplied (it may be more strategic to keep the default `ecmwfr` user.)
+2) Then, navigate to the CDS site [here](https://cds.climate.copernicus.eu/) and login using the button in the top right. Once logged in, hover your mouse over your name in the top right, and click on the option "Your profile" that appears (this should bring you to [this page](https://cds.climate.copernicus.eu/profile). Here you will find your Personal Access Token (PAT). The PAT is required for you to remotely download data from the CDS.
 
 3) Each CDS dataset has its own unique Terms of Use. You will need to accept these Terms for ERA5-reanalysis at [this page](https://cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels?tab=download) (scroll down to "Terms of use" and accept). This same set of terms also applies for other Copernicus products, including ERA5-land.
 
@@ -54,7 +53,7 @@ sapply(files_source,source)
 #### Set user credentials for API access
 
 ```{r creds, eval = FALSE}
-# assign your credentials from the CDS User ID and Personal Access Token
+# assign your credentials from the CDS Personal Access Token
 # There are found here: https://cds.climate.copernicus.eu/profile
 cds_access_token <- "********-****-****-****-************"
 
@@ -113,7 +112,7 @@ str(req)
 The next step is to execute the requests, by sending them to the CDS. Executing `request_era5` will download .nc files for each year to the location defined by `out_path`. The filenames will have a prefix defined by `outfile_name` in `build_era5_request`. The `request_era5` function will deal with lists containing multiple requests (i.e. those created by `build_era5_request` with temporal extents spanning multiple years). If users specify a duration longer than one year, the query is downloaded as a separate netCDF file for each year; users can combine files into one by specifying the parameter `combine = TRUE` in `request_era5`. At this stage, the user then waits for the netCDF to be downloaded to their machine, and will receive a confirmation message ("ERA5 netCDF file successfully downloaded") from the R console upon completion:
 
 ```{r send_request, eval = FALSE}
-request_era5(request = req, uid = uid, out_path = file_path)
+request_era5(request = req, out_path = file_path)
 ```
 
 To confirm that your request has been sent to the API, you can visit [this page](https://cds.climate.copernicus.eu/requests?tab=all), which will list your current and recent API requests. If you recently ran `request_era5` you should see a request with status "Queued" or "In progress". If the query via `request_era5` failed in R (e.g. perhaps because you accidentally specified downloading to a directory that does not exist), you still may be able to download the requested data from this page.
