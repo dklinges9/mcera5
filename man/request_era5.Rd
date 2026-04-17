@@ -6,7 +6,6 @@
 \usage{
 request_era5(
   request,
-  uid,
   out_path,
   overwrite = FALSE,
   combine = TRUE,
@@ -16,8 +15,6 @@ request_era5(
 }
 \arguments{
 \item{request}{a list of request(s) created with `build_era5_request`.}
-
-\item{uid}{character vector containing your CDS user ID.}
 
 \item{out_path}{character vector of the location at which to download nc files.}
 

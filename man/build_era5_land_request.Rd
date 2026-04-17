@@ -12,7 +12,8 @@ build_era5_land_request(
   ymax,
   start_time,
   end_time,
-  outfile_name = "era5_land_out"
+  outfile_name = "era5_land_out",
+  format = "netcdf"
 )
 }
 \arguments{
@@ -34,6 +35,9 @@ are required.}
 month, and file extension is automatically added). Keep in mind that you may
 want to submit multiple (or many) requests, and therefore this prefix should
 adequately describe a unique query (e.g. by its spatial or temporal extent).}
+
+\item{format}{the data format to be downloaded, either "grib" or "netcdf".
+GRIB allows larger queries, netCDF easier to process in R}
 }
 \description{
 `build_era5_land_request` creates a request or set of requests of

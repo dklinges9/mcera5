@@ -18,6 +18,8 @@ build_era5_timeseries_request(
 \arguments{
 \item{x}{The longitude to request data for.}
 
+\item{y}{The latitude to request data for.}
+
 \item{start_time}{a POSIXlt object indicating the first hour for which data
 are required.}
 
@@ -31,8 +33,6 @@ are required.}
 \item{outfile_name}{character prefix for .nc files when downloaded (the year, month, and file extension is automatically added). Keep in mind that you may want to submit multiple (or many) requests, and therefore
 this prefix should adequately describe a unique query (e.g. by its
 spatial or temporal extent).}
-
-\item{ymin}{The latitude to request data for.}
 }
 \description{
 `build_era5_timeseries_request` creates a request or set of requests that

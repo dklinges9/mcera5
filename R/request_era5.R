@@ -4,7 +4,6 @@
 #' Data Store (CDS) for ERA5 .nc files. Executes one request at a time.
 #'
 #' @param request a list of request(s) created with `build_era5_request`.
-#' @param uid character vector containing your CDS user ID.
 #' @param out_path character vector of the location at which to download nc files.
 #' @param overwrite TRUE for overwriting a file of the same path. Default FALSE.
 #' @param combine TRUE for combining downloaded files into one file. Default is
@@ -14,7 +13,7 @@
 #' @export
 #'
 #'
-request_era5 <- function(request, uid, out_path, overwrite = FALSE,
+request_era5 <- function(request, out_path, overwrite = FALSE,
                          combine = TRUE, max_retries = 5, base_wait = 30) {
 
     # Helper function to handle rate limiting and retries
